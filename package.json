@@ -6,26 +6,36 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "lhci": "lhci autorun",
+    "export": "next export",
+    "serve:lhci": "NODE_ENV=production pnpm run start"
   },
   "engines": {
     "node": ">=22"
   },
   "packageManager": "pnpm@10.12.1",
   "dependencies": {
+    "next": "15.3.3",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "next": "15.3.3"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@edge-runtime/vm": "^5.0.0",
+    "@eslint/eslintrc": "^3",
+    "@lhci/cli": "^0.15.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/jest": "^29.5.14",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
+    "@vitejs/plugin-react": "^4.5.2",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
-    "@eslint/eslintrc": "^3"
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^3.2.3"
   }
 }
