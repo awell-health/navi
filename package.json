@@ -8,6 +8,10 @@
     "start": "next start",
     "lint": "next lint"
   },
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@10.12.1",
   "dependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
