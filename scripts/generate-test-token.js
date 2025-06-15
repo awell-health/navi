@@ -1,6 +1,14 @@
 #!/usr/bin/env node
 
 // Helper script to generate test tokens for the magic link functionality
+// ⚠️  NOTE: This script still uses stub encryption because it's a plain JS script
+// For production token generation, use the secure TypeScript functions in src/lib/token
+// Or create tokens via the test-magic-link page which uses real encryption
+
+console.log('⚠️  WARNING: This script uses legacy stub encryption for compatibility');
+console.log('   For production-grade tokens, use the test-magic-link page instead');
+console.log('   Visit: http://localhost:3000/test-magic-link\n');
+
 const STUB_SECRET = 'magic-link-secret-key-256bit-stub';
 
 function createStubToken(payload) {
@@ -29,6 +37,9 @@ console.log('🔗 Magic Link Test Tokens\n');
 const validPayload = {
   patientId: 'patient123',
   careflowId: 'careflow456',
+  orgId: 'org123',
+  tenantId: 'tenant123',
+  environment: 'test',
   exp: Date.now() + (5 * 60 * 1000) // 5 minutes from now
 };
 const validToken = createStubToken(validPayload);
@@ -40,6 +51,9 @@ console.log(`   Token: ${validToken}\n`);
 const expiredPayload = {
   patientId: 'patient456',
   careflowId: 'careflow789',
+  orgId: 'org123',
+  tenantId: 'tenant123',
+  environment: 'test',
   exp: Date.now() - 1000 // 1 second ago
 };
 const expiredToken = createStubToken(expiredPayload);

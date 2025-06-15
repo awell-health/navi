@@ -1,62 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { decryptToken, type SessionData } from '@/lib/token';
+import { createJWT } from '@/lib/jwt';
+
 // Export edge runtime config
 export const runtime = 'edge';
 
-// Stub secret for token decryption (in production, this would come from env)
-const STUB_SECRET = 'magic-link-secret-key-256bit-stub';
-
-// In-memory session storage (stub - in production would use Redis/DB)
-const sessions = new Map<string, {
-  sessionId: string;
-  patientId: string;
-  careflowId: string;
-  expiresAt: Date;
-}>();
-
-// Simple stub encryption/decryption using base64 and XOR (for demo only)
-function decryptStubToken(token: string): { patientId: string; careflowId: string; exp: number } | null {
-  try {
-    // Decode base64
-    const decoded = atob(token);
-    
-    // Simple XOR decrypt with secret (stub implementation)
-    let decrypted = '';
-    for (let i = 0; i < decoded.length; i++) {
-      decrypted += String.fromCharCode(
-        decoded.charCodeAt(i) ^ STUB_SECRET.charCodeAt(i % STUB_SECRET.length)
-      );
-    }
-    
-    // Parse JSON payload
-    const payload = JSON.parse(decrypted);
-    
-    // Validate required fields
-    if (!payload.patientId || !payload.careflowId || !payload.exp) {
-      return null;
-    }
-    
-    return payload;
-  } catch (error) {
-    console.error('Token decryption failed:', error);
-    return null;
-  }
-}
+// In-memory session storage (stub - in production would use Redis/DB)  
+const sessions = new Map<string, SessionData>();
 
 function generateSessionId(): string {
   return crypto.randomUUID();
-}
-
-function generateStubJWT(sessionId: string): string {
-  // Stub JWT - in production would use proper JWT library with signing
-  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-  const payload = btoa(JSON.stringify({
-    sub: sessionId,
-    exp: Math.floor(Date.now() / 1000) + (15 * 60), // 15 minutes
-    iat: Math.floor(Date.now() / 1000)
-  }));
-  const signature = btoa('stub-signature'); // In production: HMAC-SHA256
-  
-  return `${header}.${payload}.${signature}`;
 }
 
 export async function GET(
@@ -65,8 +18,8 @@ export async function GET(
 ) {
   const { token } = await params;
   
-  // Decrypt the token
-  const tokenData = decryptStubToken(token);
+  // Decrypt the token using AES-GCM
+  const tokenData = await decryptToken(token);
   
   if (!tokenData) {
     return new NextResponse('Invalid token', { 
@@ -90,13 +43,16 @@ export async function GET(
   // Store session in memory
   sessions.set(sessionId, {
     sessionId,
+    tenantId: tokenData.tenantId,
     patientId: tokenData.patientId,
     careflowId: tokenData.careflowId,
+    orgId: tokenData.orgId,
+    environment: tokenData.environment,
     expiresAt
   });
   
   // Generate JWT
-  const jwt = generateStubJWT(sessionId);
+  const jwt = await createJWT(sessionId);
   
   // Create response with HTML page
   const html = `

@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
+import { encryptToken } from '@/lib/token';
+import type { TokenData } from '@/lib/token';
 
 // Add metadata for better performance
 export const metadata: Metadata = {
@@ -8,42 +10,18 @@ export const metadata: Metadata = {
   robots: 'noindex, nofollow', // Prevent indexing of test page
 };
 
-// Helper function to create test tokens (same as in the script)
-const STUB_SECRET = 'magic-link-secret-key-256bit-stub';
-
-function createStubToken(payload: { patientId: string; careflowId: string; exp: number }): string {
-  try {
-    const jsonPayload = JSON.stringify(payload);
-    
-    // Simple XOR encrypt with secret (same as route implementation)
-    let encrypted = '';
-    for (let i = 0; i < jsonPayload.length; i++) {
-      encrypted += String.fromCharCode(
-        jsonPayload.charCodeAt(i) ^ STUB_SECRET.charCodeAt(i % STUB_SECRET.length)
-      );
-    }
-    
-    // Encode as base64
-    if (typeof btoa !== 'undefined') {
-      return btoa(encrypted);
-    } else {
-      // Node.js environment
-      return Buffer.from(encrypted, 'binary').toString('base64');
-    }
-  } catch {
-    throw new Error('Failed to create test token');
-  }
-}
-
-export default function TestMagicLinkPage() {
+export default async function TestMagicLinkPage() {
   // Generate a valid token (expires in 10 minutes)
-  const validPayload = {
+  const validPayload: TokenData = {
     patientId: 'test-patient-lighthouse',
-    careflowId: 'test-careflow-lighthouse', 
+    careflowId: 'test-careflow-lighthouse',
+    orgId: 'test-org-lighthouse',
+    tenantId: 'test-tenant-lighthouse',
+    environment: 'test',
     exp: Date.now() + (10 * 60 * 1000) // 10 minutes from now
   };
   
-  const validToken = createStubToken(validPayload);
+  const validToken = await encryptToken(validPayload);
   
   return (
     <div style={{

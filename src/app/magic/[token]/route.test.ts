@@ -1,28 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { GET } from './route';
 import { NextRequest } from 'next/server';
-
-// Helper function to create test tokens using the same method as the route handler
-const STUB_SECRET = 'magic-link-secret-key-256bit-stub';
-
-function createStubToken(payload: { patientId: string; careflowId: string; exp: number }): string {
-  try {
-    const jsonPayload = JSON.stringify(payload);
-    
-    // Simple XOR encrypt with secret (same as route implementation)
-    let encrypted = '';
-    for (let i = 0; i < jsonPayload.length; i++) {
-      encrypted += String.fromCharCode(
-        jsonPayload.charCodeAt(i) ^ STUB_SECRET.charCodeAt(i % STUB_SECRET.length)
-      );
-    }
-    
-    // Encode as base64
-    return btoa(encrypted);
-  } catch {
-    throw new Error('Failed to create test token');
-  }
-}
+import { encryptToken, type TokenData } from '@/lib/token';
 
 describe('Magic Link Authentication', () => {
   beforeEach(() => {
@@ -54,7 +33,7 @@ describe('Magic Link Authentication', () => {
   it('should return 400 for token missing required fields', async () => {
     // Create a token with missing required fields
     const incompletePayload = { patientId: 'patient123' }; // missing careflowId and exp
-    const token = createStubToken(incompletePayload as { patientId: string; careflowId: string; exp: number });
+    const token = await encryptToken(incompletePayload as TokenData);
     
     const request = new NextRequest(`https://example.com/magic/${token}`);
     const params = Promise.resolve({ token });
@@ -70,9 +49,12 @@ describe('Magic Link Authentication', () => {
     const expiredPayload = {
       patientId: 'patient123',
       careflowId: 'careflow456',
+      orgId: 'org123',
+      tenantId: 'tenant123',
+      environment: 'test',
       exp: Date.now() - 1000 // 1 second ago
     };
-    const token = createStubToken(expiredPayload);
+    const token = await encryptToken(expiredPayload as TokenData);
     
     const request = new NextRequest(`https://example.com/magic/${token}`);
     const params = Promise.resolve({ token });
@@ -88,9 +70,12 @@ describe('Magic Link Authentication', () => {
     const validPayload = {
       patientId: 'patient123',
       careflowId: 'careflow456',
+      orgId: 'org123',
+      tenantId: 'tenant123',
+      environment: 'test',
       exp: Date.now() + 60000 // 1 minute from now
     };
-    const token = createStubToken(validPayload);
+    const token = await encryptToken(validPayload);
     
     const request = new NextRequest(`https://example.com/magic/${token}`);
     const params = Promise.resolve({ token });
@@ -111,9 +96,12 @@ describe('Magic Link Authentication', () => {
     const validPayload = {
       patientId: 'patient123',
       careflowId: 'careflow456',
+      orgId: 'org123',
+      tenantId: 'tenant123',
+      environment: 'test',
       exp: Date.now() + 60000 // 1 minute from now
     };
-    const token = createStubToken(validPayload);
+    const token = await encryptToken(validPayload);
     
     const request = new NextRequest(`https://example.com/magic/${token}`);
     const params = Promise.resolve({ token });
@@ -141,9 +129,12 @@ describe('Magic Link Authentication', () => {
     const validPayload = {
       patientId: 'patient123',
       careflowId: 'careflow456',
+      orgId: 'org123',
+      tenantId: 'tenant123',
+      environment: 'test',
       exp: Date.now() + 60000
     };
-    const token = createStubToken(validPayload);
+    const token = await encryptToken(validPayload);
     
     const request = new NextRequest(`https://example.com/magic/${token}`);
     const params = Promise.resolve({ token });

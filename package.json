@@ -11,16 +11,20 @@
     "test:run": "vitest run",
     "lhci": "lhci autorun",
     "export": "next export",
-    "serve:lhci": "NODE_ENV=production pnpm run start"
+    "serve:lhci": "NODE_ENV=production pnpm run start",
+    "generate-tokens": "NODE_ENV=development tsx --env-file=.env scripts/generate-secure-tokens.ts",
+    "generate-ci-env": "node scripts/generate-ci-env.js"
   },
   "engines": {
     "node": ">=22"
   },
   "packageManager": "pnpm@10.12.1",
   "dependencies": {
+    "@t3-oss/env-nextjs": "^0.13.8",
     "next": "15.3.3",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "zod": "^3.25.64"
   },
   "devDependencies": {
     "@edge-runtime/vm": "^5.0.0",
@@ -32,9 +36,11 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^4.5.2",
+    "dotenv": "^16.5.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
     "tailwindcss": "^4",
+    "tsx": "^4.20.3",
     "typescript": "^5",
     "vitest": "^3.2.3"
   }
