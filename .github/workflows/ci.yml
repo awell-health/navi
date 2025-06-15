@@ -1,0 +1,136 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.cache-key.outputs.key }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.12.1
+
+      - name: Generate cache key
+        id: cache-key
+        run: |
+          echo "key=build-${{ runner.os }}-node-22-${{ hashFiles('**/pnpm-lock.yaml', 'package.json') }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate CI environment variables
+        run: node scripts/generate-ci-env.js
+
+      - name: Set up environment for build
+        run: cp .env.test .env
+
+      - name: Build Next.js app
+        run: pnpm build
+
+      - name: Cache build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            .next
+            .env.test
+            node_modules
+          key: ${{ steps.cache-key.outputs.key }}
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.12.1
+
+      - name: Restore build cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .next
+            .env.test
+            node_modules
+          key: ${{ needs.build.outputs.cache-key }}
+
+      - name: Set up environment for tests
+        run: cp .env.test .env
+
+      - name: Run tests
+        run: pnpm test:run
+
+  lighthouse:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.12.1
+
+      - name: Restore build cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .next
+            .env.test
+            node_modules
+          key: ${{ needs.build.outputs.cache-key }}
+
+      - name: Set up environment for server
+        run: cp .env.test .env
+
+      - name: Start server
+        run: pnpm start &
+        env:
+          PORT: 3000
+
+      - name: Wait for server
+        run: npx wait-on http://localhost:3000
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: ".lighthouserc.json"
+          uploadArtifacts: true
+          temporaryPublicStorage: true

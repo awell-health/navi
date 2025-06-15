@@ -122,3 +122,8 @@ When implementation is complete, instruct the user:
 - Bundle sizes within budget (15KB initial, 40KB per chunk)
 - Edge-rendered HTML with minimal chrome
 - Immutable caching for activity chunks 
+
+## File Protection Rules
+- **NEVER modify, delete, or overwrite `.env` files** without explicit user permission
+- Environment files contain sensitive production data that should be preserved
+- When testing CI/CD workflows, use separate temporary files or the CI generation scripts
