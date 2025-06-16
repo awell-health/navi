@@ -1,0 +1,66 @@
+{
+  "orgId": "sunrise-health",
+  "branding": {
+    /* ---------- CORE PALETTE ---------- */
+    "primary":        "#FF6C4C",
+    "onPrimary":      "#FFFFFF",
+    "primaryHover":   "#E95A3C",
+    "primaryDisabled":"#FFCFC4",
+
+    "secondary":      "#004E7C",
+    "onSecondary":    "#FFFFFF",
+
+    "background":     "#FAFAFA",
+    "surface":        "#FFFFFF",
+    "onSurface":      "#1F1F1F",
+    "border":         "#E0E0E0",
+
+    "error":          "#D32F2F",
+    "onError":        "#FFFFFF",
+    "success":        "#1E8E3E",
+    "onSuccess":      "#FFFFFF",
+
+    /* ---------- TYPOGRAPHY ------------ */
+    "fontFamilyBody":   "\"Inter\", system-ui, sans-serif",
+    "fontFamilyHeading":"\"Poppins\", system-ui, sans-serif",
+    "fontWeightBold":   "600",
+    "fontSizeBase":     "16px",
+    "lineHeightBase":   "1.5",
+
+    /* ---------- RADII ----------------- */
+    "radiusSm":  "4px",   /* checkboxes, pills   */
+    "radiusMd":  "6px",   /* inputs, cards       */
+    "radiusLg":  "12px",  /* modals, large cards */
+
+    /* ---------- INPUTS ---------------- */
+    "inputBackground": "#FFFFFF",
+    "inputText":       "#1F1F1F",
+    "inputBorder":     "#B5B5B5",
+    "inputBorderHover":"#8A8A8A",
+    "inputBorderFocus":"#FF6C4C",
+    "inputRadius":     "var(--radiusMd)",
+
+    /* ---------- BUTTONS --------------- */
+    "buttonPaddingY":  "0.75rem",
+    "buttonPaddingX":  "1.25rem",
+    "buttonRadius":    "var(--radiusMd)",
+
+    /* ---------- CHECKBOX / RADIO ------ */
+    "controlBorder":   "#B5B5B5",
+    "controlCheckedBg":"#FF6C4C",
+    "controlRadius":   "var(--radiusSm)",
+
+    /* ---------- SHADOWS --------------- */
+    "shadowSm":  "0 1px 2px rgba(0,0,0,0.04)",
+    "shadowMd":  "0 4px 6px rgba(0,0,0,0.08)",
+
+    /* ---------- SPACING TOKENS -------- */
+    "space1": "0.25rem",
+    "space2": "0.5rem",
+    "space3": "0.75rem",
+    "space4": "1rem",
+
+    /* ---------- COMPONENT OVERRIDES --- */
+    "navHeight": "56px"
+  }
+}
