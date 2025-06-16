@@ -67,7 +67,7 @@ describe('Magic Link Authentication', () => {
 
   it('should return 200 and HTML for valid token', async () => {
     // Create a valid token
-    const validPayload = {
+    const validPayload: TokenData = {
       patientId: 'patient123',
       careflowId: 'careflow456',
       orgId: 'org123',
@@ -86,14 +86,14 @@ describe('Magic Link Authentication', () => {
     expect(response.headers.get('content-type')).toBe('text/html');
     
     const html = await response.text();
-    expect(html).toContain('Hello, Patient! 👋');
+    expect(html).toContain('Welcome to your care journey');
     expect(html).toContain('patient123');
     expect(html).toContain('careflow456');
   });
 
   it('should set correct cookies for valid token', async () => {
     // Create a valid token
-    const validPayload = {
+    const validPayload: TokenData = {
       patientId: 'patient123',
       careflowId: 'careflow456',
       orgId: 'org123',
@@ -121,12 +121,12 @@ describe('Magic Link Authentication', () => {
     expect(jwtCookie?.httpOnly).toBe(true);
     expect(sidCookie?.sameSite).toBe('lax');
     expect(jwtCookie?.sameSite).toBe('lax');
-    expect(jwtCookie?.path).toBe('/graphql');
+    expect(jwtCookie?.path).toBe('/api/graphql');
   });
 
   it('should set referrer policy header', async () => {
     // Create a valid token
-    const validPayload = {
+    const validPayload: TokenData = {
       patientId: 'patient123',
       careflowId: 'careflow456',
       orgId: 'org123',
