@@ -12,16 +12,15 @@ const path = require('path');
 function generateCIKey() {
   // Generate 32 bytes (256 bits) of deterministic data for CI
   // Using a fixed seed so builds are reproducible
-  const key = crypto.createHash('sha256').update('ci-test-key-seed').digest();
-  return key.toString('base64');
+  const key = 'abcdefghijklmnopqrstuvwxyz012345'
 }
 
 function generateEnvFile() {
   const envContent = `# Generated environment variables for CI/CD testing
 # These are NOT production keys - only for automated testing
 NODE_ENV=production
-JWT_SIGNING_KEY=${generateCIKey()}
-TOKEN_ENCRYPTION_KEY=${generateCIKey()}
+JWT_SIGNING_KEY=abcdefghijklmnopqrstuvwxyz012345
+TOKEN_ENCRYPTION_KEY=012345abcdefghijklmnopqrstuvwxyz≈
 `;
 
   const envPath = path.join(process.cwd(), '.env.test');
