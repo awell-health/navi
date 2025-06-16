@@ -21,16 +21,15 @@
 - Critical vars inlined as `:root{--primary:#A45128;--radius:6px}`
 - Tailwind and shadcn utility classes consume these CSS variables
 - All component styles **must resolve to CSS custom properties** (`var(--token)`). No literal color codes, font sizes, or radii are allowed inside component CSS.
-- CI step **`pnpm lint:theme`** validates that new tokens pass WCAG 2.1 AA contrast ratios; PR fails if they don't.
 - Token names are the public contract; changing or removing a token is a breaking change and requires a major version bump of the design‑system package.
 
 ## 4. Token Validation Pipeline
-1. `theme-publish.js` script receives a JSON blob, validates schema, and computes contrast against `--background` and `--foreground`.
-2. If validation passes, the blob is stored in Vercel Edge Config under `branding/{orgId}` and a `POST /invalidate-theme` hook purges CDN.
+1. `theme-publish.js` script receives a JSON blob and validates schema.
+2. If validation passes, the blob is stored in Vercel Edge Config under `branding/{orgId}`.
 3. The script writes a `theme.<orgId>.css` artifact for visual regression snapshots (Chromatic).
 
 ## 5. Usage Outside This App
 External web apps (Module Federation hosts) can:
 1. Load the design‑system remote container.
 2. Inject the same `<style id="awell-theme">:root{--primary:...}</style>` tag (or include `?orgId=` in the script URL to let the container fetch it).
-3. Because all utilities resolve to CSS variables, remote components automatically inherit the host’s theme.
+3. Because all utilities resolve to CSS variables, remote components automatically inherit the host's theme.

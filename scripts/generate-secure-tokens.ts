@@ -8,48 +8,92 @@ import { encryptToken, TokenEnvironment, type TokenData } from '../src/lib/token
  */
 
 async function generateSecureTokens(environment: TokenEnvironment = 'test') {
-  console.log('🔐 Secure Magic Link Test Tokens (AES-GCM 256)\n');
+  console.log('🎨 Branding & Theming Test Tokens (AES-GCM 256)\n');
 
   try {
-    // Valid token (expires in 5 minutes)
-    const validPayload: TokenData = {
-      patientId: 'K7m4gs2tPZmx5H6wRIpyk',
-      careflowId: 'XNqZ9nhrid1T',
-      orgId: 'baker-pro-local',
-      tenantId: 'h1TcvWEcVCU7',
+    // Sunrise Health - Bright, friendly healthcare
+    const sunrisePayload: TokenData = {
+      patientId: 'patient_sunrise_001',
+      careflowId: 'flow_wellness_check',
+      orgId: 'sunrise-health',
+      tenantId: 'sunrise_tenant',
       environment: 'local',
       exp: Date.now() + (5 * 60 * 1000) // 5 minutes from now
     };
     
-    const validToken = await encryptToken(validPayload);
-    console.log('✅ Valid Token (expires in 5 minutes):');
-    console.log(`   http://localhost:3000/magic/${validToken}`);
-    console.log(`   Token: ${validToken}\n`);
+    const sunriseToken = await encryptToken(sunrisePayload);
+    console.log('🌅 SUNRISE HEALTH - Bright & Friendly Theme');
+    console.log('   Colors: Orange primary, light backgrounds');
+    console.log('   Fonts: Inter + Poppins (web fonts)');
+    console.log('   Style: Warm, approachable healthcare');
+    console.log(`   🔗 http://localhost:3000/magic/${sunriseToken}`);
+    console.log(`   Token: ${sunriseToken}\n`);
 
-    // Expired token
+    // TechCorp - Dark, professional tech
+    const techCorpPayload: TokenData = {
+      patientId: 'user_techcorp_001',
+      careflowId: 'flow_system_onboard',
+      orgId: 'techcorp',
+      tenantId: 'techcorp_tenant',
+      environment: 'local',
+      exp: Date.now() + (5 * 60 * 1000) // 5 minutes from now
+    };
+    
+    const techCorpToken = await encryptToken(techCorpPayload);
+    console.log('🏢 TECHCORP SYSTEMS - Dark & Professional Theme');
+    console.log('   Colors: Dark navy/slate, indigo accents');
+    console.log('   Fonts: JetBrains Mono + Inter (monospace body)');
+    console.log('   Style: Technical, modern, enterprise');
+    console.log(`   🔗 http://localhost:3000/magic/${techCorpToken}`);
+    console.log(`   Token: ${techCorpToken}\n`);
+
+    // Default/Unknown org for fallback testing
+    const defaultPayload: TokenData = {
+      patientId: 'patient_unknown_001',
+      careflowId: 'flow_default_test',
+      orgId: 'unknown-org-123',
+      tenantId: 'unknown_tenant',
+      environment: 'local',
+      exp: Date.now() + (5 * 60 * 1000) // 5 minutes from now
+    };
+    
+    const defaultToken = await encryptToken(defaultPayload);
+    console.log('🔧 DEFAULT FALLBACK - Awell Default Theme');
+    console.log('   Colors: Blue primary, clean neutrals');
+    console.log('   Fonts: System fonts');
+    console.log('   Style: Default when org branding not found');
+    console.log(`   🔗 http://localhost:3000/magic/${defaultToken}`);
+    console.log(`   Token: ${defaultToken}\n`);
+
+    // Expired token for error testing
     const expiredPayload: TokenData = {
-      patientId: 'K7m4gs2tPZmx5H6wRIpyk',
-      careflowId: 'XNqZ9nhrid1T',
-      orgId: 'baker-pro-local',
-      tenantId: 'h1TcvWEcVCU7',
+      patientId: 'patient_expired',
+      careflowId: 'flow_expired',
+      orgId: 'sunrise-health',
+      tenantId: 'expired_tenant',
       environment,
       exp: Date.now() - 1000 // 1 second ago
     };
     
     const expiredToken = await encryptToken(expiredPayload);
-    console.log('❌ Expired Token (should return 400):');
+    console.log('❌ EXPIRED TOKEN (should return 400):');
     console.log(`   http://localhost:3000/magic/${expiredToken}`);
     console.log(`   Token: ${expiredToken}\n`);
 
-    console.log('🧪 Test invalid token:');
+    console.log('🧪 INVALID TOKEN TEST:');
     console.log('   http://localhost:3000/magic/invalid-token-here\n');
 
-    console.log('📝 Usage:');
-    console.log('   1. Start the dev server: pnpm dev');
-    console.log('   2. Visit the valid token URL above');
-    console.log('   3. Check browser cookies and network tab');
-    console.log('   4. Try the expired/invalid tokens to see 400 responses');
-    console.log('\n🔐 Security Features:');
+    console.log('📝 TESTING GUIDE:');
+    console.log('   1. Start dev server: pnpm dev');
+    console.log('   2. Visit each themed URL above to see dramatic differences');
+    console.log('   3. Compare: Orange vs Dark themes, different fonts');
+    console.log('   4. Check DevTools for inlined CSS variables');
+    console.log('   5. Try expired/invalid tokens for error handling');
+    console.log('\n🎨 THEME COMPARISON:');
+    console.log('   Sunrise: Bright orange, Inter/Poppins fonts, friendly');
+    console.log('   TechCorp: Dark navy, JetBrains Mono, professional');
+    console.log('   Default: Clean blue, system fonts, neutral');
+    console.log('\n🔐 SECURITY FEATURES:');
     console.log('   ✓ AES-GCM 256 encryption');
     console.log('   ✓ Random 96-bit IVs');
     console.log('   ✓ Authenticated encryption');

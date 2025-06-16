@@ -5,24 +5,32 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
-    "start": "next start",
+    "export": "next export",
+    "generate-tokens": "NODE_ENV=development tsx --env-file=.env scripts/generate-secure-tokens.ts",
+    "generate-ci-env": "node scripts/generate-ci-env.js",
+    "lhci": "lhci autorun",
     "lint": "next lint",
+    "serve:lhci": "NODE_ENV=production pnpm run start",
+    "start": "next start",
     "test": "vitest",
     "test:run": "vitest run",
-    "lhci": "lhci autorun",
-    "export": "next export",
-    "serve:lhci": "NODE_ENV=production pnpm run start",
-    "generate-tokens": "NODE_ENV=development tsx --env-file=.env scripts/generate-secure-tokens.ts",
-    "generate-ci-env": "node scripts/generate-ci-env.js"
+    "test:performance": "tsx scripts/test-performance.ts --all-themes",
+    "theme:sync": "tsx --env-file=.env scripts/theme-sync.ts --sync-all",
+    "theme:sync:dry-run": "tsx --env-file=.env scripts/theme-sync.ts --sync-all --dry-run",
+    "theme:sync:single": "tsx --env-file=.env scripts/theme-sync.ts --org"
   },
   "engines": {
     "node": ">=22"
   },
   "packageManager": "pnpm@10.12.1",
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.3",
     "@t3-oss/env-nextjs": "^0.13.8",
+    "@vercel/edge-config": "^1.4.0",
+    "chrome-launcher": "^1.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "lighthouse": "^12.6.1",
     "lucide-react": "^0.515.0",
     "next": "15.3.3",
     "react": "^19.0.0",

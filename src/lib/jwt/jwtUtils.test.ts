@@ -1,13 +1,21 @@
 import { describe, it, expect } from 'vitest';
 import { createJWT, verifyJWT } from './jwtUtils';
+import { TokenData } from '../token';
 
 describe('JWT Utils', () => {
+  const tokenData: TokenData = {
+    patientId: 'patient123',
+    careflowId: 'careflow456',
+    orgId: 'org123',
+    tenantId: 'tenant123',
+    environment: 'test',
+    exp: Date.now() + 60000
+  };
   it('should create and verify a valid JWT', async () => {
-    const sessionId = 'test-session-123';
     const expiresInMinutes = 15;
     
     // Create JWT
-    const jwt = await createJWT(sessionId, expiresInMinutes);
+    const jwt = await createJWT(tokenData, expiresInMinutes);
     
     expect(jwt).toBeDefined();
     expect(typeof jwt).toBe('string');
@@ -17,7 +25,7 @@ describe('JWT Utils', () => {
     const payload = await verifyJWT(jwt);
     
     expect(payload).toBeDefined();
-    expect(payload?.sub).toBe(sessionId);
+    expect(payload?.sub).toBe(tokenData.careflowId);
     expect(payload?.exp).toBeGreaterThan(Math.floor(Date.now() / 1000));
     expect(payload?.iat).toBeLessThanOrEqual(Math.floor(Date.now() / 1000));
   });
@@ -28,7 +36,7 @@ describe('JWT Utils', () => {
   });
 
   it('should return null for JWT with invalid signature', async () => {
-    const validJWT = await createJWT('test-session');
+    const validJWT = await createJWT(tokenData);
     // Tamper with the signature
     const tamperedJWT = validJWT.slice(0, -10) + 'tamperedsig';
     
@@ -38,7 +46,7 @@ describe('JWT Utils', () => {
 
   it('should return null for expired JWT', async () => {
     // Create a JWT that expires immediately (0 minutes)
-    const jwt = await createJWT('test-session', 0);
+    const jwt = await createJWT(tokenData, 0);
     
     // Wait a tiny bit for it to expire
     await new Promise(resolve => setTimeout(resolve, 1100));
@@ -48,20 +56,24 @@ describe('JWT Utils', () => {
   });
 
   it('should create different JWTs for different sessions', async () => {
-    const jwt1 = await createJWT('session-1');
-    const jwt2 = await createJWT('session-2');
+    const jwt1 = await createJWT(tokenData);
+    const tokenData2: TokenData = {
+      ...tokenData,
+      careflowId: 'careflow789',
+    };
+    const jwt2 = await createJWT(tokenData2);
     
     expect(jwt1).not.toEqual(jwt2);
     
     const payload1 = await verifyJWT(jwt1);
     const payload2 = await verifyJWT(jwt2);
     
-    expect(payload1?.sub).toBe('session-1');
-    expect(payload2?.sub).toBe('session-2');
+    expect(payload1?.sub).toBe(tokenData.careflowId);
+    expect(payload2?.sub).toBe(tokenData2.careflowId);
   });
 
   it('should have correct JWT structure', async () => {
-    const jwt = await createJWT('test-session');
+    const jwt = await createJWT(tokenData);
     const [headerPart, payloadPart] = jwt.split('.');
     
     // Decode header
@@ -71,7 +83,7 @@ describe('JWT Utils', () => {
     
     // Decode payload
     const payload = JSON.parse(atob(payloadPart.replace(/-/g, '+').replace(/_/g, '/')));
-    expect(payload.sub).toBe('test-session');
+    expect(payload.sub).toBe(tokenData.careflowId);
     expect(payload.exp).toBeDefined();
     expect(payload.iat).toBeDefined();
   });
