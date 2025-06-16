@@ -1,23 +1,23 @@
 #!/usr/bin/env tsx
 
-import { encryptToken, type TokenData } from '../src/lib/token';
+import { encryptToken, TokenEnvironment, type TokenData } from '../src/lib/token';
 
 /**
  * Generate test tokens using secure AES-GCM encryption
  * This script uses the same encryption as the production system
  */
 
-async function generateSecureTokens() {
+async function generateSecureTokens(environment: TokenEnvironment = 'test') {
   console.log('🔐 Secure Magic Link Test Tokens (AES-GCM 256)\n');
 
   try {
     // Valid token (expires in 5 minutes)
     const validPayload: TokenData = {
-      patientId: 'patient123',
-      careflowId: 'careflow456',
-      orgId: 'org123',
-      tenantId: 'tenant123',
-      environment: 'test',
+      patientId: 'K7m4gs2tPZmx5H6wRIpyk',
+      careflowId: 'XNqZ9nhrid1T',
+      orgId: 'baker-pro-local',
+      tenantId: 'h1TcvWEcVCU7',
+      environment: 'local',
       exp: Date.now() + (5 * 60 * 1000) // 5 minutes from now
     };
     
@@ -28,11 +28,11 @@ async function generateSecureTokens() {
 
     // Expired token
     const expiredPayload: TokenData = {
-      patientId: 'patient456',
-      careflowId: 'careflow789',
-      orgId: 'org123',
-      tenantId: 'tenant123',
-      environment: 'test',
+      patientId: 'K7m4gs2tPZmx5H6wRIpyk',
+      careflowId: 'XNqZ9nhrid1T',
+      orgId: 'baker-pro-local',
+      tenantId: 'h1TcvWEcVCU7',
+      environment,
       exp: Date.now() - 1000 // 1 second ago
     };
     

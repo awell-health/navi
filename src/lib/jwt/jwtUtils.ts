@@ -1,7 +1,13 @@
 import { env } from "@/env";
+import { type TokenData } from "../token";
 
 interface JWTPayload {
-  sub: string; // sessionId
+  sub: string; // careflow_id
+  stakeholder_id: string; // patient_id or other stakeholder_id
+  tenant_id: string; // tenant_id
+  org_id: string; // org_id
+  environment: string; // environment
+  iss: string; // issuer - Kong uses this to lookup the consumer
   exp: number; // expiration timestamp
   iat: number; // issued at timestamp
 }
@@ -48,7 +54,7 @@ function stringToBase64Url(str: string): string {
 
 // Import JWT signing key for HMAC-SHA256
 async function getJWTSigningKey(): Promise<CryptoKey> {
-  const keyData = base64ToUint8Array(env.JWT_SIGNING_KEY);
+  const keyData = new TextEncoder().encode(env.JWT_SIGNING_KEY);
   return await crypto.subtle.importKey(
     'raw',
     keyData,
@@ -59,7 +65,7 @@ async function getJWTSigningKey(): Promise<CryptoKey> {
 }
 
 // Create a properly signed JWT
-export async function createJWT(sessionId: string, expiresInMinutes: number = 15): Promise<string> {
+export async function createJWT(tokenData: TokenData, expiresInMinutes: number = 15): Promise<string> {
   try {
     const now = Math.floor(Date.now() / 1000);
     const exp = now + (expiresInMinutes * 60);
@@ -72,7 +78,12 @@ export async function createJWT(sessionId: string, expiresInMinutes: number = 15
     
     // JWT Payload
     const payload: JWTPayload = {
-      sub: sessionId,
+      sub: tokenData.careflowId,
+      stakeholder_id: tokenData.patientId,
+      tenant_id: tokenData.tenantId,
+      org_id: tokenData.orgId,
+      environment: tokenData.environment,
+      iss: env.JWT_KEY_ID, // Kong uses this to lookup the consumer/credential
       exp,
       iat: now
     };
@@ -132,12 +143,17 @@ export async function verifyJWT(jwt: string): Promise<JWTPayload | null> {
     const payloadJson = atob(base64UrlToBase64(encodedPayload));
     const payload = JSON.parse(payloadJson) as JWTPayload;
     
-    // Check expiration
+        // Check expiration
     const now = Math.floor(Date.now() / 1000);
     if (payload.exp <= now) {
       return null;
     }
-    
+
+    // Validate issuer if needed
+    if (payload.iss && payload.iss !== env.JWT_KEY_ID) {
+      console.warn('JWT issuer mismatch:', payload.iss);
+    }
+
     return payload;
   } catch (error) {
     console.error('JWT verification failed:', error);

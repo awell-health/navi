@@ -2,7 +2,7 @@
 export { encryptToken, decryptToken } from './tokenUtils';
 
 // Type definitions
-export type { TokenData, SessionData } from './types';
+export type { TokenData, SessionData, TokenEnvironment } from './types';
 
 // Validation utilities
 export { isValidToken } from './tokenUtils';
