@@ -61,6 +61,12 @@
     "space4": "1rem",
 
     /* ---------- COMPONENT OVERRIDES --- */
-    "navHeight": "56px"
+    "navHeight": "56px",
+
+    /* ---------- BRANDING ASSETS ------- */
+    "logoUrl": "https://cdn.awell.health/sunrise-health/logo.svg",
+    "faviconUrl": "https://cdn.awell.health/sunrise-health/favicon.ico",
+    "welcomeTitle": "Welcome to Sunrise Health",
+    "welcomeSubtitle": "Your personalized care journey starts here"
   }
 }

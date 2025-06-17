@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { decryptToken, type SessionData } from '@/lib/token';
 import { createJWT } from '@/lib/jwt';
 import { getBrandingByOrgId } from '@/lib/edge-config';
-import { generateInlineThemeStyle } from '@/lib/theme/generator';
+import { generateInlineThemeStyle, generateFaviconHTML } from '@/lib/theme/generator';
 import { generateWelcomePageHTML } from '@/components/welcome/welcome-page';
 
 // Export edge runtime config
@@ -59,6 +59,9 @@ export async function GET(
   // Generate theme CSS inline
   const themeStyle = generateInlineThemeStyle(branding);
   
+  // Generate favicon HTML with proper fallback
+  const faviconHTML = generateFaviconHTML(branding);
+  
   // Generate welcome page HTML
   const welcomePageHTML = generateWelcomePageHTML(branding);
   
@@ -70,6 +73,9 @@ export async function GET(
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${branding?.welcomeTitle || 'Awell Health Portal'}</title>
+  
+  <!-- Favicon -->
+  ${faviconHTML}
   
   <!-- Google Fonts - non-blocking load -->
   <link rel="preconnect" href="https://fonts.googleapis.com">

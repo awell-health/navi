@@ -65,6 +65,7 @@ export interface OrgBranding {
     
     // Welcome page customization
     logoUrl?: string;
+    faviconUrl?: string;
     welcomeTitle?: string;
     welcomeSubtitle?: string;
   };

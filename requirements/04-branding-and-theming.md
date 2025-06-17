@@ -8,6 +8,7 @@
     // flexible KV
     "primaryColor": "#A45128",
     "logoUrl": "https://cdn.awell.health/acme/logo.svg",
+    "faviconUrl": "https://cdn.awell.health/acme/favicon.ico",
     "fontFamily": "Inter",
     "...": "..."
   }

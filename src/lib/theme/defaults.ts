@@ -77,5 +77,6 @@ export const awellDefaultBranding = {
     // Welcome page defaults
     welcomeTitle: 'Welcome to your care journey',
     welcomeSubtitle: "Let's get started with your next steps",
+    faviconUrl: '/favicon-16x16.png', // Default Awell favicon
   }
 }; 

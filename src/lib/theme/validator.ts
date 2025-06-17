@@ -83,6 +83,7 @@ export const brandingSchema = z.object({
   
   // Welcome page customization
   logoUrl: urlSchema,
+  faviconUrl: urlSchema,
   welcomeTitle: z.string().max(100).optional(),
   welcomeSubtitle: z.string().max(200).optional(),
 });

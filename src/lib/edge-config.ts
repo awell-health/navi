@@ -86,6 +86,7 @@ const sampleOrgBranding: OrgBranding['branding'] = {
 
   // Welcome page customization
   logoUrl: "https://cdn.awell.health/sunrise-health/logo.svg",
+  faviconUrl: "https://cdn.awell.health/sunrise-health/favicon.ico",
   welcomeTitle: "Welcome to Sunrise Health",
   welcomeSubtitle: "Your personalized care journey starts here",
 };
@@ -145,6 +146,7 @@ const techCorpBranding: OrgBranding['branding'] = {
 
   // Welcome page customization
   logoUrl: "https://cdn.awell.health/techcorp/logo-white.svg",
+  faviconUrl: "https://cdn.awell.health/techcorp/favicon.ico",
   welcomeTitle: "Welcome to TechCorp Systems",
   welcomeSubtitle: "Advanced healthcare technology platform",
 };

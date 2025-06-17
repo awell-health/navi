@@ -136,4 +136,46 @@ export function generateFontCSS(branding: OrgBranding['branding'] | null): strin
 export function generateInlineThemeStyle(branding: OrgBranding['branding'] | null): string {
   const css = generateThemeCSS(branding);
   return `<style id="awell-theme">\n${css}\n</style>`;
+}
+
+/**
+ * Get the favicon URL with proper fallback handling
+ */
+export function getFaviconUrl(branding: OrgBranding['branding'] | null): string {
+  return branding?.faviconUrl || '/favicon-16x16.png';
+}
+
+/**
+ * Detect favicon MIME type from URL extension
+ */
+export function getFaviconType(faviconUrl: string): string {
+  // Extract pathname and remove query params/fragments
+  const pathname = faviconUrl.split('?')[0].split('#')[0];
+  const extension = pathname.split('.').pop()?.toLowerCase();
+  
+  switch (extension) {
+    case 'ico':
+      return 'image/x-icon';
+    case 'png':
+      return 'image/png';
+    case 'svg':
+      return 'image/svg+xml';
+    case 'jpg':
+    case 'jpeg':
+      return 'image/jpeg';
+    case 'gif':
+      return 'image/gif';
+    default:
+      return 'image/x-icon'; // Default fallback
+  }
+}
+
+/**
+ * Generate favicon HTML link tag with proper type detection
+ */
+export function generateFaviconHTML(branding: OrgBranding['branding'] | null): string {
+  const faviconUrl = getFaviconUrl(branding);
+  const faviconType = getFaviconType(faviconUrl);
+  
+  return `<link rel="icon" type="${faviconType}" href="${faviconUrl}">`;
 } 
