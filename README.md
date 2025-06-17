@@ -117,8 +117,12 @@ cd navi
 # Install dependencies
 pnpm install
 
+# Link with vercel
+vercel link
+
 # Set up environment variables
-cp .env.example .env
+vercel env pull
+
 # Edit .env with your API keys and configuration
 
 # Generate GraphQL types

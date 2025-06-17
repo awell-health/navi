@@ -123,11 +123,14 @@ jobs:
       - name: Link to Vercel project and pull environment variables
         run: |
           vercel link --yes --token=$VERCEL_TOKEN
-          vercel env pull .env --token=$VERCEL_TOKEN
+          vercel env pull .env.local --token=$VERCEL_TOKEN
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Set up environment for server
+        run: cp .env.local .env
 
       - name: Start server
         run: pnpm start &
