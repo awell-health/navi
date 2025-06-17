@@ -30,7 +30,6 @@ interface FormField {
 interface ConversationalFormStep {
   id: string;
   title: string;
-  subtitle?: string;
   fields: FormField[];
 }
 
@@ -270,9 +269,6 @@ export function ConversationalForm({
         {/* Step Header */}
         <div className="text-center space-y-2">
           <h2 className="text-2xl font-bold text-foreground">{currentStep.title}</h2>
-          {currentStep.subtitle && (
-            <p className="text-muted-foreground">{currentStep.subtitle}</p>
-          )}
         </div>
 
         {/* Form Fields */}

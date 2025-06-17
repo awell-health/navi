@@ -1,0 +1,22 @@
+overwrite: true
+schema: 
+  - https://api.development.awellhealth.com/orchestration/m2m/graphql:
+      headers:
+        apiKey: "${PROTOTYPE_API_KEY}"
+documents: "src/lib/awell-client/graphql/**/*.graphql"
+generates:
+  src/lib/awell-client/generated/graphql.ts:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typescript-react-apollo"
+    config:
+      withHooks: true
+      withComponent: false
+      withHOC: false
+      withRefetchFn: false
+      apolloReactCommonImportFrom: "@apollo/client"
+      apolloReactHooksImportFrom: "@apollo/client"
+      scalars:
+        JSON: unknown
+        SafeDate: string 

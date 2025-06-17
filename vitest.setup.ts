@@ -9,4 +9,13 @@ vi.mock('@/env', () => ({
     JWT_SIGNING_KEY: 'abcdefghijklmnopqrstuvwxyz012345', // 32-byte key for testing
     TOKEN_ENCRYPTION_KEY: 'abcdefghijklmnopqrstuvwxyz012345', // 32-byte key for testing
   },
+}))
+
+// Mock Vercel KV for tests
+vi.mock('@vercel/kv', () => ({
+  kv: {
+    set: vi.fn(),
+    get: vi.fn(),
+    delete: vi.fn(),
+  },
 })) 

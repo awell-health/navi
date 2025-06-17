@@ -7,7 +7,6 @@ const mockSteps: ConversationalFormStep[] = [
   {
     id: 'step1',
     title: 'Personal Information',
-    subtitle: 'Tell us about yourself',
     fields: [
       {
         id: 'firstName',
@@ -27,9 +26,7 @@ const mockSteps: ConversationalFormStep[] = [
   {
     id: 'step2',
     title: 'Preferences',
-    subtitle: 'Your preferences',
     fields: [
-
       {
         id: 'agree',
         type: 'checkbox',
@@ -59,7 +56,6 @@ describe('ConversationalForm', () => {
     render(<ConversationalForm {...defaultProps} />);
     
     expect(screen.getByText('Personal Information')).toBeInTheDocument();
-    expect(screen.getByText('Tell us about yourself')).toBeInTheDocument();
     expect(screen.getByLabelText(/first name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
   });

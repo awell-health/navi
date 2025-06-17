@@ -25,11 +25,31 @@
 * Fallback polling (REST) if WebSocket cannot establish within 5 s.
 
 ## 5. Service Boundaries
-* **Edge Functions (Vercel):** token validation, session creation, JWT minting, branding + manifest lookup, and first‑activity pre‑fetch. Stateless; target < 100 ms execution.
-* **GraphQL Gateway (`/graphql`):** persistent WebSocket endpoint that validates the JWT, multiplexes queries and subscriptions, and proxies to backend micro‑services.
-* **Activity Assets CDN:** immutable ES‑module chunks and media referenced by `componentKey`, cached globally via Vercel’s edge network.
+* **Edge Functions (Vercel):** token validation, session creation, JWT minting, branding + manifest lookup, and first‑activity pre‑fetch. Stateless; target < 100 ms execution.
+* **GraphQL Gateway (`/graphql`):** persistent WebSocket endpoint that validates the JWT, multiplexes queries and subscriptions, and proxies to backend micro‑services.
+* **Activity Assets CDN:** immutable ES‑module chunks and media referenced by `componentKey`, cached globally via Vercel's edge network.
 * **Next‑Activity Service:** given a `sessionId`, resolves the next activity descriptor. Co‑locate with the session datastore to avoid an extra hop.
-* **Branding Config Store:** Vercel Edge Config KV where each `orgId` maps to a branding blob.
+* **Branding Config Store:** Vercel Edge Config (read-only, edge-replicated) where each `orgId` maps to a branding blob.
+
+## 5.1. Data Storage Strategy
+
+### Vercel Edge Config vs KV
+
+| Service | **Vercel Edge Config** | **Vercel KV** |
+|---------|------------------------|---------------|
+| **Operations** | Read-only | Read + Write |
+| **Latency** | <50ms (edge-replicated) | ~100-200ms (single region) |
+| **Updates** | Deploy-time configuration | Real-time programmatic |
+| **Use Cases** | Static configs, branding | Sessions, dynamic caching |
+
+#### Current Implementation:
+- **Edge Config**: Organization branding configurations (meets ≤20ms latency budget)
+- **KV**: Session storage and API response caching (planned for future implementation)
+
+#### Why Both Services:
+- **Edge Config** provides ultra-fast, immutable branding lookups critical for FCP performance
+- **KV** handles dynamic, frequently-changing data like user sessions and temporary caches
+- Separation ensures optimal performance characteristics for each data type
 
 ## 6. Typical Request Flow
 1. **Magic‑link request** → `/magic/[token]` edge function  

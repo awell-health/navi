@@ -45,7 +45,6 @@ const patientIntakeSteps: ConversationalFormStep[] = [
   {
     id: 'personal-info',
     title: 'Personal Information',
-    subtitle: 'Help us get to know you better',
     fields: [
       {
         id: 'firstName',
@@ -79,7 +78,6 @@ const patientIntakeSteps: ConversationalFormStep[] = [
   {
     id: 'contact-info',
     title: 'Contact Information',
-    subtitle: 'How can we reach you?',
     fields: [
       {
         id: 'phone',
@@ -112,7 +110,6 @@ const patientIntakeSteps: ConversationalFormStep[] = [
   {
     id: 'medical-history',
     title: 'Medical History',
-    subtitle: 'Tell us about your health',
     fields: [
       {
         id: 'primaryConcern',
@@ -138,7 +135,6 @@ const patientIntakeSteps: ConversationalFormStep[] = [
   {
     id: 'preferences',
     title: 'Preferences & Consent',
-    subtitle: 'Almost done!',
     fields: [
       {
         id: 'preferredContact',
@@ -173,7 +169,6 @@ const contactFormSteps: ConversationalFormStep[] = [
   {
     id: 'contact',
     title: 'Get in Touch',
-    subtitle: 'We\'d love to hear from you',
     fields: [
       {
         id: 'name',
@@ -204,7 +199,6 @@ const contactFormSteps: ConversationalFormStep[] = [
   {
     id: 'message',
     title: 'Your Message',
-    subtitle: 'Tell us more about your inquiry',
     fields: [
       {
         id: 'message',
@@ -290,7 +284,6 @@ export const SingleStep: Story = {
       {
         id: 'single',
         title: 'Quick Form',
-        subtitle: 'Just a few details',
         fields: [
           {
             id: 'name',
@@ -331,7 +324,6 @@ export const ValidationExample: Story = {
       {
         id: 'validation',
         title: 'Form Validation',
-        subtitle: 'Try submitting without filling fields to see validation in action',
         fields: [
           {
             id: 'username',
