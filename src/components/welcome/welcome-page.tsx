@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
-import { type OrgBranding } from '@/lib/theme/types';
-import { awellDefaultBranding } from '@/lib/theme/defaults';
+import { type OrgBranding } from '@/lib/branding/types';
+import { awellDefaultBranding } from '@/lib/branding/defaults';
 
 interface WelcomePageProps {
   branding: OrgBranding['branding'] | null;

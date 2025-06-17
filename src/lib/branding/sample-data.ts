@@ -1,4 +1,4 @@
-import type { OrgBranding } from '@/lib/theme/types';
+import type { OrgBranding } from './types';
 
 /**
  * Sample branding configurations for development and testing

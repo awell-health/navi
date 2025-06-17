@@ -14,8 +14,8 @@
 
 import fs from 'fs';
 import path from 'path';
-import { validateBranding } from '../src/lib/theme/validator';
-import { generateThemeCSS } from '../src/lib/theme/generator';
+import { validateBranding } from '../src/lib/branding/theme/validator';
+import { generateThemeCSS } from '../src/lib/branding/theme/generator';
 
 interface SyncOptions {
   sourceApi?: string;
