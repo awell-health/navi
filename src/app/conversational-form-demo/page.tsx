@@ -153,7 +153,7 @@ const sampleHealthcareFormSteps: ConversationalFormStep[] = [
 ];
 
 export default function ConversationalFormDemo() {
-  const handleFormSubmit = async (data: Record<string, any>) => {
+  const handleFormSubmit = async (data: Record<string, unknown>) => {
     console.log('Form submitted with data:', data);
     
     // Simulate API call

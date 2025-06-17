@@ -1,4 +1,4 @@
-import type { Preview } from '@storybook/react'
+import type { Preview } from '@storybook/react-vite'
 import React, { useEffect } from 'react'
 import '../src/app/globals.css'
 import { generateThemeCSS } from '../src/lib/theme/generator'

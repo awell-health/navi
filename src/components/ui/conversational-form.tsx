@@ -6,8 +6,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { FormField } from '@/components/ui/form';
 import { cn } from '@/lib/utils';
+
+type FormFieldValue = string | number | readonly string[] | undefined;
 
 // Types for form configuration
 interface FormField {
@@ -34,7 +36,7 @@ interface ConversationalFormStep {
 
 interface ConversationalFormProps {
   steps: ConversationalFormStep[];
-  onSubmit: (data: Record<string, any>) => void | Promise<void>;
+  onSubmit: (data: Record<string, FormFieldValue>) => void | Promise<void>;
   onStepChange?: (currentStep: number, totalSteps: number) => void;
   className?: string;
   showProgress?: boolean;
@@ -54,7 +56,7 @@ export function ConversationalForm({
   previousButtonText = "Back"
 }: ConversationalFormProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<Record<string, FormFieldValue>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -66,24 +68,35 @@ export function ConversationalForm({
     onStepChange?.(currentStepIndex + 1, steps.length);
   }, [currentStepIndex, steps.length, onStepChange]);
 
-  const validateField = (field: FormField, value: any): string | null => {
+  const validateField = (field: FormField, value: string | number | readonly string[] | undefined): string | null => {
     if (field.required && (!value || value === '')) {
       return `${field.label} is required`;
     }
 
     if (field.validation) {
       const { min, max, pattern, message } = field.validation;
-      
-      if (min && value && value.length < min) {
-        return message || `${field.label} must be at least ${min} characters`;
-      }
-      
-      if (max && value && value.length > max) {
-        return message || `${field.label} must be no more than ${max} characters`;
-      }
-      
-      if (pattern && value && !new RegExp(pattern).test(value)) {
-        return message || `${field.label} format is invalid`;
+      switch (typeof value) {
+        case 'number':
+          if (min && value < min) {
+            return message || `${field.label} must be at least ${min}`;
+          }
+          if (max && value > max) {
+            return message || `${field.label} must be no more than ${max}`;
+          }
+          return null;
+        case 'string':
+          if (min && value.length < min) {
+            return message || `${field.label} must be at least ${min} characters`;
+          }
+          if (max && value.length > max) {
+            return message || `${field.label} must be no more than ${max} characters`;
+          }
+          if (pattern && !new RegExp(pattern).test(value)) {
+            return message || `${field.label} format is invalid`;
+          }
+          return null;
+        default:
+          return null;
       }
     }
 
@@ -106,7 +119,7 @@ export function ConversationalForm({
     return isValid;
   };
 
-  const handleFieldChange = (fieldId: string, value: any) => {
+  const handleFieldChange = (fieldId: string, value: FormFieldValue) => {
     setFormData(prev => ({
       ...prev,
       [fieldId]: value
@@ -182,7 +195,7 @@ export function ConversationalForm({
 
       case 'select':
         return (
-          <Select value={value} onValueChange={(val) => handleFieldChange(field.id, val)}>
+          <Select value={value as string} onValueChange={(val) => handleFieldChange(field.id, val)}>
             <SelectTrigger {...commonProps}>
               <SelectValue placeholder={field.description || "Select an option"} />
             </SelectTrigger>
@@ -201,8 +214,8 @@ export function ConversationalForm({
           <div className="flex items-center space-x-2">
             <Checkbox
               {...commonProps}
-              checked={value === true}
-              onCheckedChange={(checked) => handleFieldChange(field.id, checked)}
+              checked={value === 'true'}
+              onCheckedChange={(checked) => handleFieldChange(field.id, checked ? 'true' : 'false')}
             />
             <label
               htmlFor={field.id}
@@ -216,7 +229,7 @@ export function ConversationalForm({
       case 'radio':
         return (
           <RadioGroup
-            value={value}
+            value={value as string}
             onValueChange={(val) => handleFieldChange(field.id, val)}
             className="space-y-2"
           >
