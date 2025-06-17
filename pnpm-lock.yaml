@@ -35,6 +35,9 @@ importers:
       '@t3-oss/env-nextjs':
         specifier: ^0.13.8
         version: 0.13.8(typescript@5.8.3)(zod@3.25.64)
+      '@upstash/redis':
+        specifier: ^1.35.0
+        version: 1.35.0
       '@vercel/edge-config':
         specifier: ^1.4.0
         version: 1.4.0

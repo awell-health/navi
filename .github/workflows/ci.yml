@@ -108,6 +108,9 @@ jobs:
         with:
           version: 10.12.1
 
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
       - name: Restore build cache
         uses: actions/cache@v4
         with:
@@ -117,8 +120,14 @@ jobs:
             node_modules
           key: ${{ needs.build.outputs.cache-key }}
 
-      - name: Set up environment for server
-        run: cp .env.test .env
+      - name: Link to Vercel project and pull environment variables
+        run: |
+          vercel link --yes --token=$VERCEL_TOKEN
+          vercel env pull .env --token=$VERCEL_TOKEN
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
       - name: Start server
         run: pnpm start &

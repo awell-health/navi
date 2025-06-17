@@ -4,7 +4,7 @@ import { createJWT } from '@/lib/jwt';
 import { getBrandingByOrgId } from '@/lib/edge-config';
 import { generateInlineThemeStyle, generateFaviconHTML } from '@/lib/theme/generator';
 import { generateWelcomePageHTML } from '@/components/welcome/welcome-page';
-import { sessions } from '@/lib/session-store';
+import { kv } from '@vercel/kv';
 
 function generateSessionId(): string {
   return crypto.randomUUID();
@@ -36,9 +36,9 @@ export async function GET(
   }
   
   // Generate session
-  const sessionId = generateSessionId();  
+  const sessionId = generateSessionId();
   // Store session in memory
-  sessions.set(sessionId, {
+  kv.set(`session:${sessionId}`, {
     ...tokenData,
     sessionId,
     expiresAt
@@ -49,7 +49,8 @@ export async function GET(
     careflowId: tokenData.careflowId,
     patientId: tokenData.patientId,
     tenantId: tokenData.tenantId,
-    orgId: tokenData.orgId
+    orgId: tokenData.orgId,
+    environment: tokenData.environment
   });
   
   // Fetch organization branding (with 20ms budget)

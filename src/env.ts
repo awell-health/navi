@@ -8,6 +8,7 @@ export const env = createEnv({
     JWT_SIGNING_KEY: z.string().min(32).max(32).describe("256-bit secret for JWT signing"),
     JWT_KEY_ID: z.string().min(1).describe("JWT key ID"),
     TOKEN_ENCRYPTION_KEY: z.string().min(32).describe("256-bit key for AES-GCM token encryption"),
+    VERCEL_OIDC_TOKEN: z.string().min(1).describe("Vercel OIDC token for KV access"),
   },
   client: {},
   experimental__runtimeEnv: {},

@@ -78,6 +78,28 @@ sequenceDiagram
 - **Testing**: Vitest with React Testing Library
 - **Performance**: Lighthouse CI with performance budgets
 
+## 🗄️ Data Storage Strategy
+
+### Vercel Edge Config vs KV
+
+This project uses **both** Vercel Edge Config and Vercel KV for different purposes:
+
+| Service | **Vercel Edge Config** | **Vercel KV** |
+|---------|------------------------|---------------|
+| **Purpose** | Read-only configuration | Read-write caching |
+| **Latency** | <50ms (edge-replicated) | ~100-200ms (single region) |
+| **Updates** | Deploy-time only | Real-time programmatic |
+| **Best For** | Static configs, branding | Sessions, dynamic cache |
+
+#### Current Usage:
+- **Edge Config**: Organization branding configurations (logos, colors, themes)
+- **KV**: Not yet implemented (planned for session management and API caching)
+
+#### Why Both?
+- **Edge Config** gives us ultra-fast branding lookups for sub-1000ms FCP goals
+- **KV** will handle dynamic data like user sessions and API response caching
+- Different tools for different performance and consistency requirements
+
 ## 🏃‍♂️ Getting Started
 
 ### Prerequisites

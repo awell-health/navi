@@ -22,6 +22,8 @@ NODE_ENV=production
 JWT_KEY_ID=abcdefghijklm012345nopqrstuvwxyz
 JWT_SIGNING_KEY=abcdefghijklmnopqrstuvwxyz012345
 TOKEN_ENCRYPTION_KEY=012345abcdefghijklmnopqrstuvwxyz
+VERCEL_OIDC_TOKEN=abcdefghijklmnopqrstuvwxyz012345
+PROTOTYPE_API_KEY=fake-api-key-for-ci-testing-only
 `;
 
   const envPath = path.join(process.cwd(), '.env.test');
