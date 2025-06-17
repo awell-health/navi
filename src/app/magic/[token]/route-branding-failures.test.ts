@@ -3,7 +3,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from './route';
 import { NextRequest } from 'next/server';
-import { encryptToken, type TokenData } from '@/lib/token';
+import { encryptToken } from '@/lib/auth/internal/session';
+import type { TokenData } from '@/lib/auth/internal/types';
 
 // Mock the edge-config import to test failure scenarios
 vi.mock('@/lib/edge-config', () => ({

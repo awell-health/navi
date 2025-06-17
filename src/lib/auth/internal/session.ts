@@ -1,7 +1,7 @@
-import { TokenData } from "./types";
+import type { SessionTokenData } from "./types";
 import { env } from "@/env";
 
-export function isValidToken(obj: unknown): obj is TokenData {
+export function isValidSessionToken(obj: unknown): obj is SessionTokenData {
   return typeof obj === 'object' && obj !== null && 'patientId' in obj && 'careflowId' in obj && 'orgId' in obj && 'environment' in obj && 'exp' in obj;
 }
 
@@ -46,8 +46,8 @@ async function getEncryptionKey(): Promise<CryptoKey> {
   );
 }
 
-// AES-GCM 256 encryption for tokens
-export async function encryptToken(payload: TokenData): Promise<string> {
+// AES-GCM 256 encryption for session tokens
+export async function createSessionToken(payload: SessionTokenData): Promise<string> {
   try {
     const key = await getEncryptionKey();
     const jsonPayload = JSON.stringify(payload);
@@ -70,13 +70,13 @@ export async function encryptToken(payload: TokenData): Promise<string> {
     
     return uint8ArrayToBase64Url(combined);
   } catch (error) {
-    console.error('Token encryption failed:', error);
-    throw new Error('Failed to encrypt token');
+    console.error('Session token encryption failed:', error);
+    throw new Error('Failed to create session token');
   }
 }
 
-// AES-GCM 256 decryption for tokens
-export async function decryptToken(token: string): Promise<TokenData | null> {
+// AES-GCM 256 decryption for session tokens
+export async function decryptSessionToken(token: string): Promise<SessionTokenData | null> {
   try {
     const key = await getEncryptionKey();
     const combined = base64UrlToUint8Array(token);
@@ -97,21 +97,40 @@ export async function decryptToken(token: string): Promise<TokenData | null> {
     const payload = JSON.parse(decryptedText);
     
     // Validate required fields
-    if (!isValidToken(payload)) {
+    if (!isValidSessionToken(payload)) {
       return null;
     }
     
     return payload;
   } catch (error) {
-    console.error('Token decryption failed:', error);
+    console.error('Session token decryption failed:', error);
     return null;
   }
 }
 
-// Legacy stub functions for backward compatibility during transition
+// Legacy functions for backward compatibility during transition
 // TODO: Remove these once all references are updated
-export function decryptStubToken(token: string): TokenData | null {
-  console.warn('Using deprecated stub token decryption. Please use decryptToken() instead.');
+
+// Legacy alias for createSessionToken
+export function encryptToken(payload: SessionTokenData): Promise<string> {
+  console.warn('Using deprecated encryptToken(). Please use createSessionToken() instead.');
+  return createSessionToken(payload);
+}
+
+// Legacy alias for decryptSessionToken  
+export function decryptToken(token: string): Promise<SessionTokenData | null> {
+  console.warn('Using deprecated decryptToken(). Please use decryptSessionToken() instead.');
+  return decryptSessionToken(token);
+}
+
+// Legacy validation function alias
+export function isValidToken(obj: unknown): obj is SessionTokenData {
+  console.warn('Using deprecated isValidToken(). Please use isValidSessionToken() instead.');
+  return isValidSessionToken(obj);
+}
+
+export function decryptStubToken(token: string): SessionTokenData | null {
+  console.warn('Using deprecated stub token decryption. Please use decryptSessionToken() instead.');
   
   try {
     const STUB_SECRET = 'legacy-secret-for-stub-functions';
@@ -130,7 +149,7 @@ export function decryptStubToken(token: string): TokenData | null {
     const payload = JSON.parse(decrypted);
     
     // Validate required fields
-    if (!isValidToken(payload)) {
+    if (!isValidSessionToken(payload)) {
       return null;
     }
     
@@ -141,8 +160,8 @@ export function decryptStubToken(token: string): TokenData | null {
   }
 }
 
-export function createStubToken(payload: TokenData): string {
-  console.warn('Using deprecated stub token creation. Please use encryptToken() instead.');
+export function createStubToken(payload: SessionTokenData): string {
+  console.warn('Using deprecated stub token creation. Please use createSessionToken() instead.');
   
   try {
     const STUB_SECRET = 'legacy-secret-for-stub-functions';

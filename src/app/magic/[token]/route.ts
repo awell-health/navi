@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { decryptToken } from '@/lib/token';
-import { createJWT } from '@/lib/jwt';
+import { decryptToken } from '@/lib/auth/internal/session';
+import { createJWT } from '@/lib/auth/external/jwt';
 import { getBrandingByOrgId } from '@/lib/edge-config';
 import { generateInlineThemeStyle, generateFaviconHTML } from '@/lib/branding/theme/generator';
 import { generateWelcomePageHTML } from '@/components/welcome/welcome-page';

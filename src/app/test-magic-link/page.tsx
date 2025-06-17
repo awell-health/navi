@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { encryptToken } from '@/lib/token';
-import type { TokenData } from '@/lib/token';
+import { encryptToken } from '@/lib/auth/internal/session';
+import type { TokenData } from '@/lib/auth/internal/types';
 
 // Add metadata for better performance
 export const metadata: Metadata = {

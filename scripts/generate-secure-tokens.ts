@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 
-import { encryptToken, TokenEnvironment, type TokenData } from '../src/lib/token';
+import { encryptToken } from '../src/lib/auth/internal/session';
+import type { TokenEnvironment, TokenData } from '../src/lib/auth/internal/types';
 
 /**
  * Generate test tokens using secure AES-GCM encryption

@@ -1,16 +1,6 @@
 import { env } from "@/env";
-import { type TokenData } from "../token";
-
-interface JWTPayload {
-  sub: string; // careflow_id
-  stakeholder_id: string; // patient_id or other stakeholder_id
-  tenant_id: string; // tenant_id
-  org_id: string; // org_id
-  environment: string; // environment
-  iss: string; // issuer - Kong uses this to lookup the consumer
-  exp: number; // expiration timestamp
-  iat: number; // issued at timestamp
-}
+import type { JWTPayload } from "./types";
+import type { SessionTokenData } from "../internal/types";
 
 // Convert base64 string to Uint8Array
 function base64ToUint8Array(base64: string): Uint8Array {
@@ -65,7 +55,7 @@ async function getJWTSigningKey(): Promise<CryptoKey> {
 }
 
 // Create a properly signed JWT
-export async function createJWT(tokenData: TokenData, expiresInMinutes: number = 15): Promise<string> {
+export async function createJWT(sessionTokenData: SessionTokenData, expiresInMinutes: number = 15): Promise<string> {
   try {
     const now = Math.floor(Date.now() / 1000);
     const exp = now + (expiresInMinutes * 60);
@@ -78,11 +68,11 @@ export async function createJWT(tokenData: TokenData, expiresInMinutes: number =
     
     // JWT Payload
     const payload: JWTPayload = {
-      sub: tokenData.careflowId,
-      stakeholder_id: tokenData.patientId,
-      tenant_id: tokenData.tenantId,
-      org_id: tokenData.orgId,
-      environment: tokenData.environment,
+      sub: sessionTokenData.careflowId,
+      stakeholder_id: sessionTokenData.patientId,
+      tenant_id: sessionTokenData.tenantId,
+      org_id: sessionTokenData.orgId,
+      environment: sessionTokenData.environment,
       iss: env.JWT_KEY_ID, // Kong uses this to lookup the consumer/credential
       exp,
       iat: now
@@ -143,7 +133,7 @@ export async function verifyJWT(jwt: string): Promise<JWTPayload | null> {
     const payloadJson = atob(base64UrlToBase64(encodedPayload));
     const payload = JSON.parse(payloadJson) as JWTPayload;
     
-        // Check expiration
+    // Check expiration
     const now = Math.floor(Date.now() / 1000);
     if (payload.exp <= now) {
       return null;
@@ -176,4 +166,4 @@ export function generateStubJWT(sessionId: string): string {
   const signature = btoa('stub-signature'); // In production: HMAC-SHA256
   
   return `${header}.${payload}.${signature}`;
-} 
+}
