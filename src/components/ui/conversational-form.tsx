@@ -30,7 +30,6 @@ interface FormField {
 interface ConversationalFormStep {
   id: string;
   title: string;
-  subtitle?: string;
   fields: FormField[];
 }
 

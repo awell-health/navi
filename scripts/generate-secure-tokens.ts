@@ -13,11 +13,11 @@ async function generateSecureTokens(environment: TokenEnvironment = 'test') {
   try {
     // Sunrise Health - Bright, friendly healthcare
     const sunrisePayload: TokenData = {
-      patientId: 'patient_sunrise_001',
-      careflowId: 'flow_wellness_check',
+      patientId: 'YVXkfvky9cNg84_LK0Cyt',
+      careflowId: 'B1G1unpxkSEA',
       orgId: 'sunrise-health',
-      tenantId: 'sunrise_tenant',
-      environment: 'local',
+      tenantId: '_v0nvLX5zCNd',
+      environment: 'development',
       exp: Date.now() + (5 * 60 * 1000) // 5 minutes from now
     };
     

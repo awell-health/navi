@@ -5,11 +5,8 @@ import { getBrandingByOrgId } from '@/lib/edge-config';
 import { generateInlineThemeStyle, generateFaviconHTML } from '@/lib/theme/generator';
 import { generateWelcomePageHTML } from '@/components/welcome/welcome-page';
 
-// Export edge runtime config
-export const runtime = 'edge';
-
 // In-memory session storage (stub - in production would use Redis/DB)  
-const sessions = new Map<string, SessionData>();
+export const sessions = new Map<string, SessionData>();
 
 function generateSessionId(): string {
   return crypto.randomUUID();
@@ -20,6 +17,7 @@ export async function GET(
   { params }: { params: Promise<{ token: string }> }
 ) {
   const { token } = await params;
+  const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000)); // 24 hours
   
   // Decrypt the token using AES-GCM
   const tokenData = await decryptToken(token);
@@ -40,14 +38,20 @@ export async function GET(
   }
   
   // Generate session
-  const sessionId = generateSessionId();
-  const expiresAt = new Date(Date.now() + (15 * 60 * 1000)); // 15 minutes
-  
+  const sessionId = generateSessionId();  
   // Store session in memory
   sessions.set(sessionId, {
     ...tokenData,
     sessionId,
     expiresAt
+  });
+  
+  console.log('🔐 Session created:', {
+    sessionId,
+    careflowId: tokenData.careflowId,
+    patientId: tokenData.patientId,
+    tenantId: tokenData.tenantId,
+    orgId: tokenData.orgId
   });
   
   // Fetch organization branding (with 20ms budget)
@@ -260,34 +264,16 @@ Branding: ${branding ? 'Custom' : 'Default (Awell)'}
       async loadNextActivity() {
         try {
           console.log('🎯 Welcome page - Continue button clicked');
+          console.log('🔄 Redirecting to careflow activities...');
           
-          // For the prototype, simulate activity loading
-          // In production, this would connect to GraphQL
-          console.log('📡 Simulating activity fetch...');
+          // Redirect to the careflow activities page
+          const careflowId = '${tokenData.careflowId}';
+          const stakeholderId = '${tokenData.patientId}';
           
-          // Show a success message for now
-          document.body.innerHTML = \`
-            <main style="min-height: 100vh; background-color: var(--background); display: flex; align-items: center; justify-content: center; padding: 1rem;">
-              <div style="max-width: 28rem; width: 100%; text-align: center;">
-                <div style="background-color: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; box-shadow: var(--shadow-md, 0 4px 6px rgba(0,0,0,0.08));">
-                  <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--foreground); margin-bottom: 1rem;">✅ Welcome Complete!</h2>
-                  <p style="color: var(--muted-foreground); margin-bottom: 1.5rem;">
-                    Your themed welcome page is working perfectly. The next activity would load here in production.
-                  </p>
-                  <div style="background-color: var(--muted); padding: 1rem; border-radius: 8px; font-size: 0.875rem; color: var(--muted-foreground);">
-                    <strong>Prototype Status:</strong><br>
-                    ✅ Theme CSS injected inline<br>
-                    ✅ Custom branding applied<br>
-                    ✅ Welcome page rendered<br>
-                    ✅ Continue button functional
-                  </div>
-                </div>
-              </div>
-            </main>
-          \`;
+          window.location.href = \`/careflows/\${careflowId}/stakeholders/\${stakeholderId}\`;
           
         } catch (error) {
-          console.error('❌ Failed to load next activity:', error);
+          console.error('❌ Failed to redirect to activities:', error);
           this.showError(error.message);
         }
       }
@@ -323,7 +309,7 @@ Branding: ${branding ? 'Custom' : 'Default (Awell)'}
     httpOnly: true,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 15 * 60, // 15 minutes
+    maxAge: 24 * 60 * 60, // 24 hours
     path: '/'
   });
   
@@ -331,7 +317,7 @@ Branding: ${branding ? 'Custom' : 'Default (Awell)'}
     httpOnly: true,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 15 * 60, // 15 minutes
+    maxAge: 24 * 60 * 60, // 24 hours
     path: '/api/graphql'
   });
   
