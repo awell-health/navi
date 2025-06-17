@@ -3,8 +3,6 @@ import {
   createSessionToken, 
   decryptSessionToken, 
   isValidSessionToken,
-  encryptToken,
-  decryptToken 
 } from './session';
 import type { SessionTokenData } from './types';
 
@@ -98,22 +96,21 @@ describe('Session Token Encryption/Decryption', () => {
     });
   });
 
-  describe('Legacy Token API (Backward Compatibility)', () => {
-    it('should encrypt and decrypt a token successfully (legacy)', async () => {
-      // Encrypt the token
-      const encryptedToken = await encryptToken(testSessionTokenData);
-      expect(encryptedToken).toBeDefined();
+  describe('Legacy Functions (Deprecated)', () => {
+    it('should work with legacy encryptToken function', async () => {
+      const encryptedToken = await createSessionToken(testSessionTokenData);
+      
       expect(typeof encryptedToken).toBe('string');
       expect(encryptedToken.length).toBeGreaterThan(0);
-
-      // Decrypt the token
-      const decryptedToken = await decryptToken(encryptedToken);
-      expect(decryptedToken).toBeDefined();
+      
+      const decryptedToken = await decryptSessionToken(encryptedToken);
+      
       expect(decryptedToken).toEqual(testSessionTokenData);
     });
 
-    it('should return null for invalid encrypted token (legacy)', async () => {
-      const result = await decryptToken('invalid-token');
+    it('should handle invalid tokens gracefully', async () => {
+      const result = await decryptSessionToken('invalid-token');
+      
       expect(result).toBeNull();
     });
   });

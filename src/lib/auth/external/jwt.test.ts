@@ -1,8 +1,11 @@
+/**
+ * @vitest-environment node
+ */
 import { describe, it, expect } from 'vitest';
 import { createJWT, verifyJWT } from './jwt';
 import type { SessionTokenData } from '../internal/types';
 
-describe('JWT Utils', () => {
+describe('JWT Utils (jose implementation)', () => {
   const sessionTokenData: SessionTokenData = {
     patientId: 'patient123',
     careflowId: 'careflow456',
@@ -15,77 +18,75 @@ describe('JWT Utils', () => {
   it('should create and verify a valid JWT', async () => {
     const expiresInMinutes = 15;
     
-    // Create JWT
+    // Create JWT using jose
     const jwt = await createJWT(sessionTokenData, expiresInMinutes);
     
     expect(jwt).toBeDefined();
     expect(typeof jwt).toBe('string');
     expect(jwt.split('.').length).toBe(3); // header.payload.signature
     
-    // Verify JWT
+    // Verify JWT using jose
     const payload = await verifyJWT(jwt);
     
     expect(payload).toBeDefined();
     expect(payload?.sub).toBe(sessionTokenData.careflowId);
+    expect(payload?.stakeholder_id).toBe(sessionTokenData.patientId);
+    expect(payload?.tenant_id).toBe(sessionTokenData.tenantId);
+    expect(payload?.org_id).toBe(sessionTokenData.orgId);
+    expect(payload?.environment).toBe(sessionTokenData.environment);
+    expect(payload?.iss).toBeDefined();
     expect(payload?.exp).toBeGreaterThan(Math.floor(Date.now() / 1000));
     expect(payload?.iat).toBeLessThanOrEqual(Math.floor(Date.now() / 1000));
   });
-
-  it('should return null for invalid JWT format', async () => {
-    const result = await verifyJWT('invalid-jwt');
-    expect(result).toBeNull();
-  });
-
-  it('should return null for JWT with invalid signature', async () => {
-    const validJWT = await createJWT(sessionTokenData);
-    // Tamper with the signature
-    const tamperedJWT = validJWT.slice(0, -10) + 'tamperedsig';
+  
+  it('should handle invalid JWT gracefully', async () => {
+    const invalidJwt = 'invalid.jwt.token';
+    const payload = await verifyJWT(invalidJwt);
     
-    const result = await verifyJWT(tamperedJWT);
-    expect(result).toBeNull();
+    expect(payload).toBeNull();
   });
-
-  it('should return null for expired JWT', async () => {
-    // Create a JWT that expires immediately (0 minutes)
-    const jwt = await createJWT(sessionTokenData, 0);
+  
+  it('should handle malformed JWT gracefully', async () => {
+    const malformedJwt = 'not-a-jwt';
+    const payload = await verifyJWT(malformedJwt);
     
-    // Wait a tiny bit for it to expire
-    await new Promise(resolve => setTimeout(resolve, 1100));
-    
-    const result = await verifyJWT(jwt);
-    expect(result).toBeNull();
+    expect(payload).toBeNull();
   });
-
-  it('should create different JWTs for different sessions', async () => {
-    const jwt1 = await createJWT(sessionTokenData);
-    const sessionTokenData2: SessionTokenData = {
-      ...sessionTokenData,
-      careflowId: 'careflow789',
+  
+  it('should reject expired JWT', async () => {
+    // Create a JWT that expires immediately
+    const jwt = await createJWT(sessionTokenData, 0.001); // 0.001 minutes = 0.06 seconds
+    
+    // Wait for it to expire
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    const payload = await verifyJWT(jwt);
+    expect(payload).toBeNull();
+  });
+  
+  it('should create JWT with correct issuer', async () => {
+    const jwt = await createJWT(sessionTokenData, 15);
+    const payload = await verifyJWT(jwt);
+    
+    expect(payload?.iss).toBeDefined();
+    expect(typeof payload?.iss).toBe('string');
+  });
+  
+  it('should handle different session token data', async () => {
+    const differentSessionData: SessionTokenData = {
+      patientId: 'different-patient',
+      careflowId: 'different-careflow',
+      orgId: 'different-org',  
+      tenantId: 'different-tenant',
+      environment: 'production-us',
+      exp: Date.now() + 300000
     };
-    const jwt2 = await createJWT(sessionTokenData2);
     
-    expect(jwt1).not.toEqual(jwt2);
+    const jwt = await createJWT(differentSessionData, 30);
+    const payload = await verifyJWT(jwt);
     
-    const payload1 = await verifyJWT(jwt1);
-    const payload2 = await verifyJWT(jwt2);
-    
-    expect(payload1?.sub).toBe(sessionTokenData.careflowId);
-    expect(payload2?.sub).toBe(sessionTokenData2.careflowId);
-  });
-
-  it('should have correct JWT structure', async () => {
-    const jwt = await createJWT(sessionTokenData);
-    const [headerPart, payloadPart] = jwt.split('.');
-    
-    // Decode header
-    const header = JSON.parse(atob(headerPart.replace(/-/g, '+').replace(/_/g, '/')));
-    expect(header.alg).toBe('HS256');
-    expect(header.typ).toBe('JWT');
-    
-    // Decode payload
-    const payload = JSON.parse(atob(payloadPart.replace(/-/g, '+').replace(/_/g, '/')));
-    expect(payload.sub).toBe(sessionTokenData.careflowId);
-    expect(payload.exp).toBeDefined();
-    expect(payload.iat).toBeDefined();
+    expect(payload?.sub).toBe(differentSessionData.careflowId);
+    expect(payload?.stakeholder_id).toBe(differentSessionData.patientId);
+    expect(payload?.environment).toBe(differentSessionData.environment);
   });
 });

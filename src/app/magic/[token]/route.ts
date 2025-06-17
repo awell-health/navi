@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { decryptToken } from '@/lib/auth/internal/session';
+import { decryptSessionToken } from '@/lib/auth/internal/session';
 import { createJWT } from '@/lib/auth/external/jwt';
 import { getBrandingByOrgId } from '@/lib/edge-config';
 import { generateInlineThemeStyle, generateFaviconHTML } from '@/lib/branding/theme/generator';
@@ -20,7 +20,7 @@ export async function GET(
   const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000)); // 24 hours
   
   // Decrypt the token using AES-GCM
-  const tokenData = await decryptToken(token);
+  const tokenData = await decryptSessionToken(token);
   
   if (!tokenData) {
     return new NextResponse('Invalid token', { 
@@ -29,8 +29,8 @@ export async function GET(
     });
   }
   
-  // Check if token is expired
-  if (Date.now() > tokenData.exp) {
+  // Check if token is expired (tokenData.exp is in seconds, Date.now() is in milliseconds)
+  if (Math.floor(Date.now() / 1000) > tokenData.exp) {
     return new NextResponse('Token expired', { 
       status: 400,
       headers: { 'Content-Type': 'text/plain' }

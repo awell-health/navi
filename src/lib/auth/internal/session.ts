@@ -46,7 +46,9 @@ async function getEncryptionKey(): Promise<CryptoKey> {
   );
 }
 
-// AES-GCM 256 encryption for session tokens
+/**
+ * Creates an encrypted session token from session data
+ */
 export async function createSessionToken(payload: SessionTokenData): Promise<string> {
   try {
     const key = await getEncryptionKey();
@@ -75,7 +77,9 @@ export async function createSessionToken(payload: SessionTokenData): Promise<str
   }
 }
 
-// AES-GCM 256 decryption for session tokens
+/**
+ * Decrypts a session token and returns the session data
+ */
 export async function decryptSessionToken(token: string): Promise<SessionTokenData | null> {
   try {
     const key = await getEncryptionKey();
@@ -108,76 +112,4 @@ export async function decryptSessionToken(token: string): Promise<SessionTokenDa
   }
 }
 
-// Legacy functions for backward compatibility during transition
-// TODO: Remove these once all references are updated
 
-// Legacy alias for createSessionToken
-export function encryptToken(payload: SessionTokenData): Promise<string> {
-  console.warn('Using deprecated encryptToken(). Please use createSessionToken() instead.');
-  return createSessionToken(payload);
-}
-
-// Legacy alias for decryptSessionToken  
-export function decryptToken(token: string): Promise<SessionTokenData | null> {
-  console.warn('Using deprecated decryptToken(). Please use decryptSessionToken() instead.');
-  return decryptSessionToken(token);
-}
-
-// Legacy validation function alias
-export function isValidToken(obj: unknown): obj is SessionTokenData {
-  console.warn('Using deprecated isValidToken(). Please use isValidSessionToken() instead.');
-  return isValidSessionToken(obj);
-}
-
-export function decryptStubToken(token: string): SessionTokenData | null {
-  console.warn('Using deprecated stub token decryption. Please use decryptSessionToken() instead.');
-  
-  try {
-    const STUB_SECRET = 'legacy-secret-for-stub-functions';
-    // Decode base64
-    const decoded = atob(token);
-    
-    // Simple XOR decrypt with secret (stub implementation)
-    let decrypted = '';
-    for (let i = 0; i < decoded.length; i++) {
-      decrypted += String.fromCharCode(
-        decoded.charCodeAt(i) ^ STUB_SECRET.charCodeAt(i % STUB_SECRET.length)
-      );
-    }
-    
-    // Parse JSON payload
-    const payload = JSON.parse(decrypted);
-    
-    // Validate required fields
-    if (!isValidSessionToken(payload)) {
-      return null;
-    }
-    
-    return payload;
-  } catch (error) {
-    console.error('Token decryption failed:', error);
-    return null;
-  }
-}
-
-export function createStubToken(payload: SessionTokenData): string {
-  console.warn('Using deprecated stub token creation. Please use createSessionToken() instead.');
-  
-  try {
-    const STUB_SECRET = 'legacy-secret-for-stub-functions';
-    const jsonPayload = JSON.stringify(payload);
-    
-    // Simple XOR encrypt with secret (same as route implementation)
-    let encrypted = '';
-    for (let i = 0; i < jsonPayload.length; i++) {
-      encrypted += String.fromCharCode(
-        jsonPayload.charCodeAt(i) ^ STUB_SECRET.charCodeAt(i % STUB_SECRET.length)
-      );
-    }
-    
-    // Encode as base64
-    return btoa(encrypted);
-  } catch {
-    throw new Error('Failed to create test token');
-  }
-}

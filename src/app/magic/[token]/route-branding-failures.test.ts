@@ -1,10 +1,13 @@
+/**
+ * @vitest-environment node
+ */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from './route';
 import { NextRequest } from 'next/server';
-import { encryptToken } from '@/lib/auth/internal/session';
-import type { TokenData } from '@/lib/auth/internal/types';
+import { createSessionToken } from '@/lib/auth/internal/session';
+import type { SessionTokenData } from '@/lib/auth/internal/types';
 
 // Mock the edge-config import to test failure scenarios
 vi.mock('@/lib/edge-config', () => ({
@@ -47,16 +50,17 @@ describe('Magic Link Route - Branding Failure Scenarios', () => {
     mockGenerateWelcomePageHTML.mockReturnValue('<div>Welcome</div>');
   });
 
-  async function createValidToken(): Promise<string> {
-    const payload: TokenData = {
+  async function createTestToken(): Promise<string> {
+    const payload: SessionTokenData = {
       patientId: 'patient123',
       careflowId: 'careflow456',
-      orgId: 'test-org',
+      orgId: 'org123',
       tenantId: 'tenant123',
       environment: 'test',
-      exp: Date.now() + 60000
+      exp: Math.floor(Date.now() / 1000) + 60 // 1 minute from now
     };
-    return await encryptToken(payload);
+    
+    return await createSessionToken(payload);
   }
 
   describe('Branding Service Failures', () => {
@@ -68,7 +72,7 @@ describe('Magic Link Route - Branding Failure Scenarios', () => {
         )
       );
 
-      const token = await createValidToken();
+      const token = await createTestToken();
       const request = new NextRequest(`https://example.com/magic/${token}`);
       const params = Promise.resolve({ token });
 
@@ -83,7 +87,7 @@ describe('Magic Link Route - Branding Failure Scenarios', () => {
     it('should handle branding service network error gracefully', async () => {
       mockGetBrandingByOrgId.mockRejectedValue(new Error('Network error'));
 
-      const token = await createValidToken();
+      const token = await createTestToken();
       const request = new NextRequest(`https://example.com/magic/${token}`);
       const params = Promise.resolve({ token });
 
@@ -97,7 +101,7 @@ describe('Magic Link Route - Branding Failure Scenarios', () => {
     it('should handle branding service returning null gracefully', async () => {
       mockGetBrandingByOrgId.mockResolvedValue(null);
 
-      const token = await createValidToken();
+      const token = await createTestToken();
       const request = new NextRequest(`https://example.com/magic/${token}`);
       const params = Promise.resolve({ token });
 
@@ -116,7 +120,7 @@ describe('Magic Link Route - Branding Failure Scenarios', () => {
       
       mockGetBrandingByOrgId.mockResolvedValue(malformedBranding);
 
-      const token = await createValidToken();
+      const token = await createTestToken();
       const request = new NextRequest(`https://example.com/magic/${token}`);
       const params = Promise.resolve({ token });
 
@@ -134,7 +138,7 @@ describe('Magic Link Route - Branding Failure Scenarios', () => {
         throw new Error('CSS generation failed');
       });
 
-      const token = await createValidToken();
+      const token = await createTestToken();
       const request = new NextRequest(`https://example.com/magic/${token}`);
       const params = Promise.resolve({ token });
 
@@ -152,7 +156,7 @@ describe('Magic Link Route - Branding Failure Scenarios', () => {
         throw new Error('Favicon generation failed');
       });
 
-      const token = await createValidToken();
+      const token = await createTestToken();
       const request = new NextRequest(`https://example.com/magic/${token}`);
       const params = Promise.resolve({ token });
 
@@ -170,7 +174,7 @@ describe('Magic Link Route - Branding Failure Scenarios', () => {
         throw new Error('Welcome page generation failed');
       });
 
-      const token = await createValidToken();
+      const token = await createTestToken();
       const request = new NextRequest(`https://example.com/magic/${token}`);
       const params = Promise.resolve({ token });
 
@@ -193,7 +197,7 @@ describe('Magic Link Route - Branding Failure Scenarios', () => {
       
       mockGetBrandingByOrgId.mockResolvedValue(maliciousBranding);
 
-      const token = await createValidToken();
+      const token = await createTestToken();
       const request = new NextRequest(`https://example.com/magic/${token}`);
       const params = Promise.resolve({ token });
 
@@ -219,7 +223,7 @@ describe('Magic Link Route - Branding Failure Scenarios', () => {
       
       mockGetBrandingByOrgId.mockResolvedValue(largeBranding);
 
-      const token = await createValidToken();
+      const token = await createTestToken();
       const request = new NextRequest(`https://example.com/magic/${token}`);
       const params = Promise.resolve({ token });
 
@@ -238,7 +242,7 @@ describe('Magic Link Route - Branding Failure Scenarios', () => {
         new Error('@vercel/edge-config: No connection string provided')
       );
 
-      const token = await createValidToken();
+      const token = await createTestToken();
       const request = new NextRequest(`https://example.com/magic/${token}`);
       const params = Promise.resolve({ token });
 
@@ -258,9 +262,9 @@ describe('Magic Link Route - Branding Failure Scenarios', () => {
       });
 
       const tokens = await Promise.all([
-        createValidToken(),
-        createValidToken(),
-        createValidToken(),
+        createTestToken(),
+        createTestToken(),
+        createTestToken(),
       ]);
 
       const requests = tokens.map(async (token) => {
@@ -280,7 +284,7 @@ describe('Magic Link Route - Branding Failure Scenarios', () => {
     it('should handle response within reasonable time limits', async () => {
       mockGetBrandingByOrgId.mockResolvedValue({ primary: '#perf-test' });
 
-      const token = await createValidToken();
+      const token = await createTestToken();
       const request = new NextRequest(`https://example.com/magic/${token}`);
       const params = Promise.resolve({ token });
 
