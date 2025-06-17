@@ -6,6 +6,8 @@ import { generateInlineThemeStyle, generateFaviconHTML } from '@/lib/theme/gener
 import { generateWelcomePageHTML } from '@/components/welcome/welcome-page';
 import { kv } from '@vercel/kv';
 
+export const runtime = 'edge';
+
 function generateSessionId(): string {
   return crypto.randomUUID();
 }
