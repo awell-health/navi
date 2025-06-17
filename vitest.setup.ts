@@ -1,10 +1,12 @@
 import { vi } from 'vitest'
+import '@testing-library/jest-dom'
 
 // Mock environment variables for all tests
 vi.mock('@/env', () => ({
   env: {
     NODE_ENV: 'test' as const,
-    JWT_SIGNING_KEY: 'YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=', // 32-byte key for testing
-    TOKEN_ENCRYPTION_KEY: 'YmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmI=', // 32-byte key for testing
+    JWT_KEY_ID: 'abcdefghijklm012345nopqrstuvwxyz',
+    JWT_SIGNING_KEY: 'abcdefghijklmnopqrstuvwxyz012345', // 32-byte key for testing
+    TOKEN_ENCRYPTION_KEY: 'abcdefghijklmnopqrstuvwxyz012345', // 32-byte key for testing
   },
 })) 

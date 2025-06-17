@@ -42,3 +42,4 @@ next-env.d.ts
 
 # lighthouse
 .lighthouseci/
+*storybook.log
