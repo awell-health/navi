@@ -43,3 +43,6 @@ next-env.d.ts
 # lighthouse
 .lighthouseci/
 *storybook.log
+
+# development session store
+.sessions/

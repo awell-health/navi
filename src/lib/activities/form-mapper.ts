@@ -32,12 +32,6 @@ function mapQuestionType(awellQuestion: Question): string {
  */
 function mapFormQuestion(awellQuestion: Question): FormField {
   const fieldType = mapQuestionType(awellQuestion);
-  
-  // Map options for select/radio fields
-  const options = awellQuestion.options?.map(option => ({
-    value: option.value,
-    label: option.label,
-  }));
 
   // Add yes/no options for boolean questions
   if (awellQuestion.userQuestionType === 'YES_NO') {

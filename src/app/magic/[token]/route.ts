@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { decryptToken, type SessionData } from '@/lib/token';
+import { decryptToken } from '@/lib/token';
 import { createJWT } from '@/lib/jwt';
 import { getBrandingByOrgId } from '@/lib/edge-config';
 import { generateInlineThemeStyle, generateFaviconHTML } from '@/lib/theme/generator';
 import { generateWelcomePageHTML } from '@/components/welcome/welcome-page';
-
-// In-memory session storage (stub - in production would use Redis/DB)  
-export const sessions = new Map<string, SessionData>();
+import { sessions } from '@/lib/session-store';
 
 function generateSessionId(): string {
   return crypto.randomUUID();

@@ -19,7 +19,7 @@ export default function NotFound() {
           </h1>
           
           <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-            Sorry, we couldn't find the page you're looking for. The link you followed may be broken or the page may have been moved.
+            Sorry, we couldn&apos;t find the page you&apos;re looking for. The link you followed may be broken or the page may have been moved.
           </p>
 
           {/* Actions */}

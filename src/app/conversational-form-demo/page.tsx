@@ -6,7 +6,6 @@ const sampleHealthcareFormSteps: ConversationalFormStep[] = [
   {
     id: 'personal-info',
     title: 'Personal Information',
-    subtitle: 'Help us get to know you better',
     fields: [
       {
         id: 'firstName',
@@ -40,7 +39,6 @@ const sampleHealthcareFormSteps: ConversationalFormStep[] = [
   {
     id: 'medical-history',
     title: 'Medical History',
-    subtitle: 'Tell us about your health background',
     fields: [
       {
         id: 'hasAllergies',
@@ -72,7 +70,6 @@ const sampleHealthcareFormSteps: ConversationalFormStep[] = [
   {
     id: 'visit-details',
     title: 'Visit Information',
-    subtitle: 'Tell us about your visit today',
     fields: [
       {
         id: 'visitReason',
@@ -117,7 +114,6 @@ const sampleHealthcareFormSteps: ConversationalFormStep[] = [
   {
     id: 'consent',
     title: 'Consent & Preferences',
-    subtitle: 'Review and confirm your preferences',
     fields: [
       {
         id: 'consentTreatment',

@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "prebuild": "pnpm codegen",
     "build": "next build --turbopack",
     "export": "next export",
     "generate-tokens": "NODE_ENV=development tsx --env-file=.env scripts/generate-secure-tokens.ts",
@@ -39,6 +38,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@t3-oss/env-nextjs": "^0.13.8",
     "@vercel/edge-config": "^1.4.0",
+    "@vercel/kv": "^3.0.0",
     "chrome-launcher": "^1.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { sessions } from '@/app/magic/[token]/route';
+import { sessionStore } from '@/lib/session-store';
 import { generateInlineThemeStyle } from '@/lib/theme/generator';
 import { awellDefaultBranding } from '@/lib/theme/defaults';
 import { getBrandingByOrgId } from '@/lib/edge-config';
@@ -21,7 +21,7 @@ export async function GET() {
       console.log('🔍 Looking up session:', sessionCookie.value);
       
       // Get session data
-      const session = sessions.get(sessionCookie.value);
+      const session = await sessionStore.get(sessionCookie.value);
       
       if (session) {
         console.log('✅ Session found, using branding for org:', session.orgId);

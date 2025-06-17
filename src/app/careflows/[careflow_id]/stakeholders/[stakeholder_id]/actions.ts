@@ -2,13 +2,7 @@
 import { apolloClient } from '@/lib/awell-client/client';
 import { 
   PathwayActivitiesDocument, 
-  type PathwayActivitiesQuery,
-  ActivityStatus,
-  ActivityAction,
-  ActivitySubjectType,
-  ActivityObjectType,
-  ActivityReferenceType,
-  ActivityInputType
+  type PathwayActivitiesQuery
 } from '@/lib/awell-client/generated/graphql';
 
 // Type alias for activities from the generated types

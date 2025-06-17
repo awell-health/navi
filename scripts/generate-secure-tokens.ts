@@ -31,11 +31,11 @@ async function generateSecureTokens(environment: TokenEnvironment = 'test') {
 
     // TechCorp - Dark, professional tech
     const techCorpPayload: TokenData = {
-      patientId: 'user_techcorp_001',
-      careflowId: 'flow_system_onboard',
+      patientId: 'YVXkfvky9cNg84_LK0Cyt',
+      careflowId: 'B1G1unpxkSEA',
       orgId: 'techcorp',
-      tenantId: 'techcorp_tenant',
-      environment: 'local',
+      tenantId: '_v0nvLX5zCNd',
+      environment: 'development',
       exp: Date.now() + (5 * 60 * 1000) // 5 minutes from now
     };
     
@@ -49,11 +49,11 @@ async function generateSecureTokens(environment: TokenEnvironment = 'test') {
 
     // Default/Unknown org for fallback testing
     const defaultPayload: TokenData = {
-      patientId: 'patient_unknown_001',
-      careflowId: 'flow_default_test',
+      patientId: 'YVXkfvky9cNg84_LK0Cyt',
+      careflowId: 'B1G1unpxkSEA',
       orgId: 'unknown-org-123',
-      tenantId: 'unknown_tenant',
-      environment: 'local',
+      tenantId: '_v0nvLX5zCNd',
+      environment: 'development',
       exp: Date.now() + (5 * 60 * 1000) // 5 minutes from now
     };
     
