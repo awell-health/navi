@@ -1,7 +1,7 @@
 import type { Preview } from '@storybook/react-vite'
 import React, { useEffect } from 'react'
 import '../src/app/globals.css'
-import { generateThemeCSS } from '../src/lib/theme/generator'
+import { generateThemeCSS } from '../src/lib/branding/theme/generator'
 
 // Load Google Fonts for healthcare themes
 if (typeof document !== 'undefined') {
