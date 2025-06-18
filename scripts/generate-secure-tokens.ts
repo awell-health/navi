@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 
-import { encryptToken, TokenEnvironment, type TokenData } from '../src/lib/token';
+import { createSessionToken } from '../src/lib/auth/internal/session';
+import type { TokenEnvironment, SessionTokenData } from '../src/lib/auth/internal/types';
 
 /**
  * Generate test tokens using secure AES-GCM encryption
@@ -9,19 +10,19 @@ import { encryptToken, TokenEnvironment, type TokenData } from '../src/lib/token
 
 async function generateSecureTokens(environment: TokenEnvironment = 'test') {
   console.log('🎨 Branding & Theming Test Tokens (AES-GCM 256)\n');
-
+  const thirtyDaysFromNow = Date.now() + (30 * 24 * 60 * 60 * 1000)
   try {
     // Sunrise Health - Bright, friendly healthcare
-    const sunrisePayload: TokenData = {
+    const sunrisePayload: SessionTokenData = {
       patientId: 'YVXkfvky9cNg84_LK0Cyt',
       careflowId: 'B1G1unpxkSEA',
       orgId: 'sunrise-health',
       tenantId: '_v0nvLX5zCNd',
       environment: 'development',
-      exp: Date.now() + (5 * 60 * 1000) // 5 minutes from now
+      exp: thirtyDaysFromNow
     };
     
-    const sunriseToken = await encryptToken(sunrisePayload);
+    const sunriseToken = await createSessionToken(sunrisePayload);
     console.log('🌅 SUNRISE HEALTH - Bright & Friendly Theme');
     console.log('   Colors: Orange primary, light backgrounds');
     console.log('   Fonts: Inter + Poppins (web fonts)');
@@ -30,16 +31,16 @@ async function generateSecureTokens(environment: TokenEnvironment = 'test') {
     console.log(`   Token: ${sunriseToken}\n`);
 
     // TechCorp - Dark, professional tech
-    const techCorpPayload: TokenData = {
+    const techCorpPayload: SessionTokenData = {
       patientId: 'YVXkfvky9cNg84_LK0Cyt',
       careflowId: 'B1G1unpxkSEA',
       orgId: 'techcorp',
       tenantId: '_v0nvLX5zCNd',
       environment: 'development',
-      exp: Date.now() + (5 * 60 * 1000) // 5 minutes from now
+      exp: thirtyDaysFromNow
     };
     
-    const techCorpToken = await encryptToken(techCorpPayload);
+    const techCorpToken = await createSessionToken(techCorpPayload);
     console.log('🏢 TECHCORP SYSTEMS - Dark & Professional Theme');
     console.log('   Colors: Dark navy/slate, indigo accents');
     console.log('   Fonts: JetBrains Mono + Inter (monospace body)');
@@ -48,16 +49,16 @@ async function generateSecureTokens(environment: TokenEnvironment = 'test') {
     console.log(`   Token: ${techCorpToken}\n`);
 
     // Default/Unknown org for fallback testing
-    const defaultPayload: TokenData = {
+    const defaultPayload: SessionTokenData = {
       patientId: 'YVXkfvky9cNg84_LK0Cyt',
       careflowId: 'B1G1unpxkSEA',
       orgId: 'unknown-org-123',
       tenantId: '_v0nvLX5zCNd',
       environment: 'development',
-      exp: Date.now() + (5 * 60 * 1000) // 5 minutes from now
+      exp: thirtyDaysFromNow // 5 minutes from now
     };
     
-    const defaultToken = await encryptToken(defaultPayload);
+    const defaultToken = await createSessionToken(defaultPayload);
     console.log('🔧 DEFAULT FALLBACK - Awell Default Theme');
     console.log('   Colors: Blue primary, clean neutrals');
     console.log('   Fonts: System fonts');
@@ -66,7 +67,7 @@ async function generateSecureTokens(environment: TokenEnvironment = 'test') {
     console.log(`   Token: ${defaultToken}\n`);
 
     // Expired token for error testing
-    const expiredPayload: TokenData = {
+    const expiredPayload: SessionTokenData = {
       patientId: 'patient_expired',
       careflowId: 'flow_expired',
       orgId: 'sunrise-health',
@@ -75,7 +76,7 @@ async function generateSecureTokens(environment: TokenEnvironment = 'test') {
       exp: Date.now() - 1000 // 1 second ago
     };
     
-    const expiredToken = await encryptToken(expiredPayload);
+    const expiredToken = await createSessionToken(expiredPayload);
     console.log('❌ EXPIRED TOKEN (should return 400):');
     console.log(`   http://localhost:3000/magic/${expiredToken}`);
     console.log(`   Token: ${expiredToken}\n`);

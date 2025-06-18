@@ -1,5 +1,5 @@
 import { kv } from '@vercel/kv';
-import type { OrgBranding } from '@/lib/theme/types';
+import type { OrgBranding } from '../types';
 
 /**
  * KV-based storage for organizational branding data

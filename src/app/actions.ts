@@ -4,9 +4,9 @@ import { cookies } from 'next/headers';
 import { cache } from 'react';
 import { sessionStore } from '@/lib/session-store';
 import { getBrandingByOrgId } from '@/lib/edge-config';
-import { generateThemeCSS } from '@/lib/theme/generator';
-import { awellDefaultBranding } from '@/lib/theme/defaults';
-import type { OrgBranding } from '@/lib/theme/types';
+import { generateThemeCSS } from '@/lib/branding/theme/generator';
+import { awellDefaultBranding } from '@/lib/branding/defaults';
+import type { OrgBranding } from '@/lib/branding/types';
 
 interface BrandingResult {
   themeCSS: string;

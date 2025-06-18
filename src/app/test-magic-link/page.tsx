@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { encryptToken } from '@/lib/token';
-import type { TokenData } from '@/lib/token';
+import { createSessionToken } from '@/lib/auth/internal/session';
+import type { SessionTokenData } from '@/lib/auth/internal/types';
 
 // Add metadata for better performance
 export const metadata: Metadata = {
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default async function TestMagicLinkPage() {
   // Generate a valid token (expires in 10 minutes)
-  const validPayload: TokenData = {
+  const validPayload: SessionTokenData = {
     patientId: 'test-patient-lighthouse',
     careflowId: 'test-careflow-lighthouse',
     orgId: 'test-org-lighthouse',
@@ -21,7 +21,7 @@ export default async function TestMagicLinkPage() {
     exp: Date.now() + (10 * 60 * 1000) // 10 minutes from now
   };
   
-  const validToken = await encryptToken(validPayload);
+  const validToken = await createSessionToken(validPayload);
   
   return (
     <div style={{

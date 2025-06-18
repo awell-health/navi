@@ -1,5 +1,5 @@
 import { kv } from '@vercel/kv';
-import type { SessionData } from '@/lib/token';
+import type { SessionData } from '@/lib/auth/internal/types';
 
 export class SessionStore {
   async set(sessionId: string, sessionData: SessionData): Promise<void> {

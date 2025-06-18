@@ -66,9 +66,6 @@ function generateConfig() {
           'interactive': ['error', { maxNumericValue: 2500 }],
           'cumulative-layout-shift': ['warn', { maxNumericValue: 0.1 }]
         }
-      },
-      upload: {
-        target: 'temporary-public-storage'
       }
     }
   };

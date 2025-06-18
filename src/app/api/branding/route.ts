@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { sessionStore } from '@/lib/session-store';
-import { generateInlineThemeStyle } from '@/lib/theme/generator';
-import { awellDefaultBranding } from '@/lib/theme/defaults';
+import { generateInlineThemeStyle } from '@/lib/branding/theme/generator';
+import { awellDefaultBranding } from '@/lib/branding/defaults';
 import { getBrandingByOrgId } from '@/lib/edge-config';
 
 export async function GET() {

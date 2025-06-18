@@ -1,8 +1,8 @@
-import { edgeConfigBrandingStore } from './edge-config-branding-store';
-import { brandingStore } from './branding-store';
+import { edgeConfigBrandingStore } from './storage/edge-store';
+import { brandingStore } from './storage/kv-store';
 import { sampleBrandingData } from './sample-data';
-import { awellDefaultBranding } from '@/lib/theme/defaults';
-import type { OrgBranding } from '@/lib/theme/types';
+import { awellDefaultBranding } from './defaults';
+import type { OrgBranding } from './types';
 
 /**
  * Main branding service that handles all organizational branding operations

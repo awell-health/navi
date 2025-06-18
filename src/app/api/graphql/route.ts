@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyJWT } from '@/lib/jwt';
+import { verifyJWT } from '@/lib/auth/external/jwt';
 
 // Use Node.js runtime for WebSocket support
 export const runtime = 'nodejs';

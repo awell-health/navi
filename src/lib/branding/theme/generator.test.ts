@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateThemeCSS, brandingToTokens, getFaviconUrl, getFaviconType, generateFaviconHTML } from './generator';
-import { awellDefaultTheme } from './defaults';
+import { awellDefaultTheme } from '../defaults';
 
 describe('Theme Generator', () => {
   it('should generate default theme CSS when no branding provided', () => {

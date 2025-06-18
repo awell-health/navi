@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { decryptToken } from '@/lib/token';
-import { createJWT } from '@/lib/jwt';
+import { decryptSessionToken } from '@/lib/auth/internal/session';
+import { createJWT } from '@/lib/auth/external/jwt';
 import { getBrandingByOrgId } from '@/lib/edge-config';
-import { generateInlineThemeStyle, generateFaviconHTML } from '@/lib/theme/generator';
+import { generateInlineThemeStyle, generateFaviconHTML } from '@/lib/branding/theme/generator';
 import { generateWelcomePageHTML } from '@/components/welcome/welcome-page';
 import { kv } from '@vercel/kv';
+
+export const runtime = 'edge';
 
 function generateSessionId(): string {
   return crypto.randomUUID();
@@ -18,7 +20,7 @@ export async function GET(
   const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000)); // 24 hours
   
   // Decrypt the token using AES-GCM
-  const tokenData = await decryptToken(token);
+  const tokenData = await decryptSessionToken(token);
   
   if (!tokenData) {
     return new NextResponse('Invalid token', { 
@@ -27,8 +29,8 @@ export async function GET(
     });
   }
   
-  // Check if token is expired
-  if (Date.now() > tokenData.exp) {
+  // Check if token is expired (tokenData.exp is in seconds, Date.now() is in milliseconds)
+  if (Math.floor(Date.now() / 1000) > tokenData.exp) {
     return new NextResponse('Token expired', { 
       status: 400,
       headers: { 'Content-Type': 'text/plain' }
@@ -53,20 +55,41 @@ export async function GET(
     environment: tokenData.environment
   });
   
-  // Fetch organization branding (with 20ms budget)
-  const branding = await getBrandingByOrgId(tokenData.orgId);
+  // Fetch organization branding (with 20ms budget) with error handling
+  let branding = null;
+  let themeStyle = '<style>/* fallback */</style>';
+  let faviconHTML = '<link rel="icon" href="/favicon-16x16.png">';
+  let welcomePageHTML = '<div>Welcome to your care journey</div>';
+  
+  try {
+    branding = await getBrandingByOrgId(tokenData.orgId);
+  } catch (error) {
+    console.warn('⚠️ Branding fetch failed, using defaults:', error);
+  }
   
   // Generate JWT
   const jwt = await createJWT(tokenData);
   
-  // Generate theme CSS inline
-  const themeStyle = generateInlineThemeStyle(branding);
+  // Generate theme CSS inline with fallback
+  try {
+    themeStyle = generateInlineThemeStyle(branding);
+  } catch (error) {
+    console.warn('⚠️ Theme CSS generation failed, using fallback:', error);
+  }
   
-  // Generate favicon HTML with proper fallback
-  const faviconHTML = generateFaviconHTML(branding);
+  // Generate favicon HTML with fallback
+  try {
+    faviconHTML = generateFaviconHTML(branding);
+  } catch (error) {
+    console.warn('⚠️ Favicon HTML generation failed, using fallback:', error);
+  }
   
-  // Generate welcome page HTML
-  const welcomePageHTML = generateWelcomePageHTML(branding);
+  // Generate welcome page HTML with fallback
+  try {
+    welcomePageHTML = generateWelcomePageHTML(branding);
+  } catch (error) {
+    console.warn('⚠️ Welcome page generation failed, using fallback:', error);
+  }
   
   // Create themed portal HTML shell
   const html = `
