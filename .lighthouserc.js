@@ -66,10 +66,6 @@ function generateConfig() {
           'interactive': ['error', { maxNumericValue: 2500 }],
           'cumulative-layout-shift': ['warn', { maxNumericValue: 0.1 }]
         }
-      },
-      upload: {
-        target: 'lhci',
-        serverBaseUrl: 'https://lhci-server-731351933016.us-central1.run.app'
       }
     }
   };
