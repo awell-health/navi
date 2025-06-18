@@ -69,7 +69,7 @@ function generateConfig() {
       },
       upload: {
         target: 'lhci',
-        serverBaseUrl: 'https://us-central1-awell-turtle-pond.cloudfunctions.net/lighthouse-audit'
+        serverBaseUrl: 'https://lhci-server-731351933016.us-central1.run.app'
       }
     }
   };
