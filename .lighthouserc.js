@@ -68,7 +68,8 @@ function generateConfig() {
         }
       },
       upload: {
-        target: 'temporary-public-storage'
+        target: 'lhci',
+        serverBaseUrl: 'https://us-central1-awell-turtle-pond.cloudfunctions.net/lighthouse-audit'
       }
     }
   };
