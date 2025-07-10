@@ -1,3 +1,4 @@
+import { env } from "@/env";
 import {
   ApolloClient,
   InMemoryCache,
@@ -9,7 +10,6 @@ import { setContext } from "@apollo/client/link/context";
 let _apolloClient: ApolloClient<NormalizedCacheObject> | null = null;
 
 function createApolloClient(): ApolloClient<NormalizedCacheObject> {
-  const { env } = require("@/env");
   const httpLink = createHttpLink({
     uri: env.NEXT_PUBLIC_GRAPHQL_ENDPOINT,
   });
