@@ -1,0 +1,115 @@
+fragment Activity on Activity {
+  id
+  action
+  careflow_id
+  container_name
+  date
+  indirect_object {
+    id
+    type
+    name
+    email
+    preferred_language
+  }
+  object {
+    id
+    type
+    name
+    email
+    preferred_language
+  }
+  pathway_definition_id
+  reference_id
+  reference_type
+  resolution
+  session_id
+  status
+  tenant_id
+  sub_activities {
+    id
+    action
+    object {
+      id
+      type
+      name
+      email
+      preferred_language
+    }
+  }
+  inputs {
+    __typename
+    type
+    ... on FormActivityInput {
+      type
+      form {
+        id
+        key
+        title
+        trademark
+        questions {
+          ...Question
+        }
+      }
+    }
+    ... on DynamicFormActivityInput {
+      type
+      dynamicForm {
+        key
+        title
+        trademark
+        questions {
+          ...DynamicQuestion
+        }
+      }
+    }
+    ... on MessageActivityInput {
+      type
+      message {
+        id
+        subject
+        body
+        format
+        attachments {
+          id
+          name
+          type
+          url
+        }
+      }
+    }
+    ... on CalculationActivityInput {
+      type
+      calculationFields: fields {
+        id
+        key
+        label
+        value
+        value_type
+      }
+    }
+    ... on ExtensionActivityInput {
+      type
+      extensionFields: fields
+    }
+  }
+  outputs {
+    __typename
+    type
+    ... on FormActivityOutput {
+      type
+      response
+    }
+    ... on DynamicFormActivityOutput {
+      type
+      response
+    }
+    ... on CalculationActivityOutput {
+      type
+      results
+    }
+    ... on ExtensionActivityOutput {
+      type
+      results
+    }
+  }
+}

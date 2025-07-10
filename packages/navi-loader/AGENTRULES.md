@@ -1,0 +1,149 @@
+# Patient Portal Development Rules
+
+## Rule Priority Hierarchy
+
+### **P0 - Critical (Never Skip)**
+
+- Requirements consultation (`requirements/` folder)
+- Performance budgets (FCP < 1000ms, TTI < 2500ms, bundle sizes)
+- Security requirements (HIPAA-aligned logging, JWT handling)
+- Accessibility standards (WCAG 2.1 AA)
+
+### **P1 - Important (Skip Only If Explicitly Instructed)**
+
+- Planning requirement (see Planning Decision Matrix)
+- Testing strategy and Vitest test generation
+- Edge runtime evaluation (see Runtime Decision Matrix)
+
+### **P2 - Preferred (Follow When Possible)**
+
+- Naming conventions and code organization
+- Specific tooling preferences
+- Red-team assessment workflow
+
+## Requirements Consultation
+
+ALWAYS consult the `requirements/` folder before starting any work. This contains:
+
+- `00-overview.md` - High-level goals and links to detailed requirements
+- `01-architecture.md` through `08-deployment.md` - Detailed technical requirements
+
+Check if your task relates to any high-level requirements and ensure your approach aligns with the documented constraints and goals.
+
+## Planning Decision Matrix
+
+### **Generate a Plan When:**
+
+- User says: "generate a plan for X"
+- User says: "plan out X" or "design X"
+- Request involves multiple components/files
+- Request involves new architecture patterns
+- Request has performance/security implications
+- Request lacks clear implementation steps
+
+### **Skip Planning When:**
+
+- User says: "make X change" or "fix X"
+- User says: "implement this specific solution"
+- Request is a simple bug fix or typo correction
+- Request references existing code patterns to follow
+- User provides explicit step-by-step instructions
+
+### **Plan Generation Template:**
+
+When generating a plan, include:
+
+1. **Requirements Analysis** - Which `requirements/` docs apply
+2. **Technical Approach** - Architecture decisions and patterns
+3. **Component Structure** - File organization and data flow
+4. **Performance Strategy** - How to meet FCP/TTI budgets
+5. **Testing Approach** - What to test and how
+6. **Implementation Steps** - Clear, ordered milestones
+
+## Runtime Decision Matrix
+
+### **Use Edge Runtime When:**
+
+- ✅ API routes with simple data fetching
+- ✅ Authentication middleware
+- ✅ Static content generation with minimal logic
+- ✅ Response time < 50ms is critical
+- ✅ Global distribution needed
+- ✅ No file system access required
+- ✅ No Node.js-specific APIs needed
+
+### **Use Node.js Runtime When:**
+
+- ❌ File system operations required
+- ❌ Complex server-side processing (>100ms)
+- ❌ Third-party libraries requiring Node.js APIs
+- ❌ Database connections with connection pooling
+- ❌ Image processing or heavy computations
+- ❌ Streaming large responses
+
+### **Default Decision:**
+
+If unsure, start with Node.js runtime and optimize to edge later if performance requires it.
+
+## Feature Development Workflow
+
+### Phase 1: Design
+
+- Design a solution taking UX into account
+- Consider user flows, accessibility (WCAG 2.1 AA), and mobile-first approach
+- Design may be created externally - screenshots/mockups may be provided
+- Validate design against requirements (performance budgets, branding flexibility, etc.)
+
+### Phase 2: Planning (See Planning Decision Matrix Above)
+
+Follow the plan generation template when planning is required.
+
+### Phase 3: Implementation
+
+- Implement against the plan step-by-step
+- Generate Vitest tests that cover important concepts and edge cases
+- Focus on the four quality criteria (see Red-Team section)
+- Apply runtime decisions using the Runtime Decision Matrix
+- Follow existing patterns for naming, structure, and tool usage
+
+### Phase 4: Red-Team Assessment
+
+When implementation is complete, instruct the user:
+
+"Request red-team evaluation focusing on: engineering complexity, system reliability, pattern alignment, and future scalability."
+
+## Project Setup & Tooling
+
+- **Package Manager**: Use `pnpm` (not npm or yarn)
+- **Framework**: Next.js 15 with App Router
+- **Runtime**: Apply Runtime Decision Matrix above
+- **Styling**: Tailwind CSS v4
+- **TypeScript**: Strict mode enabled
+- **Testing**: Vitest for unit/integration tests
+- **Linting**: ESLint with Next.js config
+- **Build**: `pnpm build` - must pass without errors
+- **Dev**: `pnpm dev --turbopack` for development
+
+## Code Quality Standards
+
+- Use TypeScript strictly
+- Follow Next.js 15 App Router patterns
+- Implement proper error boundaries and fallbacks
+- Write meaningful test cases with Vitest
+- Consider edge runtime limitations (see Runtime Decision Matrix)
+- Optimize for mobile performance first
+- Maintain WCAG 2.1 AA accessibility standards
+
+## Performance Priorities
+
+- First Contentful Paint < 1000ms on 4G mobile
+- Time to Interactive < 2500ms
+- Bundle sizes within budget (15KB initial, 40KB per chunk)
+- Edge-rendered HTML with minimal chrome
+- Immutable caching for activity chunks
+
+## File Protection Rules
+
+- **NEVER modify, delete, or overwrite `.env` files** without explicit user permission
+- Environment files contain sensitive production data that should be preserved
+- When testing CI/CD workflows, use separate temporary files or the CI generation scripts

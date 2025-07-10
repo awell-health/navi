@@ -1,8 +1,0 @@
-query GetActivity($id: String!) {
-  activity(id: $id) {
-    success
-    activity {
-      ...Activity
-    }
-  }
-}

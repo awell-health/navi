@@ -1,0 +1,12 @@
+fragment DynamicQuestion on DynamicQuestion {
+  id
+  key
+  title
+  questionType
+  required
+  options {
+    id
+    label
+    value
+  }
+}

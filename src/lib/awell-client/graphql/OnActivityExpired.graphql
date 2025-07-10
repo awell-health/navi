@@ -1,6 +1,0 @@
-# import 'Activity'
-subscription OnActivityExpired($pathway_id: String!) {
-  activityExpired(pathway_id: $pathway_id) {
-    ...Activity
-  }
-}

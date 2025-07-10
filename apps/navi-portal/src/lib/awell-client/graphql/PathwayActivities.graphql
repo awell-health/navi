@@ -1,0 +1,13 @@
+# import 'Activity'
+query PathwayActivities($pathway_id: String!) {
+  pathwayActivities(
+    pathway_id: $pathway_id
+    sorting: { field: "date", direction: "DESC" }
+  ) {
+    success
+    activities {
+      ...Activity
+    }
+    totalCount
+  }
+}

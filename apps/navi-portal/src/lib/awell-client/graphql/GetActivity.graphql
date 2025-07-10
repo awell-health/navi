@@ -1,0 +1,8 @@
+query GetActivity($id: ID!) {
+  activity(id: $id) {
+    success
+    activity {
+      ...Activity
+    }
+  }
+}

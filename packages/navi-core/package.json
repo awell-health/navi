@@ -1,0 +1,57 @@
+{
+  "name": "@awell-health/navi-core",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Core utilities and GraphQL client for Navi care flow integration",
+  "main": "dist/index.esm.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c --watch",
+    "clean": "rm -rf dist",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "lint": "eslint src --ext .ts"
+  },
+  "keywords": [
+    "navi",
+    "awell",
+    "health",
+    "patient",
+    "care",
+    "graphql",
+    "utilities"
+  ],
+  "author": "Awell Health",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/awell-health/navi",
+    "directory": "packages/navi-core"
+  },
+  "bugs": {
+    "url": "https://github.com/awell-health/navi/issues"
+  },
+  "homepage": "https://github.com/awell-health/navi#readme",
+  "dependencies": {
+    "graphql": "^16.11.0",
+    "jose": "^6.0.11",
+    "zod": "^3.25.64"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/node": "^20",
+    "eslint": "^9",
+    "rollup": "^4.25.0",
+    "typescript": "^5",
+    "vitest": "^3.2.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
