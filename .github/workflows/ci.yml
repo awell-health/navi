@@ -160,5 +160,6 @@ jobs:
           configPath: "./apps/navi-portal/.lighthouserc.js"
           serverBaseUrl: "https://lhci-server-731351933016.us-central1.run.app"
           serverToken: ${{ secrets.LHCI_TOKEN }}
+          uploadExtraArgs: "--urlReplacementPatterns=s/(localhost-magic_3)[^\/]*/\\1-/"
           uploadArtifacts: false
           temporaryPublicStorage: false
