@@ -11,6 +11,17 @@
         ".env.production",
         ".env"
       ],
+      "env": [
+        "NEXT_PUBLIC_GRAPHQL_ENDPOINT",
+        "PROTOTYPE_API_KEY",
+        "JWT_SIGNING_KEY",
+        "JWT_KEY_ID",
+        "TOKEN_ENCRYPTION_KEY",
+        "BRANDING_API_URL",
+        "BRANDING_API_TOKEN",
+        "ORCHESTRATION_URL",
+        "EDGE_CONFIG_URL"
+      ],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
     "dev": {
