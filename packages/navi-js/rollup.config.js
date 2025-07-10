@@ -1,16 +1,16 @@
-const resolve = require('@rollup/plugin-node-resolve');
-const replace = require('@rollup/plugin-replace');
-const typescript = require('@rollup/plugin-typescript');
-const pkg = require('./package.json');
+const resolve = require("@rollup/plugin-node-resolve");
+const replace = require("@rollup/plugin-replace");
+const typescript = require("@rollup/plugin-typescript");
+const pkg = require("./package.json");
 
 module.exports = [
   // CommonJS build
   {
-    input: 'src/index.ts',
+    input: "src/index.ts",
     output: {
-      file: 'dist/index.js',
-      format: 'cjs',
-      exports: 'named',
+      file: "dist/index.js",
+      format: "cjs",
+      exports: "named",
     },
     plugins: [
       resolve(),
@@ -19,18 +19,18 @@ module.exports = [
         preventAssignment: true,
       }),
       typescript({
-        tsconfig: './tsconfig.json',
+        tsconfig: "./tsconfig.json",
         declaration: true,
-        declarationDir: 'dist',
+        declarationDir: "dist",
       }),
     ],
   },
   // ESM build
   {
-    input: 'src/index.ts',
+    input: "src/index.ts",
     output: {
-      file: 'dist/index.mjs',
-      format: 'esm',
+      file: "dist/index.mjs",
+      format: "esm",
     },
     plugins: [
       resolve(),
@@ -39,9 +39,10 @@ module.exports = [
         preventAssignment: true,
       }),
       typescript({
-        tsconfig: './tsconfig.json',
+        tsconfig: "./tsconfig.json",
         declaration: false,
+        declarationDir: null,
       }),
     ],
   },
-]; 
+];

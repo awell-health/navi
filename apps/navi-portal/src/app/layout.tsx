@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { getBrandingAction } from '@/app/actions';
+import { getBrandingAction } from "@/app/actions";
 import "./globals.css";
+
+export const dynamic = "force-dynamic";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,8 +26,11 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const { themeCSS, orgId, hasCustomBranding } = await getBrandingAction();
-  
-  console.log('🏗️  Layout: Rendering with branding', { orgId, hasCustomBranding });
+
+  console.log("🏗️  Layout: Rendering with branding", {
+    orgId,
+    hasCustomBranding,
+  });
 
   return (
     <html lang="en">

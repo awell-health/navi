@@ -1,7 +1,15 @@
-'use client';
-
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { NaviClient, AuthResult, BrandingConfig } from '@awell-health/navi-core';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+import {
+  NaviClient,
+  AuthResult,
+  BrandingConfig,
+} from "@awell-health/navi-core";
 
 export interface NaviContextType {
   client: NaviClient | null;
@@ -23,15 +31,17 @@ export interface NaviProviderProps {
   children: ReactNode;
 }
 
-export function NaviProvider({ 
-  publishableKey, 
-  pathwayId, 
-  branding = {}, 
-  children 
+export function NaviProvider({
+  publishableKey,
+  pathwayId,
+  branding = {},
+  children,
 }: NaviProviderProps) {
   const [client, setClient] = useState<NaviClient | null>(null);
   const [auth, setAuth] = useState<AuthResult | null>(null);
-  const [cssProperties, setCssProperties] = useState<Record<string, string>>({});
+  const [cssProperties, setCssProperties] = useState<Record<string, string>>(
+    {}
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,9 +63,9 @@ export function NaviProvider({
         Object.entries(initResult.cssProperties).forEach(([key, value]) => {
           root.style.setProperty(key, value);
         });
-
       } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to initialize Navi';
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to initialize Navi";
         setError(errorMessage);
       } finally {
         setIsLoading(false);
@@ -73,20 +83,16 @@ export function NaviProvider({
     isLoading,
     error,
     pathwayId,
-    publishableKey
+    publishableKey,
   };
 
-  return (
-    <NaviContext.Provider value={value}>
-      {children}
-    </NaviContext.Provider>
-  );
+  return <NaviContext.Provider value={value}>{children}</NaviContext.Provider>;
 }
 
 export function useNavi(): NaviContextType {
   const context = useContext(NaviContext);
   if (!context) {
-    throw new Error('useNavi must be used within a NaviProvider');
+    throw new Error("useNavi must be used within a NaviProvider");
   }
   return context;
-} 
+}
