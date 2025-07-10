@@ -1,0 +1,6 @@
+# import 'Activity'
+subscription OnActivityExpired($careflow_id: String!) {
+  activityExpired(careflow_id: $careflow_id) {
+    ...Activity
+  }
+}

@@ -1,0 +1,6 @@
+# import 'Activity'
+subscription OnActivityCreated($careflow_id: String!) {
+  activityCreated(careflow_id: $careflow_id) {
+    ...Activity
+  }
+}

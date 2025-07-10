@@ -1,0 +1,14 @@
+fragment Question on Question {
+  id
+  key
+  title
+  definition_id
+  placeholder
+  questionType
+  required
+  options {
+    id
+    label
+    value
+  }
+}

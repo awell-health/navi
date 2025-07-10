@@ -1,198 +1,188 @@
-# Navi - Patient Portal Prototype
+# Navi Monorepo
 
-A high-performance patient portal built with Next.js 15, designed for sub-second load times and seamless care flow management.
+A monorepo for the Navi healthcare activities SDK, following a Stripe-like architecture for maximum security, performance, and developer experience.
 
-## 🏗️ Architecture & User Flow
+**🚧 Development Status**: Currently in v0.x.x development phase - building toward v1.0.0 production release.
 
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant E as Edge Runtime (Vercel Edge)
-    participant C as Branding Cache (In-Memory)
-    participant A as Auth Service (JWT)
-    participant API as Awell API (M2M/Orchestration)
-    
-    Note over U,API: 🎯 Performance Goal: <1s paint time
-    
-    U->>E: 1. Click encrypted link (careflow/patient/org data)
-    Note right of U: Link contains encrypted: Care flow ID, Patient ID, Organization ID
-    
-    E->>E: 2. Decrypt link parameters
-    Note right of E: ⚡ Edge Runtime Expected: <100ms
-    
-    E->>C: 3. Fetch org branding
-    C-->>E: Branding settings
-    Note right of C: 🔧 PROTOTYPE In-memory cache PROD: Distributed cache
-    
-    alt Landing Page Flow (Optional)
-        E->>U: 4a. Render landing page with org branding
-        Note right of E: 🎯 Target: <1000ms FCP
-        U->>E: 5a. User interaction (continue/start)
-    else Direct Redirect Flow
-        Note over E: 4b. Skip landing page (configurable)
-    end
-    
-    E->>A: 6. Create session JWT
-    A-->>E: JWT token + session
-    Note right of A: 🔒 Session includes: Patient context, Org permissions, Expiry
-    
-    E->>U: 7. Redirect to activities /careflows/[id]/stakeholders/[id]
-    Note right of E: ⚡ Client-side navigation with JWT in session
-    
-    U->>E: 8. Load activities page
-    
-    rect rgb(255, 240, 240)
-        Note over E,API: 🔧 CURRENT PROTOTYPE STATE
-        E->>API: 9. M2M API call (API key auth)
-        Note right of API: ⚠️ Limited to 'awell-dev' organization only
-        API-->>E: Activities data
-    end
-    
-    rect rgb(240, 255, 240)
-        Note over E,API: 🚀 FUTURE PRODUCTION STATE
-        Note right of API: JWT-validated requests ✅ Any tenant supported ✅ Proper user context
-    end
-    
-    E->>U: 10. Render activities UI with Apollo Client
-    Note right of E: 📊 Generated GraphQL types 🎨 Org-specific theming
-    
-    Note over U,API: 🏗️ Architecture Notes: Edge runtime for global speed, JWT for secure session management, GraphQL for type-safe data fetching, Configurable landing page flow
+## 📚 Documentation
+
+**Complete development and architecture documentation:**
+
+- **[.cursorrules](./.cursorrules)** - AI agent guidelines and development rules
+- **[API-CONTRACTS.md](./docs/API-CONTRACTS.md)** - Interface compatibility tracking and breaking change management
+- **[RELEASE-PIPELINE.md](./docs/RELEASE-PIPELINE.md)** - Coordinated release procedures and deployment automation
+- **[PACKAGE-GUIDELINES.md](./docs/PACKAGE-GUIDELINES.md)** - Package-specific development rules and standards
+- **[REPOSITORY-STRATEGY.md](./docs/REPOSITORY-STRATEGY.md)** - High-level implementation strategy
+- **[DEPLOYMENT-STRATEGY.md](./docs/DEPLOYMENT-STRATEGY.md)** - High level deployment strategy
+
+> **For Developers**: Read `.cursorrules` for critical development guidelines and patterns.
+> **For Architecture**: Review `API-CONTRACTS.md` and `REPOSITORY-STRATEGY.md` for system design.
+> **For Releases**: Follow `RELEASE-PIPELINE.md` for deployment coordination.
+
+## 🏗️ Architecture Overview
+
+This monorepo implements a **CDN + NPM package** distribution model similar to Stripe.js:
+
+### 🌐 CDN Distribution
+
+- **`packages/navi-loader/`** → Built and deployed to CDN (Google Cloud/Cloudflare/Vercel)
+- **Global distribution** for optimal performance and caching
+- **Version pinning** for predictable behavior
+
+### 🔒 Embed Portal
+
+- **`apps/navi-portal/`** → Deployed to Vercel as embed-only content
+- **Cross-origin iframes** for security and compliance
+- **Isolated rendering** of healthcare activities
+
+### 📦 NPM Packages
+
+- **`packages/navi-js/`** → Wrapper package that loads CDN script (like `@stripe/stripe-js`)
+- **`packages/navi-react/`** → React components and hooks for direct integration
+- **`packages/navi-core/`** → Shared utilities, types, and services
+
+### 🧪 Development & Testing
+
+- **`examples/test-integration/`** → Integration testing app for both SDK patterns
+- **Cross-origin testing** between localhost:3001 (customer) and localhost:3000 (embed)
+
+## 🚀 Distribution Strategy
+
+### **Production Deployment**
+
+```
+🌐 CDN: https://cdn.navi.com
+└── /v1/navi-loader.js          ← JavaScript SDK
+
+🔒 Embed: https://embed.navi.com
+└── /[pathway_id]               ← Iframe content
+
+📦 NPM: @awell-health/navi-js
+└── Loads CDN script securely
 ```
 
-## 🚀 Key Features
+### **Development Environment**
 
-- **⚡ Edge Runtime**: Sub-second page loads with global edge deployment
-- **🔒 Secure Authentication**: JWT-based session management with encrypted links
-- **🎨 Dynamic Theming**: Organization-specific branding with real-time theme switching
-- **📊 Type-Safe GraphQL**: Apollo Client with auto-generated TypeScript types
-- **📱 Mobile-First**: Optimized for mobile devices with WCAG 2.1 AA accessibility
-- **🔧 Configurable Flows**: Optional landing pages and customizable user journeys
+```
+🏢 Portal: localhost:3000
+├── /navi-loader.js             ← Development SDK
+└── /embed/[pathway_id]         ← Iframe content
 
-## 🛠️ Tech Stack
+🧪 Test App: localhost:3001
+└── Tests both SDK integration patterns
+```
 
-- **Framework**: Next.js 15 with App Router and Turbopack
-- **Runtime**: Vercel Edge Runtime for global performance
-- **GraphQL**: Apollo Client with GraphQL Code Generator
-- **Styling**: Tailwind CSS v4 with dynamic theming
-- **Auth**: JWT with encrypted URL parameters
-- **Testing**: Vitest with React Testing Library
-- **Performance**: Lighthouse CI with performance budgets
+## 📦 Package Responsibilities
 
-## 🗄️ Data Storage Strategy
+### `@awell-health/navi-js`
 
-### Vercel Edge Config vs KV
+NPM wrapper package that securely loads the Navi SDK from CDN. Provides TypeScript types and a clean loading interface, similar to how `@stripe/stripe-js` works.
 
-This project uses **both** Vercel Edge Config and Vercel KV for different purposes:
+### `@awell-health/navi-react`
 
-| Service | **Vercel Edge Config** | **Vercel KV** |
-|---------|------------------------|---------------|
-| **Purpose** | Read-only configuration | Read-write caching |
-| **Latency** | <50ms (edge-replicated) | ~100-200ms (single region) |
-| **Updates** | Deploy-time only | Real-time programmatic |
-| **Best For** | Static configs, branding | Sessions, dynamic cache |
+React components for customers who want to embed Navi activities directly into their React applications instead of using iframes.
 
-#### Current Usage:
-- **Edge Config**: Organization branding configurations (logos, colors, themes)
-- **KV**: Not yet implemented (planned for session management and API caching)
+### `@awell-health/navi-core`
 
-#### Why Both?
-- **Edge Config** gives us ultra-fast branding lookups for sub-1000ms FCP goals
-- **KV** will handle dynamic data like user sessions and API response caching
-- Different tools for different performance and consistency requirements
+Shared utilities, TypeScript types, authentication services, and common functionality used across the SDK packages.
 
-## 🏃‍♂️ Getting Started
+### `navi-loader` (CDN Bundle)
+
+The main JavaScript SDK that gets distributed via CDN. Creates secure cross-origin iframes and handles all communication with the Navi embed portal.
+
+### `navi-portal` (Embed Application)
+
+Vercel-deployed application that renders healthcare activities inside secure iframes. Handles JWT authentication, branding, and activity rendering.
+
+## 🛠️ Development
 
 ### Prerequisites
 
-- Node.js 22+ (see `.nvmrc`)
-- pnpm (package manager)
+- Node.js 22+
+- pnpm package manager
 
-### Installation
+### Quick Start
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd navi
-
 # Install dependencies
 pnpm install
 
-# Link with vercel
-vercel link
+# Build all packages
+pnpm build
 
-# Set up environment variables
-vercel env pull
-
-# Edit .env with your API keys and configuration
-
-# Generate GraphQL types
-pnpm codegen
-
-# Start development server
-pnpm dev --turbopack
+# Start development servers
+pnpm dev
 ```
 
-### Environment Variables
+This starts both the portal (localhost:3000) and test integration app (localhost:3001) to test cross-origin iframe functionality.
 
-```env
-PROTOTYPE_API_KEY=your_awell_api_key
-NEXT_PUBLIC_ENCRYPTION_SECRET=your_encryption_secret
+### Package Development
+
+```bash
+# Build packages only
+pnpm build:packages
+
+# Test specific package
+pnpm --filter navi-react test
+
+# Lint all code
+pnpm lint
 ```
 
-## 📋 Available Scripts
+## 🌍 Deployment Targets
 
-- `pnpm dev` - Start development server with Turbopack
-- `pnpm build` - Build for production (includes GraphQL codegen)
-- `pnpm codegen` - Generate GraphQL types and hooks
-- `pnpm codegen:watch` - Watch mode for GraphQL generation
-- `pnpm test` - Run tests with Vitest
-- `pnpm test:performance` - Run performance tests
-- `pnpm lint` - Run ESLint
+- **CDN**: Google Cloud CDN, Cloudflare, or Vercel Edge Network
+- **Portal**: Vercel (embed.navi.com)
+- **NPM**: Public registry for customer installation
 
-## 🔧 Development Status
+## 📁 Workspace Structure
 
-### ✅ Production Ready
-- Next.js 15 App Router with Edge Runtime
-- Apollo Client with type-safe GraphQL
-- Dynamic theming system
-- JWT authentication
-- Performance optimization
-- Accessibility compliance (WCAG 2.1 AA)
+```
+navi/
+├── apps/
+│   └── navi-portal/              # Embed portal (Vercel deployment)
+├── packages/
+│   ├── navi-js/                  # NPM wrapper (loads CDN)
+│   ├── navi-loader/              # JavaScript SDK (CDN bundle)
+│   ├── navi-react/               # React components (NPM)
+│   └── navi-core/                # Shared utilities (NPM)
+├── examples/
+│   └── test-integration/         # Cross-origin testing app
+└── requirements/                 # Architecture & API documentation
+```
 
-### 🔧 Prototype/In Development
-- **Branding Cache**: Currently in-memory, needs distributed cache
-- **API Authentication**: M2M with API key (limited to 'awell-dev' org)
-- **Tenant Support**: Single organization, needs multi-tenant support
+## 🔄 Release Management
 
-### 🚀 Future Production Goals
-- JWT-validated API requests for any tenant
-- Distributed branding cache
-- Enhanced analytics and monitoring
-- Advanced error handling and fallbacks
+Uses [Changesets](https://github.com/changesets/changesets) for coordinated package versioning:
 
-## 📊 Performance Goals
+```bash
+pnpm changeset           # Add changeset
+pnpm changeset:version   # Update versions
+pnpm changeset:publish   # Publish to NPM
+```
 
-- **First Contentful Paint**: < 1000ms on 4G mobile
-- **Time to Interactive**: < 2500ms
-- **Bundle Size**: 15KB initial, 40KB per chunk
-- **Edge Processing**: < 100ms
+CDN deployment happens automatically via GitHub Actions when tags are pushed.
 
-## 🏗️ Architecture Decisions
+## 🎯 Design Goals
 
-- **Edge Runtime**: For global speed and reduced latency
-- **GraphQL Fragments**: Reusable, composable data fetching
-- **Apollo Client**: Caching and optimistic updates
-- **Tailwind v4**: Dynamic theming with CSS variables
-- **TypeScript Strict**: Full type safety across the stack
+- **Security**: Cannot bundle or self-host (like Stripe's PCI compliance model)
+- **Performance**: Global CDN distribution with aggressive caching
+- **Developer Experience**: Clean APIs with full TypeScript support
+- **Reliability**: Version pinning and backward compatibility
+- **Compliance**: HIPAA-aligned architecture for healthcare data
+
+## 📄 License
+
+MIT
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes with tests
-4. Run performance and accessibility checks
-5. Submit a pull request
+2. Create feature branch (`git checkout -b feature/name`)
+3. Commit changes (`git commit -m 'Description'`)
+4. Push branch (`git push origin feature/name`)
+5. Open Pull Request
 
-## 📄 License
+## 📞 Support
 
-[License details here]
+For questions or issues, please open a GitHub issue or contact the Awell Health team.

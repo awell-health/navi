@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for the test app */
+body {
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Ensure iframes don't have unwanted borders */
+iframe {
+  border: none;
+  outline: none;
+}
+
+/* Custom scrollbar for events log */
+.max-h-64::-webkit-scrollbar {
+  width: 4px;
+}
+
+.max-h-64::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 2px;
+}
+
+.max-h-64::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+.max-h-64::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+} 

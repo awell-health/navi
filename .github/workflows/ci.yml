@@ -1,10 +1,16 @@
-name: CI
+name: Navi Portal CI
 
 on:
   push:
     branches: [main]
+    paths:
+      - "apps/navi-portal/**"
+      - ".github/workflows/ci.yml"
   pull_request:
     branches: [main]
+    paths:
+      - "apps/navi-portal/**"
+      - ".github/workflows/ci.yml"
 
 jobs:
   build:
@@ -28,9 +34,9 @@ jobs:
       - name: Generate cache key
         id: cache-key
         run: |
-          echo "key=build-${{ runner.os }}-node-22-${{ hashFiles('**/pnpm-lock.yaml', 'package.json') }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "key=build-navi-portal-${{ runner.os }}-node-22-${{ hashFiles('**/pnpm-lock.yaml', 'apps/navi-portal/package.json') }}-${{ github.sha }}" >> $GITHUB_OUTPUT
 
-      - name: Cache node modules
+      - name: Cache pnpm store
         uses: actions/cache@v4
         with:
           path: ~/.pnpm-store
@@ -42,21 +48,20 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Generate CI environment variables
-        run: node scripts/generate-ci-env.js
+        run: node apps/navi-portal/scripts/generate-ci-env.js
 
       - name: Set up environment for build
-        run: cp .env.test .env
+        run: cp apps/navi-portal/.env.test apps/navi-portal/.env
 
-      - name: Build Next.js app
-        run: pnpm build
+      - name: Build navi-portal app
+        run: pnpm --filter navi-portal build
 
       - name: Cache build artifacts
         uses: actions/cache@v4
         with:
           path: |
-            .next
-            .env.test
-            node_modules
+            apps/navi-portal/.next
+            apps/navi-portal/.env.test
           key: ${{ steps.cache-key.outputs.key }}
 
   test:
@@ -76,20 +81,23 @@ jobs:
         with:
           version: 10.12.1
 
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Restore build cache
         uses: actions/cache@v4
         with:
           path: |
-            .next
-            .env.test
-            node_modules
+            apps/navi-portal/.next
+            apps/navi-portal/.env.test
           key: ${{ needs.build.outputs.cache-key }}
+          fail-on-cache-miss: true
 
       - name: Set up environment for tests
-        run: cp .env.test .env
+        run: cp apps/navi-portal/.env.test apps/navi-portal/.env
 
       - name: Run tests
-        run: pnpm test:run
+        run: pnpm --filter navi-portal test:run
 
   lighthouse:
     runs-on: ubuntu-latest
@@ -108,6 +116,9 @@ jobs:
         with:
           version: 10.12.1
 
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
@@ -115,12 +126,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            .next
-            .env.test
-            node_modules
+            apps/navi-portal/.next
+            apps/navi-portal/.env.test
           key: ${{ needs.build.outputs.cache-key }}
+          fail-on-cache-miss: true
 
       - name: Link to Vercel project and pull environment variables
+        working-directory: ./apps/navi-portal
         run: |
           vercel link --yes --token=$VERCEL_TOKEN
           vercel env pull .env.local --token=$VERCEL_TOKEN
@@ -130,9 +142,11 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
       - name: Set up environment for server
+        working-directory: ./apps/navi-portal
         run: cp .env.local .env
 
       - name: Start server
+        working-directory: ./apps/navi-portal
         run: pnpm start &
         env:
           PORT: 3000
@@ -143,7 +157,7 @@ jobs:
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@v12
         with:
-          configPath: ".lighthouserc.js"
+          configPath: "./apps/navi-portal/.lighthouserc.js"
           serverBaseUrl: "https://lhci-server-731351933016.us-central1.run.app"
           serverToken: ${{ secrets.LHCI_TOKEN }}
           uploadArtifacts: false

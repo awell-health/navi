@@ -1,0 +1,211 @@
+{
+  "folders": [
+    {
+      "name": "navi-monorepo",
+      "path": "."
+    },
+    {
+      "name": "awell-backend-module-navi",
+      "path": "../awell-next/packages/module-navi"
+    }
+  ],
+  "settings": {
+    "typescript.preferences.includePackageJsonAutoImports": "auto",
+    "typescript.suggest.autoImports": true,
+    "typescript.preferences.includeCompletionsForModuleExports": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "eslint.workingDirectories": [".", "../awell-next/packages/module-navi"],
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/build": true,
+      "**/.next": true,
+      "**/coverage": true,
+      "**/.turbo": true
+    },
+    "files.exclude": {
+      "**/.turbo": true
+    },
+    "typescript.preferences.enableAutoMagicCompletion": true,
+    "typescript.suggest.paths": true,
+    "javascript.suggest.paths": true,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "turbo.useLocalTurbo": true
+  },
+  "extensions": {
+    "recommendations": [
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "bradlc.vscode-tailwindcss",
+      "ms-vscode.vscode-typescript-next",
+      "GraphQL.vscode-graphql",
+      "GraphQL.vscode-graphql-syntax",
+      "ms-vscode.turbo-vscode",
+      "yoavbls.pretty-ts-errors",
+      "streetsidesoftware.code-spell-checker"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "🚀 Full Stack Dev (All Services)",
+        "dependsOn": [
+          "backend:connect-cluster",
+          "backend:wait-for-services",
+          "frontend:navi-all"
+        ],
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": true,
+          "panel": "shared"
+        }
+      },
+      {
+        "label": "backend:wait-for-services",
+        "dependsOrder": "sequence",
+        "dependsOn": ["backend:health-check", "backend:module-navi"],
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared"
+        }
+      },
+      {
+        "label": "backend:health-check",
+        "type": "shell",
+        "command": "echo '⏳ Waiting for port-forwards to initialize...' && sleep 3 && echo '  - Checking if NATS is ready...' && until nc -z localhost 4222 2>/dev/null; do echo '    Waiting for NATS (4222)...'; sleep 2; done && echo '  - Checking if Redis is ready...' && until nc -z localhost 6379 2>/dev/null; do echo '    Waiting for Redis (6379)...'; sleep 2; done && echo '  - Checking if ArangoDB is ready...' && until nc -z localhost 8529 2>/dev/null; do echo '    Waiting for ArangoDB (8529)...'; sleep 2; done && echo '✅ All backend services ready! Starting module-navi...'",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "new",
+          "group": "backend",
+          "close": true
+        }
+      },
+      {
+        "label": "backend:connect-cluster",
+        "type": "shell",
+        "command": "../awell-next/tooling/scripts/connect-to-dev-cluster-backend.sh --default",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "new",
+          "group": "backend"
+        },
+        "isBackground": true,
+        "problemMatcher": []
+      },
+      {
+        "label": "backend:module-navi",
+        "type": "shell",
+        "command": "yarn dev",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "new",
+          "group": "backend"
+        },
+        "options": {
+          "cwd": "../awell-next/packages/module-navi"
+        },
+        "isBackground": true,
+        "problemMatcher": []
+      },
+      {
+        "label": "frontend:navi-all",
+        "type": "shell",
+        "command": "pnpm dev",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "new",
+          "group": "frontend"
+        },
+        "options": {
+          "cwd": "${workspaceFolder:navi-monorepo}"
+        },
+        "isBackground": true,
+        "problemMatcher": []
+      },
+      {
+        "label": "frontend:portal-only",
+        "type": "shell",
+        "command": "pnpm dev:portal",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared"
+        },
+        "options": {
+          "cwd": "${workspaceFolder:navi-monorepo}"
+        }
+      },
+      {
+        "label": "build:packages",
+        "type": "shell",
+        "command": "pnpm build:packages",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared"
+        },
+        "options": {
+          "cwd": "${workspaceFolder:navi-monorepo}"
+        }
+      },
+      {
+        "label": "test:all",
+        "type": "shell",
+        "command": "pnpm test",
+        "group": "test",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared"
+        },
+        "options": {
+          "cwd": "${workspaceFolder:navi-monorepo}"
+        }
+      }
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Debug navi-portal",
+        "type": "node",
+        "request": "launch",
+        "program": "${workspaceFolder:navi-monorepo}/apps/navi-portal/node_modules/.bin/next",
+        "args": ["dev"],
+        "cwd": "${workspaceFolder:navi-monorepo}/apps/navi-portal",
+        "env": {
+          "NODE_ENV": "development"
+        },
+        "console": "integratedTerminal",
+        "skipFiles": ["<node_internals>/**"]
+      }
+    ]
+  }
+}

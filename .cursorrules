@@ -1,129 +1,282 @@
-# Patient Portal Development Rules
+# Navi Monorepo - AI Agent Guidelines
 
-## Rule Priority Hierarchy
+## 📁 Workspace Structure (CRITICAL)
 
-### **P0 - Critical (Never Skip)**
-- Requirements consultation (`requirements/` folder)
-- Performance budgets (FCP < 1000ms, TTI < 2500ms, bundle sizes)
-- Security requirements (HIPAA-aligned logging, JWT handling)
-- Accessibility standards (WCAG 2.1 AA)
+**IMPORTANT**: "navi-monorepo" is the WORKSPACE NAME, not a folder path!
 
-### **P1 - Important (Skip Only If Explicitly Instructed)**
-- Planning requirement (see Planning Decision Matrix)
-- Testing strategy and Vitest test generation
-- Edge runtime evaluation (see Runtime Decision Matrix)
+**Root workspace contains these directories:**
 
-### **P2 - Preferred (Follow When Possible)**
-- Naming conventions and code organization
-- Specific tooling preferences
-- Red-team assessment workflow
+```
+/                    ← You are here (workspace root)
+├── apps/           ← Applications (navi-portal)
+├── packages/       ← Libraries (navi-core, navi-js, navi-loader, navi-react)
+├── examples/       ← Test integration examples
+├── docs/           ← Documentation
+└── package.json    ← Root package.json
+```
 
-## Requirements Consultation
-ALWAYS consult the `requirements/` folder before starting any work. This contains:
-- `00-overview.md` - High-level goals and links to detailed requirements
-- `01-architecture.md` through `08-deployment.md` - Detailed technical requirements
+**Never reference "navi-monorepo/" as a path** - all paths are relative to workspace root.
 
-Check if your task relates to any high-level requirements and ensure your approach aligns with the documented constraints and goals.
+## 🏗️ Repository Architecture
 
-## Planning Decision Matrix
+This is a **Stripe-like SDN architecture** with complex package dependencies. Understanding the dependency flow is critical:
 
-### **Generate a Plan When:**
-- User says: "generate a plan for X"
-- User says: "plan out X" or "design X"
-- Request involves multiple components/files
-- Request involves new architecture patterns
-- Request has performance/security implications
-- Request lacks clear implementation steps
+```
+navi-core (base) → navi-portal (embed API) → navi-loader (CDN) → navi-js (NPM wrapper)
+                                          → navi-react (direct components)
+```
 
-### **Skip Planning When:**
-- User says: "make X change" or "fix X"
-- User says: "implement this specific solution"
-- Request is a simple bug fix or typo correction
-- Request references existing code patterns to follow
-- User provides explicit step-by-step instructions
+## 📚 Documentation Reference
 
-### **Plan Generation Template:**
-When generating a plan, include:
-1. **Requirements Analysis** - Which `requirements/` docs apply
-2. **Technical Approach** - Architecture decisions and patterns
-3. **Component Structure** - File organization and data flow
-4. **Performance Strategy** - How to meet FCP/TTI budgets
-5. **Testing Approach** - What to test and how
-6. **Implementation Steps** - Clear, ordered milestones
+**Read these documents for complete context:**
 
-## Runtime Decision Matrix
+- **[API-CONTRACTS.md](./API-CONTRACTS.md)** - Interface compatibility tracking
+- **[RELEASE-PIPELINE.md](./RELEASE-PIPELINE.md)** - Coordinated release procedures
+- **[PACKAGE-GUIDELINES.md](./PACKAGE-GUIDELINES.md)** - Package-specific development rules
+- **[REPOSITORY-STRATEGY.md](./REPOSITORY-STRATEGY.md)** - High-level implementation strategy
+- **[README.md](./README.md)** - Repository overview and quick start
 
-### **Use Edge Runtime When:**
-- ✅ API routes with simple data fetching
-- ✅ Authentication middleware
-- ✅ Static content generation with minimal logic
-- ✅ Response time < 50ms is critical
-- ✅ Global distribution needed
-- ✅ No file system access required
-- ✅ No Node.js-specific APIs needed
+**NOTE**: We are currently in **v0.x.x development phase** - breaking changes are acceptable but require coordination!
 
-### **Use Node.js Runtime When:**
-- ❌ File system operations required
-- ❌ Complex server-side processing (>100ms)
-- ❌ Third-party libraries requiring Node.js APIs
-- ❌ Database connections with connection pooling
-- ❌ Image processing or heavy computations
-- ❌ Streaming large responses
+## 🚨 CRITICAL RULES - DEVELOPMENT PHASE (v0.x.x)
 
-### **Default Decision:**
-If unsure, start with Node.js runtime and optimize to edge later if performance requires it.
+### **1. API Contract Protection**
 
-## Feature Development Workflow
+- **WHILE IN v0.x.x, ALWAYS ASK** before changing embed route signatures in `navi-portal`
+- **WHILE IN v0.x.x, ALWAYS ASK** before changing navi-loader global API
+- **ALWAYS** update API contracts in `API-CONTRACTS.md` before making breaking changes
+- **NOTE**: Breaking changes are OKAY in v0.x.x but coordination is still critical
 
-### Phase 1: Design
-- Design a solution taking UX into account
-- Consider user flows, accessibility (WCAG 2.1 AA), and mobile-first approach
-- Design may be created externally - screenshots/mockups may be provided
-- Validate design against requirements (performance budgets, branding flexibility, etc.)
+### **2. Release Coordination**
 
-### Phase 2: Planning (See Planning Decision Matrix Above)
-Follow the plan generation template when planning is required.
+- **WHILE IN v0.x.x, ALWAYS ASK** before publishing packages independently
+- **ALWAYS** test cross-package compatibility before releasing
+- **WHILE IN v0.x.x, ALWAYS ASK** before deploying navi-loader to CDN without version mapping
 
-### Phase 3: Implementation
-- Implement against the plan step-by-step
-- Generate Vitest tests that cover important concepts and edge cases
-- Focus on the four quality criteria (see Red-Team section)
-- Apply runtime decisions using the Runtime Decision Matrix
-- Follow existing patterns for naming, structure, and tool usage
+### **3. File Protection Rules**
 
-### Phase 4: Red-Team Assessment
-When implementation is complete, instruct the user:
+- **ABSOLUTE RULE**: Only the user can modify `.env` files (ID: 2526200)
+- **NEVER** bypass file editing restrictions using shell commands (ID: 2526076)
+- **ALWAYS** ask user to handle environment file modifications
 
-"Request red-team evaluation focusing on: engineering complexity, system reliability, pattern alignment, and future scalability."
+### **4. Testing Requirements**
 
-## Project Setup & Tooling
-- **Package Manager**: Use `pnpm` (not npm or yarn)
-- **Framework**: Next.js 15 with App Router
-- **Runtime**: Apply Runtime Decision Matrix above
-- **Styling**: Tailwind CSS v4
-- **TypeScript**: Strict mode enabled
-- **Testing**: Vitest for unit/integration tests
-- **Linting**: ESLint with Next.js config
-- **Build**: `pnpm build` - must pass without errors
-- **Dev**: `pnpm dev --turbopack` for development
+- **MANDATORY**: Test cross-origin functionality between localhost:3000 and localhost:3001
+- **ALWAYS** test both iframe and direct React integration patterns
+- **WHILE IN v0.x.x, ALWAYS ASK** before merging without testing the full customer integration flow
 
-## Code Quality Standards
-- Use TypeScript strictly
-- Follow Next.js 15 App Router patterns
-- Implement proper error boundaries and fallbacks
-- Write meaningful test cases with Vitest
-- Consider edge runtime limitations (see Runtime Decision Matrix)
-- Optimize for mobile performance first
-- Maintain WCAG 2.1 AA accessibility standards
+## 📦 Package-Specific Guidelines
 
-## Performance Priorities
-- First Contentful Paint < 1000ms on 4G mobile
-- Time to Interactive < 2500ms
-- Bundle sizes within budget (15KB initial, 40KB per chunk)
-- Edge-rendered HTML with minimal chrome
-- Immutable caching for activity chunks 
+### **navi-core (Foundation)**
 
-## File Protection Rules
-- **NEVER modify, delete, or overwrite `.env` files** without explicit user permission
-- Environment files contain sensitive production data that should be preserved
-- When testing CI/CD workflows, use separate temporary files or the CI generation scripts
+- **Independent releases** - Lowest in dependency chain
+- **Strict backward compatibility** - Other packages depend on this
+- **Types-first development** - All interfaces must be well-typed
+- **No external side effects** - Pure utilities only
+
+### **navi-portal (Embed Application)**
+
+- **API contract owner** - Defines embed route signatures
+- **Security critical** - HIPAA-aligned logging, JWT handling
+- **Performance budgets**: FCP < 1000ms, TTI < 2500ms
+- **WCAG 2.1 AA compliance** mandatory
+- **Edge runtime evaluation** using Runtime Decision Matrix
+
+### **navi-loader (CDN JavaScript SDK)**
+
+- **Global API stability** - Cannot break existing customer implementations
+- **Bundle size critical** - Must stay under 15KB gzipped
+- **Cross-origin security** - Proper postMessage validation
+- **Version awareness** - Must coordinate with CDN deployment
+
+### **navi-js (NPM Wrapper)**
+
+- **CDN version pinning** - Each version pins to specific CDN version
+- **TypeScript types** - Full type definitions for customer DX
+- **Environment detection** - Auto-switch localhost vs CDN
+- **Security model** - Cannot bundle CDN script (like Stripe)
+
+### **navi-react (React Components)**
+
+- **React best practices** - Hooks rules, proper lifecycle management
+- **Performance optimization** - Memoization, stable deps
+- **Accessibility** - Full WCAG 2.1 AA support
+- **Bundle efficiency** - Tree-shakeable exports
+
+## 🔄 Development Workflow
+
+### **Before Making Changes**
+
+1. **Identify impact scope** - Which packages are affected?
+2. **Check API contracts** - Will this break existing APIs?
+3. **Review dependency flow** - What downstream effects?
+4. **Plan changeset strategy** - Major/minor/patch for each package?
+
+### **Implementation Process**
+
+1. **Start with types** in navi-core if needed
+2. **Update API contracts** before implementation
+3. **Implement in dependency order** (core → portal → loader → js/react)
+4. **Test cross-package integration** continuously
+5. **Generate changesets** for all affected packages
+
+### **Testing Requirements**
+
+```bash
+# Always test the full integration flow
+pnpm dev  # Starts both localhost:3000 and localhost:3001
+
+# Test both integration patterns:
+# 1. localhost:3001 (JS SDK) → iframe to localhost:3000/embed
+# 2. localhost:3001/react-demo (React SDK) → direct components
+
+# Verify cross-origin messaging works correctly
+```
+
+### **Before Merging**
+
+- [ ] All tests pass (`pnpm test`)
+- [ ] Build succeeds (`pnpm build`)
+- [ ] Cross-origin integration tested
+- [ ] Changesets generated for affected packages
+- [ ] API contracts updated if breaking changes
+- [ ] Performance budgets met
+
+## 🚀 Release Management
+
+### **Changeset Strategy**
+
+```bash
+# For coordinated releases affecting multiple packages
+pnpm changeset
+
+# Categories:
+# - patch: Bug fixes, internal improvements
+# - minor: New features, backward compatible
+# - major: Breaking changes, API modifications
+```
+
+### **Version Coordination Rules** (v0.x.x Development Phase)
+
+- **navi-core changes** → May require minor bumps in dependent packages (ask first)
+- **navi-portal embed API changes** → Coordinate with navi-loader (breaking changes OK in v0.x.x)
+- **navi-loader API changes** → Coordinate with navi-js (breaking changes OK in v0.x.x)
+- **CDN deployment** → Update version mapping in navi-js
+- **NOTE**: In v0.x.x, breaking changes are acceptable but require coordination
+
+### **Release Order** (Must follow this sequence)
+
+1. **navi-core** (if changed)
+2. **navi-portal** (if embed routes changed)
+3. **navi-loader** (build + CDN deployment)
+4. **navi-js** (with updated CDN version mapping)
+5. **navi-react** (if changed)
+
+## ⚡ Performance Requirements
+
+### **Bundle Size Budgets**
+
+- `navi-loader` (CDN): **15KB gzipped max**
+- `navi-js` (wrapper): **2KB gzipped max**
+- `navi-react`: **40KB per component max**
+
+### **Performance Budgets**
+
+- First Contentful Paint: **< 1000ms on 4G mobile**
+- Time to Interactive: **< 2500ms**
+- Iframe load time: **< 500ms**
+
+### **Accessibility Standards**
+
+- **WCAG 2.1 AA compliance** mandatory
+- **Keyboard navigation** fully functional
+- **Screen reader compatibility** tested
+- **Color contrast ratios** minimum 4.5:1
+
+## 🔒 Security Guidelines
+
+### **Authentication & Authorization**
+
+- **JWT handling** - Secure token creation and validation
+- **HIPAA compliance** - Appropriate logging and data handling
+- **Cross-origin security** - Proper origin validation
+
+### **Content Security Policy**
+
+```typescript
+// Customers should use:
+// script-src 'self' https://cdn.navi.com
+// frame-src https://embed.navi.com
+```
+
+## 🐛 Error Handling
+
+### **Required Error Boundaries**
+
+- **Network failures** - CDN unavailable, API errors
+- **Authentication failures** - Invalid keys, expired tokens
+- **Integration errors** - Missing containers, invalid options
+- **Cross-origin errors** - Blocked iframes, CSP violations
+
+### **Error Reporting**
+
+- **User-friendly messages** - No technical jargon
+- **Actionable guidance** - How to fix the problem
+- **Proper error codes** - For programmatic handling
+
+## 📋 Code Quality Standards
+
+### **TypeScript**
+
+- **Strict mode** enabled across all packages
+- **No `any` types** without explicit reasoning
+- **Full type coverage** for public APIs
+- **Interface segregation** - Small, focused interfaces
+
+### **Testing**
+
+- **Vitest** for unit/integration tests
+- **Cross-origin testing** for iframe functionality
+- **Edge case coverage** - Error conditions, network failures
+- **Performance testing** - Bundle size, load times
+
+### **Documentation**
+
+- **TSDoc comments** for all public APIs
+- **README updates** for significant changes
+- **API contract documentation** for breaking changes
+- **Migration guides** for major version bumps
+
+## 🎯 AI Agent Best Practices
+
+### **Planning Before Implementation**
+
+1. **Understand the full impact** - Map affected packages
+2. **Do not worry about backwards compatibility until we have released v1.0** - During the initial build, stay focused on a first delivery
+3. **Consider the customer migration path** for breaking changes
+4. **Plan the release coordination** across packages
+
+### **Implementation Quality**
+
+- **Follow existing patterns** in each package
+- **Maintain consistency** across the monorepo
+- **Optimize for the critical path** (customer integration flow)
+- **Test edge cases thoroughly** (network failures, errors)
+
+### **Communication**
+
+- **Clear commit messages** explaining impact scope
+- **Detailed PR descriptions** with testing instructions
+- **Changeset descriptions** explaining customer impact
+- **Update documentation** proactively
+
+---
+
+## 📞 When in Doubt
+
+1. **Check API contracts** - Are you breaking compatibility?
+2. **Test cross-origin flow** - Does the full integration work?
+3. **Review dependencies** - What packages need updates?
+4. **Ask the user** - Complex release coordination decisions
+
+**Remember**: This is a customer-facing SDK. Every change affects real healthcare applications. Quality and reliability are paramount. 🏥

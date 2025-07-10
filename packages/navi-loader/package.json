@@ -1,0 +1,27 @@
+{
+  "name": "@awell-health/navi-loader",
+  "version": "1.0.0-poc",
+  "description": "Navi SDK - UMD loader script for customer websites",
+  "main": "dist/navi-loader.js",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "navi",
+    "sdk",
+    "healthcare",
+    "activities",
+    "embed"
+  ],
+  "author": "Awell Health",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.0"
+  }
+}

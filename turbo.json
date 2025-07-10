@@ -1,0 +1,48 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env.*local"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env.production.local",
+        ".env.local",
+        ".env.production",
+        ".env"
+      ],
+      "env": [
+        "NEXT_PUBLIC_GRAPHQL_ENDPOINT",
+        "PROTOTYPE_API_KEY",
+        "JWT_SIGNING_KEY",
+        "JWT_KEY_ID",
+        "TOKEN_ENCRYPTION_KEY",
+        "BRANDING_API_URL",
+        "BRANDING_API_TOKEN",
+        "ORCHESTRATION_URL",
+        "EDGE_CONFIG_URL"
+      ],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env.development.local",
+        ".env.local",
+        ".env.development",
+        ".env"
+      ]
+    },
+    "lint": {
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "dependsOn": ["^build"]
+    },
+    "clean": {
+      "cache": false
+    }
+  }
+}
