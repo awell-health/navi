@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyJWT } from "@/lib/auth/external/jwt";
-import { env } from "@/env";
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,6 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     // For other queries, proxy to orchestration service
+    const { env } = await import("@/env");
     const orchestrationUrl = env.ORCHESTRATION_URL;
 
     try {
