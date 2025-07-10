@@ -1,8 +1,6 @@
-import { Navi, NaviConstructor } from './types';
+import { Navi, NaviConstructor } from "./types";
 
-export type LoadNavi = (
-  publishableKey: string
-) => Promise<Navi | null>;
+export type LoadNavi = (publishableKey: string) => Promise<Navi | null>;
 
 // `_VERSION` will be rewritten by `@rollup/plugin-replace` as a string literal
 // containing the package.json version
@@ -10,23 +8,27 @@ declare const _VERSION: string;
 
 // CDN configuration - environment aware
 const getCDNConfig = () => {
-  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development') {
+  if (
+    typeof process !== "undefined" &&
+    process.env.NODE_ENV === "development"
+  ) {
     return {
-      origin: 'http://localhost:3000',
-      embedOrigin: 'http://localhost:3000'
+      origin: "http://localhost:3000",
+      embedOrigin: "http://localhost:3000",
     };
   }
-  
+
   return {
-    origin: 'https://cdn.navi.com',
-    embedOrigin: 'https://embed.navi.com'
+    origin: "https://cdn.navi.com",
+    embedOrigin: "https://embed.navi.com",
   };
 };
 
 const config = getCDNConfig();
 const NAVI_JS_URL = `${config.origin}/v1/navi-loader.js`;
 
-const NAVI_JS_URL_REGEX = /^https:\/\/cdn\.navi\.com\/v\d+\/navi-loader\.js(\?.*)?$/;
+const NAVI_JS_URL_REGEX =
+  /^https:\/\/cdn\.navi\.com\/v\d+\/navi-loader\.js(\?.*)?$/;
 const LOCALHOST_REGEX = /^http:\/\/localhost:3000\/navi-loader\.js(\?.*)?$/;
 
 const isNaviJSURL = (url: string): boolean =>
@@ -51,14 +53,14 @@ export const findScript = (): HTMLScriptElement | null => {
 };
 
 const injectScript = (): HTMLScriptElement => {
-  const script = document.createElement('script');
+  const script = document.createElement("script");
   script.src = NAVI_JS_URL;
 
   const headOrBody = document.head || document.body;
 
   if (!headOrBody) {
     throw new Error(
-      'Expected document.body not to be null. Navi.js requires a <body> element.'
+      "Expected document.body not to be null. Navi.js requires a <body> element."
     );
   }
 
@@ -73,9 +75,9 @@ const registerWrapper = (navi: any, startTime: number): void => {
   }
 
   navi._registerWrapper({
-    name: 'navi-js', 
-    version: _VERSION, 
-    startTime
+    name: "navi-js",
+    version: _VERSION,
+    startTime,
   });
 };
 
@@ -84,21 +86,23 @@ let onErrorListener: ((cause?: unknown) => void) | null = null;
 let onLoadListener: (() => void) | null = null;
 
 const onError = (reject: (reason?: any) => void) => (cause?: unknown) => {
-  reject(new Error('Failed to load Navi.js', {cause}));
+  reject(new Error(`Failed to load Navi.js: ${JSON.stringify(cause)}`));
 };
 
-const onLoad = (
-  resolve: (
-    value: NaviConstructor | PromiseLike<NaviConstructor | null> | null
-  ) => void,
-  reject: (reason?: any) => void
-) => () => {
-  if (window.Navi) {
-    resolve(window.Navi);
-  } else {
-    reject(new Error('Navi.js not available'));
-  }
-};
+const onLoad =
+  (
+    resolve: (
+      value: NaviConstructor | PromiseLike<NaviConstructor | null> | null
+    ) => void,
+    reject: (reason?: any) => void
+  ) =>
+  () => {
+    if (window.Navi) {
+      resolve(window.Navi);
+    } else {
+      reject(new Error("Navi.js not available"));
+    }
+  };
 
 export const loadScript = (): Promise<NaviConstructor | null> => {
   // Ensure that we only attempt to load Navi.js at most once
@@ -107,7 +111,7 @@ export const loadScript = (): Promise<NaviConstructor | null> => {
   }
 
   naviPromise = new Promise((resolve, reject) => {
-    if (typeof window === 'undefined' || typeof document === 'undefined') {
+    if (typeof window === "undefined" || typeof document === "undefined") {
       // Resolve to null when imported server side. This makes the module
       // safe to import in an isomorphic code base.
       resolve(null);
@@ -130,8 +134,8 @@ export const loadScript = (): Promise<NaviConstructor | null> => {
         onErrorListener !== null
       ) {
         // remove event listeners
-        script.removeEventListener('load', onLoadListener);
-        script.removeEventListener('error', onErrorListener);
+        script.removeEventListener("load", onLoadListener);
+        script.removeEventListener("error", onErrorListener);
 
         // if script exists, but we are reloading due to an error,
         // reload script to trigger 'load' event
@@ -141,14 +145,14 @@ export const loadScript = (): Promise<NaviConstructor | null> => {
 
       onLoadListener = onLoad(resolve, reject);
       onErrorListener = onError(reject);
-      script.addEventListener('load', onLoadListener);
-      script.addEventListener('error', onErrorListener);
+      script.addEventListener("load", onLoadListener);
+      script.addEventListener("error", onErrorListener);
     } catch (error) {
       reject(error);
       return;
     }
   });
-  
+
   // Resets naviPromise on error
   return naviPromise.catch((error) => {
     naviPromise = null;
@@ -169,10 +173,10 @@ export const initNavi = (
   const isTestKey = publishableKey.match(/^pk_test/);
 
   if (isTestKey) {
-    console.log('🚀 Navi.js loaded in development mode');
+    console.log("🚀 Navi.js loaded in development mode");
   }
 
   const navi = maybeNavi(publishableKey);
   registerWrapper(navi, startTime);
   return navi;
-}; 
+};

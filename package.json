@@ -19,7 +19,8 @@
     "build:portal": "turbo build --filter=navi-portal",
     "changeset": "changeset",
     "changeset:version": "changeset version",
-    "changeset:publish": "changeset publish"
+    "changeset:publish": "changeset publish",
+    "start:portal": "pnpm --filter=navi-portal run start"
   },
   "engines": {
     "node": ">=22"
