@@ -30,7 +30,7 @@ async function generateSecureTokens(environment: TokenEnvironment = "test") {
     console.log("   Colors: Orange primary, light backgrounds");
     console.log("   Fonts: Inter + Poppins (web fonts)");
     console.log("   Style: Warm, approachable healthcare");
-    console.log(`   🔗 http://localhost:3000/magic/${sunriseToken}`);
+    console.log(`   🔗 http://localhost:3000/magic?token=${sunriseToken}`);
     console.log(`   Token: ${sunriseToken}\n`);
 
     // TechCorp - Dark, professional tech
@@ -48,7 +48,7 @@ async function generateSecureTokens(environment: TokenEnvironment = "test") {
     console.log("   Colors: Dark navy/slate, indigo accents");
     console.log("   Fonts: JetBrains Mono + Inter (monospace body)");
     console.log("   Style: Technical, modern, enterprise");
-    console.log(`   🔗 http://localhost:3000/magic/${techCorpToken}`);
+    console.log(`   🔗 http://localhost:3000/magic?token=${techCorpToken}`);
     console.log(`   Token: ${techCorpToken}\n`);
 
     // Default/ baker-pro-local org
@@ -66,7 +66,7 @@ async function generateSecureTokens(environment: TokenEnvironment = "test") {
     console.log("   Colors: Blue primary, clean neutrals");
     console.log("   Fonts: System fonts");
     console.log("   Style: Default when org branding not found");
-    console.log(`   🔗 http://localhost:3000/magic/${defaultToken}`);
+    console.log(`   🔗 http://localhost:3000/magic?token=${defaultToken}`);
     console.log(`   Token: ${defaultToken}\n`);
 
     // Expired token for error testing
@@ -81,11 +81,11 @@ async function generateSecureTokens(environment: TokenEnvironment = "test") {
 
     const expiredToken = await createSessionToken(expiredPayload);
     console.log("❌ EXPIRED TOKEN (should return 400):");
-    console.log(`   http://localhost:3000/magic/${expiredToken}`);
+    console.log(`   http://localhost:3000/magic?token=${expiredToken}`);
     console.log(`   Token: ${expiredToken}\n`);
 
     console.log("🧪 INVALID TOKEN TEST:");
-    console.log("   http://localhost:3000/magic/invalid-token-here\n");
+    console.log("   http://localhost:3000/magic?token=invalid-token-here\n");
 
     console.log("📝 TESTING GUIDE:");
     console.log("   1. Start dev server: pnpm dev");

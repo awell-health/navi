@@ -27,7 +27,7 @@ function generateConfig() {
 
     // Extract the sunrise-health token from the output
     const sunriseMatch = output.match(
-      /🔗 http:\/\/localhost:3000\/magic\/([A-Za-z0-9\-_]+)/g
+      /🔗 http:\/\/localhost:3000\/magic\?token=([A-Za-z0-9\-_]+)/g
     );
     if (sunriseMatch && sunriseMatch[0]) {
       testUrl = sunriseMatch[0].replace("🔗 ", "");

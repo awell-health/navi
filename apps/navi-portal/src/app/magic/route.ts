@@ -1,96 +1,102 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { decryptSessionToken } from '@/lib/auth/internal/session';
-import { createJWT } from '@/lib/auth/external/jwt';
-import { getBrandingByOrgId } from '@/lib/edge-config';
-import { generateInlineThemeStyle, generateFaviconHTML } from '@/lib/branding/theme/generator';
-import { generateWelcomePageHTML } from '@/components/welcome/welcome-page';
-import { kv } from '@vercel/kv';
+import { NextRequest, NextResponse } from "next/server";
+import { decryptSessionToken } from "@/lib/auth/internal/session";
+import { createJWT } from "@/lib/auth/external/jwt";
+import { getBrandingByOrgId } from "@/lib/edge-config";
+import {
+  generateInlineThemeStyle,
+  generateFaviconHTML,
+} from "@/lib/branding/theme/generator";
+import { generateWelcomePageHTML } from "@/components/welcome/welcome-page";
+import { kv } from "@vercel/kv";
 
-export const runtime = 'edge';
+export const runtime = "edge";
 
 function generateSessionId(): string {
   return crypto.randomUUID();
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ token: string }> }
-) {
-  const { token } = await params;
-  const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000)); // 24 hours
-  
+export async function GET(request: NextRequest) {
+  const token = request.nextUrl.searchParams.get("token");
+  if (!token) {
+    return new NextResponse("No token provided", {
+      status: 400,
+      headers: { "Content-Type": "text/plain" },
+    });
+  }
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
   // Decrypt the token using AES-GCM
   const tokenData = await decryptSessionToken(token);
-  
+
   if (!tokenData) {
-    return new NextResponse('Invalid token', { 
+    return new NextResponse("Invalid token", {
       status: 400,
-      headers: { 'Content-Type': 'text/plain' }
+      headers: { "Content-Type": "text/plain" },
     });
   }
-  
+
   // Check if token is expired (tokenData.exp is in seconds, Date.now() is in milliseconds)
   if (Math.floor(Date.now() / 1000) > tokenData.exp) {
-    return new NextResponse('Token expired', { 
+    return new NextResponse("Token expired", {
       status: 400,
-      headers: { 'Content-Type': 'text/plain' }
+      headers: { "Content-Type": "text/plain" },
     });
   }
-  
+
   // Generate session
   const sessionId = generateSessionId();
   // Store session in memory
   kv.set(`session:${sessionId}`, {
     ...tokenData,
     sessionId,
-    expiresAt
+    expiresAt,
   });
-  
-  console.log('🔐 Session created:', {
+
+  console.log("🔐 Session created:", {
     sessionId,
     careflowId: tokenData.careflowId,
     patientId: tokenData.patientId,
     tenantId: tokenData.tenantId,
     orgId: tokenData.orgId,
-    environment: tokenData.environment
+    environment: tokenData.environment,
   });
-  
+
   // Fetch organization branding (with 20ms budget) with error handling
   let branding = null;
-  let themeStyle = '<style>/* fallback */</style>';
+  let themeStyle = "<style>/* fallback */</style>";
   let faviconHTML = '<link rel="icon" href="/favicon-16x16.png">';
-  let welcomePageHTML = '<div>Welcome to your care journey</div>';
-  
+  let welcomePageHTML = "<div>Welcome to your care journey</div>";
+
   try {
     branding = await getBrandingByOrgId(tokenData.orgId);
   } catch (error) {
-    console.warn('⚠️ Branding fetch failed, using defaults:', error);
+    console.warn("⚠️ Branding fetch failed, using defaults:", error);
   }
-  
+
   // Generate JWT
   const jwt = await createJWT(tokenData);
-  
+
   // Generate theme CSS inline with fallback
   try {
     themeStyle = generateInlineThemeStyle(branding);
   } catch (error) {
-    console.warn('⚠️ Theme CSS generation failed, using fallback:', error);
+    console.warn("⚠️ Theme CSS generation failed, using fallback:", error);
   }
-  
+
   // Generate favicon HTML with fallback
   try {
     faviconHTML = generateFaviconHTML(branding);
   } catch (error) {
-    console.warn('⚠️ Favicon HTML generation failed, using fallback:', error);
+    console.warn("⚠️ Favicon HTML generation failed, using fallback:", error);
   }
-  
+
   // Generate welcome page HTML with fallback
   try {
     welcomePageHTML = generateWelcomePageHTML(branding);
   } catch (error) {
-    console.warn('⚠️ Welcome page generation failed, using fallback:', error);
+    console.warn("⚠️ Welcome page generation failed, using fallback:", error);
   }
-  
+
   // Create themed portal HTML shell
   const html = `
 <!DOCTYPE html>
@@ -98,7 +104,7 @@ export async function GET(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${branding?.welcomeTitle || 'Awell Health Portal'}</title>
+  <title>${branding?.welcomeTitle || "Awell Health Portal"}</title>
   
   <!-- Favicon -->
   ${faviconHTML}
@@ -263,7 +269,7 @@ Tenant ID: ${tokenData.tenantId}
 Expires: ${expiresAt.toLocaleTimeString()}
 Environment: ${tokenData.environment}
 Org: ${tokenData.orgId}
-Branding: ${branding ? 'Custom' : 'Default (Awell)'}
+Branding: ${branding ? "Custom" : "Default (Awell)"}
     </div>
   </details>
 
@@ -280,7 +286,9 @@ Branding: ${branding ? 'Custom' : 'Default (Awell)'}
       
       async init() {
         console.log('🚀 Themed Portal initialized successfully!');
-        console.log('🎨 Theme applied:', '${branding ? `Custom (${tokenData.orgId})` : 'Default (Awell)'}');
+        console.log('🎨 Theme applied:', '${
+          branding ? `Custom (${tokenData.orgId})` : "Default (Awell)"
+        }');
       }
       
       async loadNextActivity() {
@@ -317,31 +325,31 @@ Branding: ${branding ? 'Custom' : 'Default (Awell)'}
   </script>
 </body>
 </html>`;
-  
+
   const response = new NextResponse(html, {
     status: 200,
     headers: {
-      'Content-Type': 'text/html',
-      'Referrer-Policy': 'strict-origin'
-    }
+      "Content-Type": "text/html",
+      "Referrer-Policy": "strict-origin",
+    },
   });
-  
+
   // Set cookies as per requirements
-  response.cookies.set('awell.sid', sessionId, {
+  response.cookies.set("awell.sid", sessionId, {
     httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     maxAge: 30 * 24 * 60 * 60, // 30 days
-    path: '/'
+    path: "/",
   });
-  
-  response.cookies.set('awell.jwt', jwt, {
+
+  response.cookies.set("awell.jwt", jwt, {
     httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     maxAge: 30 * 24 * 60 * 60, // 30 days
-    path: '/api/graphql'
+    path: "/api/graphql",
   });
-  
+
   return response;
 }
