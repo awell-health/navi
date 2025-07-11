@@ -1,0 +1,63 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Introduction" />
+
+# Navi Activities
+
+Welcome to the **Navi Activities** component library! This package provides production-ready React components for healthcare applications with a unified event system inspired by Stripe Elements.
+
+## 🏗️ Architecture
+
+All activity components share the same external API for consistency:
+
+```tsx
+interface ActivityProps<T> {
+  data: T;                    // Activity-specific data
+  onReady?: (event) => void;  // Component ready
+  onComplete?: (event) => void; // Activity complete
+  onFocus?: (event) => void;  // Field focused
+  onBlur?: (event) => void;   // Field blurred
+}
+```
+
+## 📚 Component Categories
+
+### Activity Components
+- **FormActivity** - Interactive forms with multiple question types
+- **MessageActivity** - Rich content display (HTML/Markdown)  
+- **ChecklistActivity** - Task completion tracking
+
+### UI Components (shadcn/ui)
+- **Button** - Multiple variants and sizes
+- **Input** - Text, email, number, password
+- **Textarea** - Multi-line text input
+- **Checkbox** - Single and grouped selections
+- **RadioGroup** - Mutually exclusive options
+- **Label** - Accessible form labels
+
+## 🎨 Design System
+
+Built with modern tools for healthcare applications:
+
+- **Radix UI** - Accessible primitives
+- **Tailwind CSS** - Utility-first styling
+- **CSS Variables** - Theme integration
+- **WCAG 2.1 AA** - Accessibility compliance
+
+## 🚀 Getting Started
+
+1. **Browse the stories** to see components in action
+2. **Check the Controls panel** to interact with props
+3. **View the Docs tab** for detailed API information
+4. **Copy code examples** from the story source
+
+## 🏥 Healthcare Focus
+
+All components are designed specifically for healthcare applications with considerations for:
+
+- **Patient data security**
+- **Accessibility requirements**
+- **Clinical workflow integration**
+- **Regulatory compliance**
+
+Explore the stories to see these components in healthcare contexts like patient intake forms, discharge instructions, and care plan checklists.
