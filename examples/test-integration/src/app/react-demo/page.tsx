@@ -1,17 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { NaviProvider, MockActivitiesLoader } from '@awell-health/navi-react';
+import { useState } from "react";
+import {
+  NaviProvider,
+  MockActivitiesLoader,
+} from "@awell-health/navi-js-react";
 
 export default function ReactDemoPage() {
   const [config, setConfig] = useState({
-    publishableKey: 'pk_test_demo123',
-    pathwayId: 'pathway_patient_intake',
+    publishableKey: "pk_test_demo123",
+    pathwayId: "pathway_patient_intake",
     branding: {
-      primary: '#3b82f6',
-      secondary: '#64748b',
-      fontFamily: 'Inter, sans-serif'
-    }
+      primary: "#3b82f6",
+      secondary: "#64748b",
+      fontFamily: "Inter, sans-serif",
+    },
   });
 
   const [showNavi, setShowNavi] = useState(false);
@@ -36,14 +39,17 @@ export default function ReactDemoPage() {
           </div>
 
           <p className="text-gray-600 mb-8">
-            Testing the React components directly imported from @awell-health/navi-react
+            Testing the React components directly imported from
+            @awell-health/navi-react
           </p>
 
           {/* Configuration Panel */}
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-gray-900">Configuration</h2>
-              
+              <h2 className="text-lg font-semibold text-gray-900">
+                Configuration
+              </h2>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Publishable Key
@@ -51,7 +57,12 @@ export default function ReactDemoPage() {
                 <input
                   type="text"
                   value={config.publishableKey}
-                  onChange={(e) => setConfig(prev => ({ ...prev, publishableKey: e.target.value }))}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      publishableKey: e.target.value,
+                    }))
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -63,7 +74,12 @@ export default function ReactDemoPage() {
                 <input
                   type="text"
                   value={config.pathwayId}
-                  onChange={(e) => setConfig(prev => ({ ...prev, pathwayId: e.target.value }))}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      pathwayId: e.target.value,
+                    }))
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -71,7 +87,7 @@ export default function ReactDemoPage() {
 
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-900">Branding</h2>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Primary Color
@@ -79,10 +95,12 @@ export default function ReactDemoPage() {
                 <input
                   type="color"
                   value={config.branding.primary}
-                  onChange={(e) => setConfig(prev => ({ 
-                    ...prev, 
-                    branding: { ...prev.branding, primary: e.target.value }
-                  }))}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      branding: { ...prev.branding, primary: e.target.value },
+                    }))
+                  }
                   className="w-full h-10 border border-gray-300 rounded-md"
                 />
               </div>
@@ -94,10 +112,12 @@ export default function ReactDemoPage() {
                 <input
                   type="color"
                   value={config.branding.secondary}
-                  onChange={(e) => setConfig(prev => ({ 
-                    ...prev, 
-                    branding: { ...prev.branding, secondary: e.target.value }
-                  }))}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      branding: { ...prev.branding, secondary: e.target.value },
+                    }))
+                  }
                   className="w-full h-10 border border-gray-300 rounded-md"
                 />
               </div>
@@ -108,10 +128,15 @@ export default function ReactDemoPage() {
                 </label>
                 <select
                   value={config.branding.fontFamily}
-                  onChange={(e) => setConfig(prev => ({ 
-                    ...prev, 
-                    branding: { ...prev.branding, fontFamily: e.target.value }
-                  }))}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      branding: {
+                        ...prev.branding,
+                        fontFamily: e.target.value,
+                      },
+                    }))
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="Inter, sans-serif">Inter</option>
@@ -129,11 +154,11 @@ export default function ReactDemoPage() {
               onClick={() => setShowNavi(!showNavi)}
               className={`px-6 py-2 rounded-md font-medium transition-colors ${
                 showNavi
-                  ? 'bg-red-600 hover:bg-red-700 text-white'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  ? "bg-red-600 hover:bg-red-700 text-white"
+                  : "bg-blue-600 hover:bg-blue-700 text-white"
               }`}
             >
-              {showNavi ? 'Hide Navi' : 'Show Navi'}
+              {showNavi ? "Hide Navi" : "Show Navi"}
             </button>
           </div>
 
@@ -143,7 +168,7 @@ export default function ReactDemoPage() {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Navi Activities
               </h3>
-              
+
               <NaviProvider
                 publishableKey={config.publishableKey}
                 pathwayId={config.pathwayId}
@@ -156,7 +181,9 @@ export default function ReactDemoPage() {
 
           {/* Status Info */}
           <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-            <h3 className="text-sm font-semibold text-blue-900 mb-2">Current Configuration:</h3>
+            <h3 className="text-sm font-semibold text-blue-900 mb-2">
+              Current Configuration:
+            </h3>
             <pre className="text-xs text-blue-800 overflow-x-auto">
               {JSON.stringify(config, null, 2)}
             </pre>
@@ -165,4 +192,4 @@ export default function ReactDemoPage() {
       </div>
     </div>
   );
-} 
+}

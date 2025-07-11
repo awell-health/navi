@@ -461,7 +461,7 @@ export default function CareflowActivitiesClient({
   return (
     <div className="min-h-screen bg-background flex">
       {/* Activities Drawer */}
-      <aside className="w-80 bg-card border-r border-border p-6 overflow-y-auto">
+      <aside className="w-80 bg-card border-r border-customborder p-6 overflow-y-auto">
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-foreground mb-2">
             Activities
@@ -495,7 +495,7 @@ export default function CareflowActivitiesClient({
                       ? "border-primary bg-primary/10"
                       : activity.status === "ACTIVE"
                       ? "border-primary bg-primary/5 hover:bg-primary/10"
-                      : "border-border bg-muted/50 hover:bg-muted"
+                      : "border-customborder bg-muted/50 hover:bg-muted"
                   } ${!canDisplay ? "opacity-60" : ""}`}
                   onClick={() => handleActivityClick(activity)}
                 >
@@ -531,7 +531,7 @@ export default function CareflowActivitiesClient({
                   </p>
 
                   {activity.status === "ACTIVE" && canDisplay && (
-                    <div className="mt-3 pt-3 border-t border-border">
+                    <div className="mt-3 pt-3 border-t border-customborder">
                       <span className="text-xs font-medium text-primary">
                         Click to view →
                       </span>
@@ -550,7 +550,7 @@ export default function CareflowActivitiesClient({
         <div className="flex-1 overflow-y-auto">{renderActiveActivity()}</div>
 
         {/* Live Events Panel */}
-        <aside className="w-80 bg-muted/30 border-l border-border p-4 overflow-y-auto">
+        <aside className="w-80 bg-muted/30 border-l border-customborder p-4 overflow-y-auto">
           <div className="mb-4">
             <h3 className="text-lg font-semibold text-foreground mb-2">
               Live Events
@@ -601,7 +601,7 @@ export default function CareflowActivitiesClient({
           )}
 
           {events.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-border">
+            <div className="mt-4 pt-4 border-t border-customborder">
               <p className="text-xs text-muted-foreground text-center">
                 Showing last {events.length} events
               </p>

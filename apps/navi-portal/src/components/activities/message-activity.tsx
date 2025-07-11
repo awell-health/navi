@@ -77,13 +77,13 @@ export function MessageActivityComponent({
         </div>
 
         {/* Message Content */}
-        <div className="bg-card border border-border rounded-lg p-6 mb-6">
+        <div className="bg-card border border-customborder rounded-lg p-6 mb-6">
           {renderMessageBody()}
         </div>
 
         {/* Attachments */}
         {message.attachments && message.attachments.length > 0 && (
-          <div className="bg-card border border-border rounded-lg p-6">
+          <div className="bg-card border border-customborder rounded-lg p-6">
             <h3 className="text-lg font-semibold text-foreground mb-4">
               Attachments
             </h3>

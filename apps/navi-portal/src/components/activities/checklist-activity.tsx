@@ -102,7 +102,7 @@ export function ChecklistActivityComponent({
         </div>
 
         {/* Checklist Items */}
-        <div className="bg-card border border-border rounded-lg p-6">
+        <div className="bg-card border border-customborder rounded-lg p-6">
           <h3 className="text-lg font-semibold text-foreground mb-4">
             Checklist Items
           </h3>
@@ -110,7 +110,7 @@ export function ChecklistActivityComponent({
             {checklistActivity.inputs.checklist?.items.map((item, idx) => (
               <div
                 key={idx}
-                className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+                className="flex items-center space-x-3 p-3 rounded-lg border border-customborder hover:bg-muted/50 transition-colors"
               >
                 <Checkbox
                   id={`checklist-item-${idx}`}
