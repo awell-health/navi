@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import type { BaseActivityProps, FormActivityData, FormFieldEvent, FormValidationState } from '@awell-health/navi-core';
 import { useActivityEvents } from '../../hooks/use-activity-events';
+import { Input, Textarea, RadioGroup, RadioGroupItem, Checkbox, Label, Button } from '../../components/ui';
+import { cn } from '../../lib/utils';
 
 export interface FormActivityProps extends BaseActivityProps {
   activity: BaseActivityProps['activity'] & {
@@ -13,7 +15,7 @@ export interface FormActivityProps extends BaseActivityProps {
 
 /**
  * FormActivity component - manages form lifecycle and aggregates field events
- * Follows Stripe Elements pattern for events
+ * Uses shadcn/ui components following the Form Components Plan
  */
 export function FormActivity({
   activity,
@@ -126,21 +128,10 @@ export function FormActivity({
     const isRequired = question.required;
     const isFocused = focusedField === question.key;
 
-    // Basic field rendering for now - will be replaced with proper question components
-    const baseStyle = {
-      width: '100%',
-      padding: '0.75rem',
-      border: `2px solid ${isFocused ? '#3b82f6' : '#e5e7eb'}`,
-      borderRadius: '0.375rem',
-      fontSize: '1rem',
-      transition: 'border-color 0.2s ease',
-      outline: 'none'
-    };
-
     switch (question.userQuestionType) {
       case 'SHORT_TEXT':
         return (
-          <input
+          <Input
             type="text"
             value={value}
             placeholder={question.placeholder || ''}
@@ -148,13 +139,13 @@ export function FormActivity({
             onFocus={() => handleFieldFocus(question.key)}
             onBlur={() => handleFieldBlur(question.key)}
             disabled={disabled}
-            style={baseStyle}
+            className={cn(isFocused && "ring-2 ring-primary/20")}
           />
         );
       
       case 'LONG_TEXT':
         return (
-          <textarea
+          <Textarea
             value={value}
             placeholder={question.placeholder || ''}
             onChange={(e) => handleFieldChange(question.key, e.target.value)}
@@ -162,13 +153,13 @@ export function FormActivity({
             onBlur={() => handleFieldBlur(question.key)}
             disabled={disabled}
             rows={4}
-            style={baseStyle}
+            className={cn(isFocused && "ring-2 ring-primary/20")}
           />
         );
       
       case 'NUMBER':
         return (
-          <input
+          <Input
             type="number"
             value={value}
             placeholder={question.placeholder || ''}
@@ -176,13 +167,13 @@ export function FormActivity({
             onFocus={() => handleFieldFocus(question.key)}
             onBlur={() => handleFieldBlur(question.key)}
             disabled={disabled}
-            style={baseStyle}
+            className={cn(isFocused && "ring-2 ring-primary/20")}
           />
         );
       
       case 'EMAIL':
         return (
-          <input
+          <Input
             type="email"
             value={value}
             placeholder={question.placeholder || ''}
@@ -190,66 +181,77 @@ export function FormActivity({
             onFocus={() => handleFieldFocus(question.key)}
             onBlur={() => handleFieldBlur(question.key)}
             disabled={disabled}
-            style={baseStyle}
+            className={cn(isFocused && "ring-2 ring-primary/20")}
           />
         );
       
       case 'YES_NO':
         return (
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <input
-                type="radio"
-                name={question.key}
-                value="yes"
-                checked={value === 'yes'}
-                onChange={(e) => handleFieldChange(question.key, e.target.value)}
-                onFocus={() => handleFieldFocus(question.key)}
-                onBlur={() => handleFieldBlur(question.key)}
-                disabled={disabled}
-              />
-              Yes
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <input
-                type="radio"
-                name={question.key}
-                value="no"
-                checked={value === 'no'}
-                onChange={(e) => handleFieldChange(question.key, e.target.value)}
-                onFocus={() => handleFieldFocus(question.key)}
-                onBlur={() => handleFieldBlur(question.key)}
-                disabled={disabled}
-              />
-              No
-            </label>
-          </div>
+          <RadioGroup
+            value={value}
+            onValueChange={(newValue) => handleFieldChange(question.key, newValue)}
+            onFocus={() => handleFieldFocus(question.key)}
+            onBlur={() => handleFieldBlur(question.key)}
+            disabled={disabled}
+            className="flex flex-row gap-6"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="yes" id={`${question.key}-yes`} />
+              <Label htmlFor={`${question.key}-yes`}>Yes</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="no" id={`${question.key}-no`} />
+              <Label htmlFor={`${question.key}-no`}>No</Label>
+            </div>
+          </RadioGroup>
         );
       
       case 'MULTIPLE_CHOICE':
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <RadioGroup
+            value={value}
+            onValueChange={(newValue) => handleFieldChange(question.key, newValue)}
+            onFocus={() => handleFieldFocus(question.key)}
+            onBlur={() => handleFieldBlur(question.key)}
+            disabled={disabled}
+          >
             {question.options?.map((option: any) => (
-              <label key={option.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <input
-                  type="radio"
-                  name={question.key}
-                  value={option.value}
-                  checked={value === option.value}
-                  onChange={(e) => handleFieldChange(question.key, e.target.value)}
+              <div key={option.id} className="flex items-center space-x-2">
+                <RadioGroupItem value={option.value} id={`${question.key}-${option.id}`} />
+                <Label htmlFor={`${question.key}-${option.id}`}>{option.label}</Label>
+              </div>
+            ))}
+          </RadioGroup>
+        );
+
+      case 'MULTIPLE_SELECT':
+        const selectedValues = Array.isArray(value) ? value : [];
+        return (
+          <div className="space-y-3">
+            {question.options?.map((option: any) => (
+              <div key={option.id} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`${question.key}-${option.id}`}
+                  checked={selectedValues.includes(option.value)}
+                  onCheckedChange={(checked) => {
+                    const newValues = checked
+                      ? [...selectedValues, option.value]
+                      : selectedValues.filter((v: any) => v !== option.value);
+                    handleFieldChange(question.key, newValues);
+                  }}
                   onFocus={() => handleFieldFocus(question.key)}
                   onBlur={() => handleFieldBlur(question.key)}
                   disabled={disabled}
                 />
-                {option.label}
-              </label>
+                <Label htmlFor={`${question.key}-${option.id}`}>{option.label}</Label>
+              </div>
             ))}
           </div>
         );
       
       default:
         return (
-          <input
+          <Input
             type="text"
             value={value}
             placeholder={question.placeholder || ''}
@@ -257,7 +259,7 @@ export function FormActivity({
             onFocus={() => handleFieldFocus(question.key)}
             onBlur={() => handleFieldBlur(question.key)}
             disabled={disabled}
-            style={baseStyle}
+            className={cn(isFocused && "ring-2 ring-primary/20")}
           />
         );
     }
@@ -265,7 +267,7 @@ export function FormActivity({
 
   if (!form) {
     return (
-      <div className={`navi-form-activity ${className}`}>
+      <div className={cn("navi-form-activity", className)}>
         <div>No form data available</div>
       </div>
     );
@@ -277,63 +279,46 @@ export function FormActivity({
   }).length;
 
   return (
-    <div className={`navi-form-activity ${className}`}>
+    <div className={cn("navi-form-activity", className)}>
       {/* Header */}
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-foreground mb-2">
           {form.title}
         </h1>
-        <div style={{ display: 'flex', gap: '1rem', fontSize: '0.875rem', color: '#6b7280' }}>
+        <div className="flex gap-4 text-sm text-muted-foreground">
           <span>Form • {activity.status}</span>
           <span>{answeredCount} of {questions.length} questions answered</span>
         </div>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          {questions.map((question) => (
-            <div key={question.id} style={{
-              padding: '1.5rem',
-              backgroundColor: '#ffffff',
-              border: '1px solid #e5e7eb',
-              borderRadius: '0.5rem'
-            }}>
-              <label style={{
-                display: 'block',
-                fontSize: '1rem',
-                fontWeight: '500',
-                marginBottom: '0.5rem',
-                color: '#374151'
-              }}>
-                {question.title}
-                {question.required && (
-                  <span style={{ color: '#ef4444', marginLeft: '0.25rem' }}>*</span>
-                )}
-              </label>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {questions.map((question) => (
+          <div key={question.id} className="space-y-3 p-6 bg-card border border-border rounded-lg">
+            <Label 
+              htmlFor={question.key}
+              className="text-base font-medium text-foreground"
+            >
+              {question.title}
+              {question.required && (
+                <span className="text-destructive ml-1">*</span>
+              )}
+            </Label>
+            <div id={question.key}>
               {renderQuestionField(question)}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
 
         {/* Submit Button */}
-        <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
-          <button
+        <div className="flex justify-end pt-4">
+          <Button
             type="submit"
             disabled={disabled}
-            style={{
-              backgroundColor: disabled ? '#9ca3af' : '#3b82f6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '0.375rem',
-              padding: '0.75rem 1.5rem',
-              fontSize: '1rem',
-              fontWeight: '500',
-              cursor: disabled ? 'not-allowed' : 'pointer'
-            }}
+            size="lg"
           >
             Submit Form
-          </button>
+          </Button>
         </div>
       </form>
     </div>

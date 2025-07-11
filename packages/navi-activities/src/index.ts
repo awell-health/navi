@@ -9,6 +9,20 @@ export { useActivityEvents } from './hooks/use-activity-events';
 // Shared components
 export { SlateViewer } from './components/slate-viewer';
 
+// UI Components (shadcn/ui)
+export { 
+  Input, 
+  Checkbox, 
+  RadioGroup, 
+  RadioGroupItem, 
+  Textarea, 
+  Label, 
+  Button 
+} from './components/ui';
+
+// Utility functions
+export { cn } from './lib/utils';
+
 // Re-export types from navi-core for convenience
 export type {
   ActivityEvent,

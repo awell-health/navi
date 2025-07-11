@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import type { BaseActivityProps, ChecklistActivityData } from '@awell-health/navi-core';
 import { useActivityEvents } from '../../hooks/use-activity-events';
+import { Button, Checkbox, Label } from '../../components/ui';
+import { cn } from '../../lib/utils';
 
 export interface ChecklistActivityProps extends BaseActivityProps {
   activity: BaseActivityProps['activity'] & {
@@ -13,7 +15,7 @@ export interface ChecklistActivityProps extends BaseActivityProps {
 
 /**
  * ChecklistActivity component - manages checklist completion with progress tracking
- * Follows Stripe Elements pattern for events
+ * Uses shadcn/ui components following the Form Components Plan
  */
 export function ChecklistActivity({
   activity,
@@ -88,7 +90,7 @@ export function ChecklistActivity({
 
   if (!checklist || items.length === 0) {
     return (
-      <div className={`navi-checklist-activity ${className}`}>
+      <div className={cn("navi-checklist-activity", className)}>
         <div>No checklist items available</div>
       </div>
     );
@@ -96,135 +98,85 @@ export function ChecklistActivity({
 
   return (
     <div 
-      className={`navi-checklist-activity ${className}`}
+      className={cn("navi-checklist-activity", className)}
       onFocus={() => emitActivityEvent('activity-focus')}
       onBlur={() => emitActivityEvent('activity-blur')}
     >
       {/* Header */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+            <h1 className="text-2xl font-bold text-foreground mb-2">
               {checklist.title || 'Checklist Activity'}
             </h1>
-            <div style={{ display: 'flex', gap: '1rem', fontSize: '0.875rem', color: '#6b7280' }}>
+            <div className="flex gap-4 text-sm text-muted-foreground">
               <span>Checklist • {activity.status}</span>
               <span>{new Date(activity.date).toLocaleString()}</span>
             </div>
           </div>
           {activity.status === 'ACTIVE' && isComplete && !disabled && (
-            <button 
-              onClick={handleCompleteChecklist}
-              style={{
-                backgroundColor: '#10b981',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.375rem',
-                padding: '0.5rem 1rem',
-                cursor: 'pointer'
-              }}
-            >
+            <Button onClick={handleCompleteChecklist} variant="default">
               Complete Checklist
-            </button>
+            </Button>
           )}
         </div>
 
         {/* Progress Bar */}
-        <div style={{ marginBottom: '1rem' }}>
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between', 
-            fontSize: '0.875rem', 
-            color: '#6b7280',
-            marginBottom: '0.5rem'
-          }}>
+        <div className="mb-4">
+          <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
             <span>Progress</span>
             <span>{completedCount} of {totalCount} items completed</span>
           </div>
-          <div style={{
-            width: '100%',
-            backgroundColor: '#f3f4f6',
-            borderRadius: '9999px',
-            height: '0.5rem',
-            overflow: 'hidden'
-          }}>
+          <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
             <div
-              style={{
-                backgroundColor: '#10b981',
-                height: '100%',
-                borderRadius: '9999px',
-                transition: 'width 0.3s ease',
-                width: `${progressPercentage}%`
-              }}
+              className="bg-primary h-full rounded-full transition-all duration-300"
+              style={{ width: `${progressPercentage}%` }}
             />
           </div>
         </div>
       </div>
 
       {/* Checklist Items */}
-      <div style={{
-        backgroundColor: '#ffffff',
-        border: '1px solid #e5e7eb',
-        borderRadius: '0.5rem',
-        padding: '1.5rem'
-      }}>
-        <h3 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem' }}>
+      <div className="bg-card border border-border rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-foreground mb-4">
           Checklist Items
         </h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className="space-y-4">
           {items.map((item, idx) => (
             <div
               key={idx}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                padding: '0.75rem',
-                borderRadius: '0.5rem',
-                border: '1px solid #e5e7eb',
-                backgroundColor: checkedItems[idx] ? '#f0fdf4' : '#ffffff',
-                transition: 'background-color 0.2s ease'
-              }}
+              className={cn(
+                "flex items-center gap-3 p-3 rounded-lg border transition-all duration-200",
+                checkedItems[idx] 
+                  ? "bg-primary/5 border-primary/20" 
+                  : "bg-background border-border hover:bg-muted/50"
+              )}
             >
-              <input
-                type="checkbox"
+              <Checkbox
                 id={`checklist-item-${idx}`}
                 checked={checkedItems[idx] || false}
-                onChange={(e) => handleItemChange(idx, e.target.checked)}
+                onCheckedChange={(checked) => handleItemChange(idx, checked as boolean)}
                 disabled={disabled}
-                style={{
-                  width: '1.25rem',
-                  height: '1.25rem',
-                  cursor: disabled ? 'not-allowed' : 'pointer'
-                }}
+                className="h-5 w-5"
               />
-              <label
+              <Label
                 htmlFor={`checklist-item-${idx}`}
-                style={{
-                  flex: 1,
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  cursor: disabled ? 'not-allowed' : 'pointer',
-                  textDecoration: checkedItems[idx] ? 'line-through' : 'none',
-                  color: checkedItems[idx] ? '#6b7280' : '#374151'
-                }}
+                className={cn(
+                  "flex-1 text-sm font-medium cursor-pointer transition-all",
+                  checkedItems[idx]
+                    ? "line-through text-muted-foreground"
+                    : "text-foreground hover:text-foreground/80"
+                )}
               >
                 {item}
-              </label>
+              </Label>
             </div>
           ))}
         </div>
 
         {!isComplete && (
-          <div style={{
-            marginTop: '1.5rem',
-            padding: '1rem',
-            backgroundColor: '#f9fafb',
-            borderRadius: '0.5rem',
-            border: '1px solid #e5e7eb'
-          }}>
-            <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+          <div className="mt-6 p-4 bg-muted/50 rounded-lg border border-border">
+            <p className="text-sm text-muted-foreground">
               Complete all items to finish this checklist activity.
             </p>
           </div>
