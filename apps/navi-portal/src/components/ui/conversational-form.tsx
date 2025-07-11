@@ -1,20 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { FormField } from '@/components/ui/form';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/form";
+import { cn } from "@/lib/utils";
 
 type FormFieldValue = string | number | readonly string[] | undefined;
 
 // Types for form configuration
 interface FormField {
   id: string;
-  type: 'text' | 'email' | 'number' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'date';
+  type:
+    | "text"
+    | "email"
+    | "number"
+    | "textarea"
+    | "select"
+    | "checkbox"
+    | "radio"
+    | "date";
   label: string;
   description?: string;
   required?: boolean;
@@ -52,7 +66,7 @@ export function ConversationalForm({
   showProgress = true,
   submitButtonText = "Submit",
   nextButtonText = "Continue",
-  previousButtonText = "Back"
+  previousButtonText = "Back",
 }: ConversationalFormProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [formData, setFormData] = useState<Record<string, FormFieldValue>>({});
@@ -67,15 +81,18 @@ export function ConversationalForm({
     onStepChange?.(currentStepIndex + 1, steps.length);
   }, [currentStepIndex, steps.length, onStepChange]);
 
-  const validateField = (field: FormField, value: string | number | readonly string[] | undefined): string | null => {
-    if (field.required && (!value || value === '')) {
+  const validateField = (
+    field: FormField,
+    value: string | number | readonly string[] | undefined
+  ): string | null => {
+    if (field.required && (!value || value === "")) {
       return `${field.label} is required`;
     }
 
     if (field.validation) {
       const { min, max, pattern, message } = field.validation;
       switch (typeof value) {
-        case 'number':
+        case "number":
           if (min && value < min) {
             return message || `${field.label} must be at least ${min}`;
           }
@@ -83,12 +100,16 @@ export function ConversationalForm({
             return message || `${field.label} must be no more than ${max}`;
           }
           return null;
-        case 'string':
+        case "string":
           if (min && value.length < min) {
-            return message || `${field.label} must be at least ${min} characters`;
+            return (
+              message || `${field.label} must be at least ${min} characters`
+            );
           }
           if (max && value.length > max) {
-            return message || `${field.label} must be no more than ${max} characters`;
+            return (
+              message || `${field.label} must be no more than ${max} characters`
+            );
           }
           if (pattern && !new RegExp(pattern).test(value)) {
             return message || `${field.label} format is invalid`;
@@ -106,7 +127,7 @@ export function ConversationalForm({
     const stepErrors: Record<string, string> = {};
     let isValid = true;
 
-    currentStep.fields.forEach(field => {
+    currentStep.fields.forEach((field) => {
       const error = validateField(field, formData[field.id]);
       if (error) {
         stepErrors[field.id] = error;
@@ -119,28 +140,28 @@ export function ConversationalForm({
   };
 
   const handleFieldChange = (fieldId: string, value: FormFieldValue) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [fieldId]: value
+      [fieldId]: value,
     }));
 
     // Clear error when field is changed
     if (errors[fieldId]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [fieldId]: ''
+        [fieldId]: "",
       }));
     }
   };
 
   const handleNext = () => {
     if (validateCurrentStep()) {
-      setCurrentStepIndex(prev => prev + 1);
+      setCurrentStepIndex((prev) => prev + 1);
     }
   };
 
   const handlePrevious = () => {
-    setCurrentStepIndex(prev => prev - 1);
+    setCurrentStepIndex((prev) => prev - 1);
   };
 
   const handleSubmit = async () => {
@@ -150,27 +171,28 @@ export function ConversationalForm({
     try {
       await onSubmit(formData);
     } catch (error) {
-      console.error('Form submission error:', error);
+      console.error("Form submission error:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const renderField = (field: FormField) => {
-    const value = formData[field.id] || '';
+    console.log("Rendering field:", field);
+    const value = formData[field.id] || "";
     const error = errors[field.id];
 
     const commonProps = {
       id: field.id,
-      'aria-invalid': !!error,
-      'aria-describedby': error ? `${field.id}-error` : undefined,
+      "aria-invalid": !!error,
+      "aria-describedby": error ? `${field.id}-error` : undefined,
     };
 
     switch (field.type) {
-      case 'text':
-      case 'email':
-      case 'number':
-      case 'date':
+      case "text":
+      case "email":
+      case "number":
+      case "date":
         return (
           <Input
             {...commonProps}
@@ -181,7 +203,7 @@ export function ConversationalForm({
           />
         );
 
-      case 'textarea':
+      case "textarea":
         return (
           <Textarea
             {...commonProps}
@@ -192,11 +214,16 @@ export function ConversationalForm({
           />
         );
 
-      case 'select':
+      case "select":
         return (
-          <Select value={value as string} onValueChange={(val) => handleFieldChange(field.id, val)}>
+          <Select
+            value={value as string}
+            onValueChange={(val) => handleFieldChange(field.id, val)}
+          >
             <SelectTrigger {...commonProps}>
-              <SelectValue placeholder={field.description || "Select an option"} />
+              <SelectValue
+                placeholder={field.description || "Select an option"}
+              />
             </SelectTrigger>
             <SelectContent>
               {field.options?.map((option) => (
@@ -208,13 +235,15 @@ export function ConversationalForm({
           </Select>
         );
 
-      case 'checkbox':
+      case "checkbox":
         return (
           <div className="flex items-center space-x-2">
             <Checkbox
               {...commonProps}
-              checked={value === 'true'}
-              onCheckedChange={(checked) => handleFieldChange(field.id, checked ? 'true' : 'false')}
+              checked={value === "true"}
+              onCheckedChange={(checked) =>
+                handleFieldChange(field.id, checked ? "true" : "false")
+              }
             />
             <label
               htmlFor={field.id}
@@ -225,7 +254,7 @@ export function ConversationalForm({
           </div>
         );
 
-      case 'radio':
+      case "radio":
         return (
           <RadioGroup
             value={value as string}
@@ -234,13 +263,17 @@ export function ConversationalForm({
           >
             {field.options?.map((option) => (
               <div key={option.value} className="flex items-center space-x-2">
-                <RadioGroupItem value={option.value} id={`${field.id}-${option.value}`} />
-                <Label htmlFor={`${field.id}-${option.value}`}>{option.label}</Label>
+                <RadioGroupItem
+                  value={option.value}
+                  id={`${field.id}-${option.value}`}
+                />
+                <Label htmlFor={`${field.id}-${option.value}`}>
+                  {option.label}
+                </Label>
               </div>
             ))}
           </RadioGroup>
         );
-
       default:
         return null;
     }
@@ -252,13 +285,20 @@ export function ConversationalForm({
       {showProgress && (
         <div className="space-y-2">
           <div className="flex justify-between text-sm text-muted-foreground">
-            <span>Step {currentStepIndex + 1} of {steps.length}</span>
-            <span>{Math.round(((currentStepIndex + 1) / steps.length) * 100)}% complete</span>
+            <span>
+              Step {currentStepIndex + 1} of {steps.length}
+            </span>
+            <span>
+              {Math.round(((currentStepIndex + 1) / steps.length) * 100)}%
+              complete
+            </span>
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
-            <div 
+            <div
               className="h-full bg-primary transition-all duration-300 ease-out rounded-full"
-              style={{ width: `${((currentStepIndex + 1) / steps.length) * 100}%` }}
+              style={{
+                width: `${((currentStepIndex + 1) / steps.length) * 100}%`,
+              }}
             />
           </div>
         </div>
@@ -268,24 +308,31 @@ export function ConversationalForm({
       <div className="space-y-6">
         {/* Step Header */}
         <div className="text-center space-y-2">
-          <h2 className="text-2xl font-bold text-foreground">{currentStep.title}</h2>
+          <h2 className="text-2xl font-bold text-foreground">
+            {currentStep.title}
+          </h2>
         </div>
 
         {/* Form Fields */}
         <div className="space-y-6">
           {currentStep.fields.map((field) => (
             <div key={field.id} className="space-y-2">
-              {field.type !== 'checkbox' && (
+              {field.type !== "checkbox" && (
                 <Label htmlFor={field.id} className="text-sm font-medium">
                   {field.label}
-                  {field.required && <span className="text-destructive ml-1">*</span>}
+                  {field.required && (
+                    <span className="text-destructive ml-1">*</span>
+                  )}
                 </Label>
               )}
-              
+
               {renderField(field)}
-              
+
               {errors[field.id] && (
-                <p id={`${field.id}-error`} className="text-sm text-destructive">
+                <p
+                  id={`${field.id}-error`}
+                  className="text-sm text-destructive"
+                >
                   {errors[field.id]}
                 </p>
               )}
@@ -316,11 +363,7 @@ export function ConversationalForm({
             {isSubmitting ? "Submitting..." : submitButtonText}
           </Button>
         ) : (
-          <Button
-            type="button"
-            onClick={handleNext}
-            className="min-w-24"
-          >
+          <Button type="button" onClick={handleNext} className="min-w-24">
             {nextButtonText}
           </Button>
         )}
@@ -329,4 +372,4 @@ export function ConversationalForm({
   );
 }
 
-export type { ConversationalFormProps, ConversationalFormStep, FormField }; 
+export type { ConversationalFormProps, ConversationalFormStep, FormField };

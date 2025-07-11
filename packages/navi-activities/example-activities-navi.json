@@ -1,0 +1,814 @@
+[
+  {
+    "id": "oLILpMs6AvMBLEW7N6tAg",
+    "action": "ASSIGNED",
+    "careflow_id": "NX9Hw12TBclt",
+    "container_name": "step w/message and checklist",
+    "date": "2025-07-11T16:27:07.320Z",
+    "indirect_object": {
+      "id": "Eh4UQbKZKBk6hKd0M7wKk",
+      "type": "PATIENT",
+      "name": "jb belanger",
+      "email": "jbb@jbb.dev",
+      "preferred_language": "en",
+      "__typename": "ActivityObject"
+    },
+    "object": {
+      "id": "rXUkB2GJXRZj",
+      "type": "CHECKLIST",
+      "name": "my super important checklist",
+      "email": null,
+      "preferred_language": null,
+      "__typename": "ActivityObject"
+    },
+    "pathway_definition_id": "1CnTTHNYM1Q3",
+    "reference_id": "PathwayNavigationNode/290403396",
+    "reference_type": "NAVIGATION",
+    "resolution": null,
+    "session_id": null,
+    "status": "ACTIVE",
+    "tenant_id": "_v0nvLX5zCNd",
+    "sub_activities": [
+      {
+        "id": "RUtZeRXnP1Wcibs5cTkJp",
+        "action": "ACTIVATE",
+        "object": null,
+        "__typename": "SubActivity"
+      }
+    ],
+    "inputs": {
+      "__typename": "ChecklistActivityInput",
+      "type": "CHECKLIST",
+      "checklist": {
+        "title": "my super important checklist",
+        "items": ["check 1", "check 2"],
+        "__typename": "Checklist"
+      }
+    },
+    "outputs": null,
+    "__typename": "Activity"
+  },
+  {
+    "id": "tzeEN1pxXwb5EpMzQihHj",
+    "action": "ASSIGNED",
+    "careflow_id": "NX9Hw12TBclt",
+    "container_name": "step with clinical note",
+    "date": "2025-07-11T16:27:07.320Z",
+    "indirect_object": {
+      "id": "l91k9ESkYRu5",
+      "type": "STAKEHOLDER",
+      "name": "Care coordinator",
+      "email": null,
+      "preferred_language": null,
+      "__typename": "ActivityObject"
+    },
+    "object": {
+      "id": "cJmS2hu40CgS",
+      "type": "FORM",
+      "name": "form with many input validations",
+      "email": null,
+      "preferred_language": null,
+      "__typename": "ActivityObject"
+    },
+    "pathway_definition_id": "1CnTTHNYM1Q3",
+    "reference_id": "PathwayNavigationNode/290403397",
+    "reference_type": "NAVIGATION",
+    "resolution": null,
+    "session_id": null,
+    "status": "ACTIVE",
+    "tenant_id": "_v0nvLX5zCNd",
+    "sub_activities": [
+      {
+        "id": "Bp1GHTN2ABF8NaCyfhsRD",
+        "action": "ACTIVATE",
+        "object": null,
+        "__typename": "SubActivity"
+      }
+    ],
+    "inputs": {
+      "__typename": "FormActivityInput",
+      "type": "FORM",
+      "form": {
+        "id": "cJmS2hu40CgS",
+        "key": "formWithManyInputValidations",
+        "title": "form with many input validations",
+        "trademark": null,
+        "questions": [
+          {
+            "id": "mhYl9aTPblP6",
+            "key": "firstName",
+            "title": "What is your first name?",
+            "definition_id": "mEHObAXFI81q",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "SHORT_TEXT",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "iFvCSGr3tucO",
+            "key": "lastName",
+            "title": "What is your last name?",
+            "definition_id": "Kje3bZlfgmMV",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "SHORT_TEXT",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "7kAcJJTSrrDY",
+            "key": "conditionalQuestion",
+            "title": "Conditional question",
+            "definition_id": "hYLXsw7miR2p",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "SHORT_TEXT",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "dRISYKRZ8qTQ",
+            "key": "aSliderWithMinAndMaxValues",
+            "title": "a slider with min and max values",
+            "definition_id": "hjzGTUxrqTeC",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "SLIDER",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "OO1H6G6Vfne6",
+            "key": "aNumberBetweenOneAndTen",
+            "title": "A number between 1 and 10",
+            "definition_id": "GDkYsbBn7WA8",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "NUMBER",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "AL1qOJfmI4Xf",
+            "key": "futureDate",
+            "title": "A date in the future",
+            "definition_id": "mS54XLDiX9Ug",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "DATE",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "lYcldvoCm31q",
+            "key": "pastDate",
+            "title": "A date in the past",
+            "definition_id": "NYDFAp2mKkWn",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "DATE",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "89mn9fFML7f7",
+            "key": "usPhoneNumber",
+            "title": "US Phone number",
+            "definition_id": "oPQUm8SmYhio",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "TELEPHONE",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "jKWFCCC1KDTl",
+            "key": "europeanPhoneNumber",
+            "title": "European phone number",
+            "definition_id": "4u7G1A5zQFQp",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "TELEPHONE",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "xvs68ySm5V6v",
+            "key": "csvUpload",
+            "title": "CSV upload please",
+            "definition_id": "iZxFBZqwMdnb",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "FILE",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "3BTX9Sv2aREn",
+            "key": "imageUpload",
+            "title": "Image upload",
+            "definition_id": "OKyuwSgoyVsJ",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "IMAGE",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "uqLVHpIIpYIT",
+            "key": "typeH1ChildrenTextImAHeaderTypeH2ChildrenTextMeTooTypeH3ChildrenTextDontForgetAboutMeeeeeeTypePChildrenTextHelloStrikethroughTrueTextTextImItalicTrueTextATextDescriptionBoldTrueTextTextWithUnderlineTrueTextTypeAUrlHttpsAwellhealthComChildrenTextALinkTextTypeOlChildrenTypeLiChildrenTypeLicChildrenTextNumberedTypeUlChildrenTypeLiChildrenTypeLicChildrenTextBulletedTypeMediaEmbedUrlHttpsWwwYoutubeComEmbedDQw4W9WgXcQChildrenTextTypeImgUrlHttpsResCloudinaryComDa7X4Rzl4ImageUploadV1752250560Dev20Sandbox2020Awell20Studio2020TextEditor2020Image20UploadTrdyp3FsvdfyufemqklmJpgCaptionTextAHolidaySquirrelChildrenTextTypePChildrenText",
+            "title": "[{\"type\":\"h1\",\"children\":[{\"text\":\"i'm a header\"}]},{\"type\":\"h2\",\"children\":[{\"text\":\"me too\"}]},{\"type\":\"h3\",\"children\":[{\"text\":\"dont forget about meeeeee\"}]},{\"type\":\"p\",\"children\":[{\"text\":\"hello\",\"strikethrough\":true},{\"text\":\" \"},{\"text\":\"i'm\",\"italic\":true},{\"text\":\" a \"},{\"text\":\"description\",\"bold\":true},{\"text\":\" \"},{\"text\":\"with\",\"underline\":true},{\"text\":\" \"},{\"type\":\"a\",\"url\":\"https://awellhealth.com\",\"children\":[{\"text\":\"a link\"}]},{\"text\":\"\"}]},{\"type\":\"ol\",\"children\":[{\"type\":\"li\",\"children\":[{\"type\":\"lic\",\"children\":[{\"text\":\"numbered\"}]}]}]},{\"type\":\"ul\",\"children\":[{\"type\":\"li\",\"children\":[{\"type\":\"lic\",\"children\":[{\"text\":\"bulleted\"}]}]}]},{\"type\":\"media_embed\",\"url\":\"https://www.youtube.com/embed/dQw4w9WgXcQ\",\"children\":[{\"text\":\"\"}]},{\"type\":\"img\",\"url\":\"https://res.cloudinary.com/da7x4rzl4/image/upload/v1752250560/DEV%20SANDBOX%20-%20Awell%20Studio%20-%20TextEditor%20-%20Image%20upload/trdyp3fsvdfyufemqklm.jpg\",\"caption\":[{\"text\":\"a holiday squirrel\"}],\"children\":[{\"text\":\"\"}]},{\"type\":\"p\",\"children\":[{\"text\":\"\"}]}]",
+            "definition_id": "qSFUx0JkfBAv",
+            "placeholder": null,
+            "questionType": "NO_INPUT",
+            "userQuestionType": "DESCRIPTION",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          }
+        ],
+        "__typename": "ActivityForm"
+      }
+    },
+    "outputs": null,
+    "__typename": "Activity"
+  },
+  {
+    "id": "UvMjkfriBXBk3upd7zdwd",
+    "action": "ASSIGNED",
+    "careflow_id": "NX9Hw12TBclt",
+    "container_name": "step w/message and checklist",
+    "date": "2025-07-11T16:27:06.836Z",
+    "indirect_object": {
+      "id": "Eh4UQbKZKBk6hKd0M7wKk",
+      "type": "PATIENT",
+      "name": "jb belanger",
+      "email": "jbb@jbb.dev",
+      "preferred_language": "en",
+      "__typename": "ActivityObject"
+    },
+    "object": {
+      "id": "iPyqvjlkDeu1u6VmkfrmI",
+      "type": "MESSAGE",
+      "name": "here's a message",
+      "email": null,
+      "preferred_language": null,
+      "__typename": "ActivityObject"
+    },
+    "pathway_definition_id": "1CnTTHNYM1Q3",
+    "reference_id": "PathwayNavigationNode/290403391",
+    "reference_type": "NAVIGATION",
+    "resolution": null,
+    "session_id": null,
+    "status": "ACTIVE",
+    "tenant_id": "_v0nvLX5zCNd",
+    "sub_activities": [
+      {
+        "id": "0ICPXVnnpr8iBV9HDr6WV",
+        "action": "ACTIVATE",
+        "object": null,
+        "__typename": "SubActivity"
+      },
+      {
+        "id": "u7j16piYFemGzT8vBg7VU",
+        "action": "SEND",
+        "object": null,
+        "__typename": "SubActivity"
+      }
+    ],
+    "inputs": {
+      "__typename": "MessageActivityInput",
+      "type": "MESSAGE",
+      "message": {
+        "id": "iPyqvjlkDeu1u6VmkfrmI",
+        "subject": "here's a message",
+        "body": "<h1 class=\"slate-h1\">heading 1</h1><h2 class=\"slate-h2\">heading 2</h2><h3 class=\"slate-h3\">heading 3</h3><p class=\"slate-p\">Something <strong class=\"slate-bold\">bold </strong>something <em class=\"slate-italic\">italic</em> something <u class=\"slate-underline\">underlined</u>. oh, and don't forget to <s class=\"slate-strikethrough\">cross something out</s>. finally, let's use a <a rel=\"noreferrer\" target=\"_blank\" href=\"https://awellhealth.com\">link</a></p><ul class=\"slate-ul\"><li class=\"slate-li\"><div style=\"position:relative\">bullet 1</div></li><li class=\"slate-li\"><div style=\"position:relative\">bullet 2</div></li></ul><p class=\"slate-p\"></p><ol class=\"slate-ol\"><li class=\"slate-li\"><div style=\"position:relative\">number 1</div></li><li class=\"slate-li\"><div style=\"position:relative\">number 2</div></li></ol><p class=\"slate-p\"></p><div class=\"slate-img\"><div><figure class=\"slate-ImageElement-figure\"><div class=\"slate-ImageElement-resizable\" style=\"position:relative;user-select:auto;width:100%;height:100%;max-width:100%;min-width:92px;box-sizing:border-box;flex-shrink:0\"><img alt=\"\" src=\"https://res.cloudinary.com/da7x4rzl4/image/upload/v1752192989/DEV SANDBOX - Awell Studio - TextEditor - Image upload/mjqpsbmxexbm38pbzkpd.jpg\" class=\"slate-ImageElement-img\"><div><div style=\"position:absolute;user-select:none;width:10px;height:100%;top:0px;left:0;cursor:col-resize\"><div class=\"slate-ImageElement-handleLeft\"></div></div><div style=\"position:absolute;user-select:none;width:10px;height:100%;top:0px;right:0;cursor:col-resize\"><div class=\"slate-ImageElement-handleRight\"></div></div></div></div></figure></div></div><p class=\"slate-p\">let's forget about the attachment and video for now.</p>",
+        "format": "HTML",
+        "attachments": null,
+        "__typename": "ActivityMessage"
+      }
+    },
+    "outputs": null,
+    "__typename": "Activity"
+  },
+  {
+    "id": "kG7el0M42YRnFjlAYxHhA",
+    "action": "GENERATED",
+    "careflow_id": "NX9Hw12TBclt",
+    "container_name": "step with clinical note",
+    "date": "2025-07-11T16:27:06.833Z",
+    "indirect_object": null,
+    "object": {
+      "id": "rD1QCqBR0f8jfszLmyzgx",
+      "type": "CLINICAL_NOTE",
+      "name": "exploring clinical notes",
+      "email": null,
+      "preferred_language": null,
+      "__typename": "ActivityObject"
+    },
+    "pathway_definition_id": "1CnTTHNYM1Q3",
+    "reference_id": "PathwayNavigationNode/290403393",
+    "reference_type": "NAVIGATION",
+    "resolution": "SUCCESS",
+    "session_id": null,
+    "status": "DONE",
+    "tenant_id": "_v0nvLX5zCNd",
+    "sub_activities": [
+      {
+        "id": "sUY1wVRxhwtZ8jXwfJpYg",
+        "action": "GENERATED",
+        "object": null,
+        "__typename": "SubActivity"
+      }
+    ],
+    "inputs": null,
+    "outputs": null,
+    "__typename": "Activity"
+  },
+  {
+    "id": "0tjFDYUd5BWY6LvjYyfwE",
+    "action": "ASSIGNED",
+    "careflow_id": "NX9Hw12TBclt",
+    "container_name": "step with form",
+    "date": "2025-07-11T16:27:06.832Z",
+    "indirect_object": {
+      "id": "Eh4UQbKZKBk6hKd0M7wKk",
+      "type": "PATIENT",
+      "name": "jb belanger",
+      "email": "jbb@jbb.dev",
+      "preferred_language": "en",
+      "__typename": "ActivityObject"
+    },
+    "object": {
+      "id": "98HVswxT8gpl",
+      "type": "FORM",
+      "name": "Form with all question types",
+      "email": null,
+      "preferred_language": null,
+      "__typename": "ActivityObject"
+    },
+    "pathway_definition_id": "1CnTTHNYM1Q3",
+    "reference_id": "PathwayNavigationNode/290403390",
+    "reference_type": "NAVIGATION",
+    "resolution": null,
+    "session_id": null,
+    "status": "ACTIVE",
+    "tenant_id": "_v0nvLX5zCNd",
+    "sub_activities": [
+      {
+        "id": "pO1rvHbSJaENrjXKGF3oj",
+        "action": "ACTIVATE",
+        "object": null,
+        "__typename": "SubActivity"
+      }
+    ],
+    "inputs": {
+      "__typename": "FormActivityInput",
+      "type": "FORM",
+      "form": {
+        "id": "98HVswxT8gpl",
+        "key": "formWithAllQuestionTypes",
+        "title": "Form with all question types",
+        "trademark": null,
+        "questions": [
+          {
+            "id": "o3gbSmNLT957",
+            "key": "typePChildrenTextThisIsADescriptionQuestionItsDoesntCollectAnyDataButJustShowsSomeTextToTheUser",
+            "title": "[{\"type\":\"p\",\"children\":[{\"text\":\"This is a description question. It's doesn't collect any data but just shows some text to the user.\"}]}]",
+            "definition_id": "rUfECkXAtCxe",
+            "placeholder": null,
+            "questionType": "NO_INPUT",
+            "userQuestionType": "DESCRIPTION",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "TAcFl7e6uFEF",
+            "key": "singleSelectNumber",
+            "title": "Single select (number)",
+            "definition_id": "UPHy_BJdHhzs",
+            "placeholder": null,
+            "questionType": "MULTIPLE_CHOICE",
+            "userQuestionType": "MULTIPLE_CHOICE",
+            "required": null,
+            "options": [
+              {
+                "id": "zOTvuy0usHkb",
+                "label": "Option 1",
+                "value": "0",
+                "__typename": "QuestionOption"
+              },
+              {
+                "id": "q6jRNHKATieI",
+                "label": "Option 2",
+                "value": "1",
+                "__typename": "QuestionOption"
+              },
+              {
+                "id": "vvMBtwpHl0o5",
+                "label": "Option 3",
+                "value": "2",
+                "__typename": "QuestionOption"
+              }
+            ],
+            "__typename": "Question"
+          },
+          {
+            "id": "Cf8gvB5Z1jJP",
+            "key": "singleSelectString",
+            "title": "Single select (string)",
+            "definition_id": "KjYHPz9kZLlnvguMT3epw",
+            "placeholder": null,
+            "questionType": "MULTIPLE_CHOICE",
+            "userQuestionType": "MULTIPLE_CHOICE",
+            "required": null,
+            "options": [
+              {
+                "id": "u9qpd6kPr83f",
+                "label": "Option 1",
+                "value": "option_1",
+                "__typename": "QuestionOption"
+              },
+              {
+                "id": "yRy_LwI1refh",
+                "label": "Option 2",
+                "value": "option_2",
+                "__typename": "QuestionOption"
+              },
+              {
+                "id": "OOCTmiXXvjpN",
+                "label": "Option 3",
+                "value": "option_3",
+                "__typename": "QuestionOption"
+              },
+              {
+                "id": "P32BtMUeLwNN",
+                "label": "helloo",
+                "value": "option_4",
+                "__typename": "QuestionOption"
+              },
+              {
+                "id": "rrgEixvMsF9I",
+                "label": "helloooooo",
+                "value": "option_5",
+                "__typename": "QuestionOption"
+              },
+              {
+                "id": "seZqcRQb2qDm",
+                "label": "test",
+                "value": "option_6",
+                "__typename": "QuestionOption"
+              }
+            ],
+            "__typename": "Question"
+          },
+          {
+            "id": "aYutxsljFqWD",
+            "key": "multipleSelectNumber",
+            "title": "Multiple select (number)",
+            "definition_id": "y8dZyIh1JEHo",
+            "placeholder": null,
+            "questionType": "MULTIPLE_CHOICE",
+            "userQuestionType": "MULTIPLE_SELECT",
+            "required": null,
+            "options": [
+              {
+                "id": "NRhfKVrRJ1qQ",
+                "label": "Option 1",
+                "value": "0",
+                "__typename": "QuestionOption"
+              },
+              {
+                "id": "kbdbxrZP9-cY",
+                "label": "Option 2",
+                "value": "1",
+                "__typename": "QuestionOption"
+              },
+              {
+                "id": "7EFDVDtvyZ6h",
+                "label": "Option 3",
+                "value": "2",
+                "__typename": "QuestionOption"
+              },
+              {
+                "id": "CKqrKwhPbObE",
+                "label": "Option 4",
+                "value": "3",
+                "__typename": "QuestionOption"
+              }
+            ],
+            "__typename": "Question"
+          },
+          {
+            "id": "img8ym8xUqLl",
+            "key": "multipleSelectString",
+            "title": "Multiple select (string)",
+            "definition_id": "KYcDSScnM8cxu2WMyVuIi",
+            "placeholder": null,
+            "questionType": "MULTIPLE_CHOICE",
+            "userQuestionType": "MULTIPLE_SELECT",
+            "required": null,
+            "options": [
+              {
+                "id": "v3XJP3ZgMyc9",
+                "label": "Option 1",
+                "value": "some option",
+                "__typename": "QuestionOption"
+              },
+              {
+                "id": "JYHA_c6UFLJX",
+                "label": "Option 2",
+                "value": "3232",
+                "__typename": "QuestionOption"
+              },
+              {
+                "id": "xmXV065kgDEk",
+                "label": "Option 3",
+                "value": "another option",
+                "__typename": "QuestionOption"
+              },
+              {
+                "id": "eCrmxno3fpcy",
+                "label": "fdsfds",
+                "value": "option 4",
+                "__typename": "QuestionOption"
+              }
+            ],
+            "__typename": "Question"
+          },
+          {
+            "id": "AkVCskFBZrZM",
+            "key": "yesOrNoBoolean",
+            "title": "Yes or no? (boolean)",
+            "definition_id": "QSzAEHWU5SNl",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "YES_NO",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "iZz94WQj9CEb",
+            "key": "slider",
+            "title": "Slider",
+            "definition_id": "qeIf6jhiizCu",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "SLIDER",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "ptVT4zqmPOjH",
+            "key": "date",
+            "title": "Date",
+            "definition_id": "yX86ygNm5M0a",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "DATE",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "5hMZKhZQdYpn",
+            "key": "email",
+            "title": "Email",
+            "definition_id": "PKp3cBu5lPvR",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "EMAIL",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "6lmmfS94FIoj",
+            "key": "questionThatCollectsANumericValue",
+            "title": "Question that collects a numeric value",
+            "definition_id": "0NuSKClQNXV_",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "NUMBER",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "0s1So18cf02G",
+            "key": "questionThatCollectsASstringValue",
+            "title": "Question that collects a sstring value",
+            "definition_id": "qiIFXlNLUVzN",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "SHORT_TEXT",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "3Um49UpTPvio",
+            "key": "questionThatCollectsAStringButLongFormTextarea",
+            "title": "Question that collects a string but long-form (textarea)",
+            "definition_id": "tSFHKGROz6Zm",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "LONG_TEXT",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "Dqr6jLqO0mQI",
+            "key": "questionThatCollectsAPhoneNumber",
+            "title": "Question that collects a phone number",
+            "definition_id": "yZahm5RhM1mb",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "TELEPHONE",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "zVk9YHVWxiTj",
+            "key": "icd",
+            "title": "ICD",
+            "definition_id": "LJDrgL3z0pSB",
+            "placeholder": null,
+            "questionType": "INPUT",
+            "userQuestionType": "ICD10_CLASSIFICATION",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          },
+          {
+            "id": "QIZobP7884b9",
+            "key": "typePChildrenTextAnotherDescriptionElement",
+            "title": "[{\"type\":\"p\",\"children\":[{\"text\":\"Another description element\"}]}]",
+            "definition_id": "kTKhru8J2Mtr",
+            "placeholder": null,
+            "questionType": "NO_INPUT",
+            "userQuestionType": "DESCRIPTION",
+            "required": null,
+            "options": [],
+            "__typename": "Question"
+          }
+        ],
+        "__typename": "ActivityForm"
+      }
+    },
+    "outputs": null,
+    "__typename": "Activity"
+  },
+  {
+    "id": "c14g1v7ukXbXxPj2JnaMl",
+    "action": "ACTIVATE",
+    "careflow_id": "NX9Hw12TBclt",
+    "container_name": null,
+    "date": "2025-07-11T16:27:06.478Z",
+    "indirect_object": null,
+    "object": {
+      "id": "GqcizxgKGW8d",
+      "type": "STEP",
+      "name": "step w/message and checklist",
+      "email": null,
+      "preferred_language": null,
+      "__typename": "ActivityObject"
+    },
+    "pathway_definition_id": "1CnTTHNYM1Q3",
+    "reference_id": "PathwayNavigationNode/290403388",
+    "reference_type": "NAVIGATION",
+    "resolution": "SUCCESS",
+    "session_id": null,
+    "status": "DONE",
+    "tenant_id": "_v0nvLX5zCNd",
+    "sub_activities": [],
+    "inputs": null,
+    "outputs": null,
+    "__typename": "Activity"
+  },
+  {
+    "id": "U8fSeN464VHMGYpK6dvPu",
+    "action": "ACTIVATE",
+    "careflow_id": "NX9Hw12TBclt",
+    "container_name": null,
+    "date": "2025-07-11T16:27:06.455Z",
+    "indirect_object": null,
+    "object": {
+      "id": "BI6Wl1P4lveg",
+      "type": "STEP",
+      "name": "step with clinical note",
+      "email": null,
+      "preferred_language": null,
+      "__typename": "ActivityObject"
+    },
+    "pathway_definition_id": "1CnTTHNYM1Q3",
+    "reference_id": "PathwayNavigationNode/290403389",
+    "reference_type": "NAVIGATION",
+    "resolution": "SUCCESS",
+    "session_id": null,
+    "status": "DONE",
+    "tenant_id": "_v0nvLX5zCNd",
+    "sub_activities": [],
+    "inputs": null,
+    "outputs": null,
+    "__typename": "Activity"
+  },
+  {
+    "id": "9beqOFYsChEwdu2icSbG8",
+    "action": "ACTIVATE",
+    "careflow_id": "NX9Hw12TBclt",
+    "container_name": null,
+    "date": "2025-07-11T16:27:06.420Z",
+    "indirect_object": null,
+    "object": {
+      "id": "5vZsEgfc41aq",
+      "type": "STEP",
+      "name": "step with form",
+      "email": null,
+      "preferred_language": null,
+      "__typename": "ActivityObject"
+    },
+    "pathway_definition_id": "1CnTTHNYM1Q3",
+    "reference_id": "PathwayNavigationNode/290403387",
+    "reference_type": "NAVIGATION",
+    "resolution": "SUCCESS",
+    "session_id": null,
+    "status": "DONE",
+    "tenant_id": "_v0nvLX5zCNd",
+    "sub_activities": [],
+    "inputs": null,
+    "outputs": null,
+    "__typename": "Activity"
+  },
+  {
+    "id": "nyEmKpkAztTHsx7wlWEBR",
+    "action": "SCHEDULED",
+    "careflow_id": "NX9Hw12TBclt",
+    "container_name": null,
+    "date": "2025-07-11T16:27:06.391Z",
+    "indirect_object": null,
+    "object": {
+      "id": "GqcizxgKGW8d",
+      "type": "STEP",
+      "name": "step w/message and checklist",
+      "email": null,
+      "preferred_language": null,
+      "__typename": "ActivityObject"
+    },
+    "pathway_definition_id": "1CnTTHNYM1Q3",
+    "reference_id": "PathwayNavigationNode/290403388",
+    "reference_type": "NAVIGATION",
+    "resolution": "SUCCESS",
+    "session_id": null,
+    "status": "DONE",
+    "tenant_id": "_v0nvLX5zCNd",
+    "sub_activities": [],
+    "inputs": null,
+    "outputs": null,
+    "__typename": "Activity"
+  },
+  {
+    "id": "g4pVzdjNn7Iat2rNbJhPE",
+    "action": "SCHEDULED",
+    "careflow_id": "NX9Hw12TBclt",
+    "container_name": null,
+    "date": "2025-07-11T16:27:06.312Z",
+    "indirect_object": null,
+    "object": {
+      "id": "BI6Wl1P4lveg",
+      "type": "STEP",
+      "name": "step with clinical note",
+      "email": null,
+      "preferred_language": null,
+      "__typename": "ActivityObject"
+    },
+    "pathway_definition_id": "1CnTTHNYM1Q3",
+    "reference_id": "PathwayNavigationNode/290403389",
+    "reference_type": "NAVIGATION",
+    "resolution": "SUCCESS",
+    "session_id": null,
+    "status": "DONE",
+    "tenant_id": "_v0nvLX5zCNd",
+    "sub_activities": [],
+    "inputs": null,
+    "outputs": null,
+    "__typename": "Activity"
+  }
+]

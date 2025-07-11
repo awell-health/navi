@@ -2,9 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { FormActivityComponent } from "@/components/activities/form-activity";
+import { MessageActivityComponent } from "@/components/activities/message-activity";
+import { ChecklistActivityComponent } from "@/components/activities/checklist-activity";
 import {
   ActivityFragment,
   FormActivityInput,
+  MessageActivityInput,
   useOnActivityCompletedSubscription,
   useOnActivityCreatedSubscription,
   useOnActivityUpdatedSubscription,
@@ -34,13 +37,49 @@ function getFormFromActivity(
   return null;
 }
 
-// Helper function to get form title
+// Helper function to check if activity has message input
+function getMessageFromActivity(
+  activity: ActivityFragment
+): MessageActivityInput["message"] | null {
+  if (activity.inputs?.__typename === "MessageActivityInput") {
+    return activity.inputs.message || null;
+  }
+  return null;
+}
+
+// Helper function to get activity title
 function getActivityTitle(activity: ActivityFragment): string {
   const form = getFormFromActivity(activity);
   if (form) {
     return form.title;
   }
-  return `${activity.object.type} Activity`;
+
+  const message = getMessageFromActivity(activity);
+  if (message) {
+    return message.subject;
+  }
+
+  return activity.object.name || `${activity.object.type} Activity`;
+}
+
+// Helper function to check if activity can be displayed
+function canDisplayActivity(activity: ActivityFragment): boolean {
+  // Can display if it's a form with form data
+  if (activity.object.type === "FORM" && getFormFromActivity(activity)) {
+    return true;
+  }
+
+  // Can display if it's a message with message data
+  if (activity.object.type === "MESSAGE" && getMessageFromActivity(activity)) {
+    return true;
+  }
+
+  // Can display checklist activities (even without specific input data)
+  if (activity.object.type === "CHECKLIST") {
+    return true;
+  }
+
+  return false;
 }
 
 export default function CareflowActivitiesClient({
@@ -51,6 +90,9 @@ export default function CareflowActivitiesClient({
     initialActivities || []
   );
   const [events, setEvents] = useState<ActivityEvent[]>([]);
+  const [activeActivity, setActiveActivity] = useState<ActivityFragment | null>(
+    null
+  );
 
   // Fetch activities if not provided initially
   const {
@@ -79,6 +121,32 @@ export default function CareflowActivitiesClient({
       setActivities(activitiesData.pathwayActivities.activities);
     }
   }, [activitiesData, activitiesLoading]);
+
+  // Set default active activity when activities change
+  useEffect(() => {
+    if (activities.length > 0 && !activeActivity) {
+      // Find the first active activity that can be displayed
+      const defaultActivity = activities.find(
+        (activity) =>
+          activity.status === "ACTIVE" && canDisplayActivity(activity)
+      );
+
+      if (defaultActivity) {
+        console.log("🎯 Setting default active activity:", defaultActivity.id);
+        setActiveActivity(defaultActivity);
+      } else {
+        // If no active displayable activities, just pick the first one that can be displayed
+        const firstDisplayableActivity = activities.find(canDisplayActivity);
+        if (firstDisplayableActivity) {
+          console.log(
+            "🎯 Setting first displayable activity:",
+            firstDisplayableActivity.id
+          );
+          setActiveActivity(firstDisplayableActivity);
+        }
+      }
+    }
+  }, [activities, activeActivity]);
 
   // Subscribe to activity events for this careflow
   const { data: completedData } = useOnActivityCompletedSubscription({
@@ -199,32 +267,139 @@ export default function CareflowActivitiesClient({
     }
   }, [expiredData]);
 
-  // Find the first active form activity to display by default
-  const activeFormActivity = activities.find(
-    (activity) =>
-      activity.object.type === "FORM" &&
-      activity.status === "ACTIVE" &&
-      getFormFromActivity(activity)
-  );
-
-  console.log(
-    "🎯 Active form activity:",
-    activeFormActivity
-      ? {
-          id: activeFormActivity.id,
-          form_title: getActivityTitle(activeFormActivity),
-          question_count:
-            getFormFromActivity(activeFormActivity)?.questions?.length,
-        }
-      : "None found"
-  );
-
   const handleFormSubmit = async (data: Record<string, unknown>) => {
     console.log("📝 Form submitted with data:", data);
-    console.log("📋 Activity ID:", activeFormActivity?.id);
+    console.log("📋 Activity ID:", activeActivity?.id);
 
     // For prototype, just log the submission
     console.log("✅ Form submission logged (prototype mode)");
+  };
+
+  const handleMessageMarkAsRead = async (activityId: string) => {
+    console.log("📧 Message marked as read:", activityId);
+
+    // For prototype, just log the action
+    console.log("✅ Message marked as read (prototype mode)");
+  };
+
+  const handleChecklistComplete = async (
+    activityId: string,
+    data: Record<string, unknown>
+  ) => {
+    console.log("☑️ Checklist completed:", activityId, data);
+
+    // For prototype, just log the action
+    console.log("✅ Checklist completion logged (prototype mode)");
+  };
+
+  const handleActivityClick = (activity: ActivityFragment) => {
+    console.log("🔍 Activity clicked:", activity);
+    if (canDisplayActivity(activity)) {
+      setActiveActivity(activity);
+    } else {
+      console.warn("⚠️ Cannot display activity type:", activity.object.type);
+    }
+  };
+
+  // Render the appropriate activity component based on the active activity type
+  const renderActiveActivity = () => {
+    if (!activeActivity) {
+      return (
+        <div className="h-full flex items-center justify-center p-8">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-foreground mb-2">
+              No Activity Selected
+            </h2>
+            <p className="text-muted-foreground">
+              Select an activity from the list to view its details.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    switch (activeActivity.object.type) {
+      case "FORM": {
+        const form = getFormFromActivity(activeActivity);
+        if (form) {
+          return (
+            <FormActivityComponent
+              formActivity={
+                {
+                  ...activeActivity,
+                  form,
+                } as any
+              } // eslint-disable-line @typescript-eslint/no-explicit-any
+              onSubmit={handleFormSubmit}
+            />
+          );
+        }
+        break;
+      }
+      case "MESSAGE": {
+        const message = getMessageFromActivity(activeActivity);
+        if (message) {
+          return (
+            <MessageActivityComponent
+              messageActivity={
+                {
+                  ...activeActivity,
+                  message,
+                } as any
+              } // eslint-disable-line @typescript-eslint/no-explicit-any
+              onMarkAsRead={handleMessageMarkAsRead}
+            />
+          );
+        }
+        break;
+      }
+      case "CHECKLIST": {
+        return (
+          <ChecklistActivityComponent
+            checklistActivity={activeActivity as any}
+            onComplete={handleChecklistComplete}
+          />
+        );
+      }
+      default:
+        return (
+          <div className="h-full flex items-center justify-center p-8">
+            <div className="text-center">
+              <h2 className="text-xl font-semibold text-foreground mb-2">
+                Unsupported Activity Type
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                Activity type "{activeActivity.object.type}" is not yet
+                supported.
+              </p>
+              <div className="text-sm text-muted-foreground bg-muted p-4 rounded-lg">
+                <strong>Activity Details:</strong>
+                <br />
+                ID: {activeActivity.id}
+                <br />
+                Type: {activeActivity.object.type}
+                <br />
+                Status: {activeActivity.status}
+                <br />
+                Name: {activeActivity.object.name}
+              </div>
+            </div>
+          </div>
+        );
+    }
+
+    return (
+      <div className="h-full flex items-center justify-center p-8">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-foreground mb-2">
+            Activity Data Missing
+          </h2>
+          <p className="text-muted-foreground">
+            This activity doesn't have the required data to be displayed.
+          </p>
+        </div>
+      </div>
+    );
   };
 
   const getEventIcon = (type: ActivityEvent["type"]) => {
@@ -308,79 +483,71 @@ export default function CareflowActivitiesClient({
               </p>
             </div>
           ) : (
-            activities.map((activity) => (
-              <div
-                key={activity.id}
-                className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                  activity.status === "ACTIVE"
-                    ? "border-primary bg-primary/5 hover:bg-primary/10"
-                    : "border-border bg-muted/50 hover:bg-muted"
-                }`}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-medium text-sm text-foreground">
-                    {getActivityTitle(activity)}
-                  </h3>
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      activity.status === "ACTIVE"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    {activity.status}
-                  </span>
-                </div>
+            activities.map((activity) => {
+              const isSelected = activeActivity?.id === activity.id;
+              const canDisplay = canDisplayActivity(activity);
 
-                <p className="text-xs text-muted-foreground mb-2">
-                  Type: {activity.object.type}
-                </p>
-
-                <p className="text-xs text-muted-foreground">
-                  {new Date(activity.date).toLocaleDateString()}
-                </p>
-
-                {activity.status === "ACTIVE" && (
-                  <div className="mt-3 pt-3 border-t border-border">
-                    <span className="text-xs font-medium text-primary">
-                      Click to complete →
-                    </span>
+              return (
+                <div
+                  key={activity.id}
+                  className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                    isSelected
+                      ? "border-primary bg-primary/10"
+                      : activity.status === "ACTIVE"
+                      ? "border-primary bg-primary/5 hover:bg-primary/10"
+                      : "border-border bg-muted/50 hover:bg-muted"
+                  } ${!canDisplay ? "opacity-60" : ""}`}
+                  onClick={() => handleActivityClick(activity)}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-medium text-sm text-foreground">
+                      {getActivityTitle(activity)}
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      {isSelected && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-primary text-primary-foreground">
+                          Selected
+                        </span>
+                      )}
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full ${
+                          activity.status === "ACTIVE"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-600"
+                        }`}
+                      >
+                        {activity.status}
+                      </span>
+                    </div>
                   </div>
-                )}
-              </div>
-            ))
+
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Type: {activity.object.type}
+                    {!canDisplay && " (Preview not available)"}
+                  </p>
+
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(activity.date).toLocaleDateString()}
+                  </p>
+
+                  {activity.status === "ACTIVE" && canDisplay && (
+                    <div className="mt-3 pt-3 border-t border-border">
+                      <span className="text-xs font-medium text-primary">
+                        Click to view →
+                      </span>
+                    </div>
+                  )}
+                </div>
+              );
+            })
           )}
         </div>
       </aside>
 
       {/* Main Content Area */}
       <main className="flex-1 flex">
-        {/* Form Content */}
-        <div className="flex-1 overflow-y-auto">
-          {activeFormActivity && getFormFromActivity(activeFormActivity) ? (
-            <FormActivityComponent
-              formActivity={
-                {
-                  ...activeFormActivity,
-                  form: getFormFromActivity(activeFormActivity)!,
-                } as any // eslint-disable-line @typescript-eslint/no-explicit-any
-              }
-              onSubmit={handleFormSubmit}
-            />
-          ) : (
-            <div className="h-full flex items-center justify-center p-8">
-              <div className="text-center">
-                <h2 className="text-xl font-semibold text-foreground mb-2">
-                  No Active Activities
-                </h2>
-                <p className="text-muted-foreground">
-                  There are no active activities that require your attention at
-                  this time.
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
+        {/* Activity Content */}
+        <div className="flex-1 overflow-y-auto">{renderActiveActivity()}</div>
 
         {/* Live Events Panel */}
         <aside className="w-80 bg-muted/30 border-l border-border p-4 overflow-y-auto">

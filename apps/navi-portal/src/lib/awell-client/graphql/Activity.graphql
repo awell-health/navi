@@ -91,6 +91,29 @@ fragment Activity on Activity {
       type
       extensionFields: fields
     }
+    ... on ChecklistActivityInput {
+      type
+      checklist {
+        title
+        items
+      }
+    }
+    ... on ClinicalNoteActivityInput {
+      type
+      clinicalNote {
+        id
+        narratives {
+          id
+          key
+          title
+          body
+        }
+        context {
+          key
+          value
+        }
+      }
+    }
   }
   outputs {
     __typename

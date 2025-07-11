@@ -35,8 +35,8 @@ async function generateSecureTokens(environment: TokenEnvironment = "test") {
 
     // TechCorp - Dark, professional tech
     const techCorpPayload: SessionTokenData = {
-      patientId: "YVXkfvky9cNg84_LK0Cyt",
-      careflowId: "B1G1unpxkSEA",
+      patientId: "Eh4UQbKZKBk6hKd0M7wKk",
+      careflowId: "NX9Hw12TBclt",
       orgId: "techcorp",
       tenantId: "_v0nvLX5zCNd",
       environment: "development",
