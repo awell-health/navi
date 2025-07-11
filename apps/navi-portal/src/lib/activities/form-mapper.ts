@@ -12,8 +12,8 @@ import type {
  * Map Awell question type to conversational form field type
  */
 function mapQuestionType(awellQuestion: Question): string {
-  switch (awellQuestion.questionType) {
-    case "INPUT":
+  switch (awellQuestion.userQuestionType) {
+    case "SHORT_TEXT":
       return "text";
     case "LONG_TEXT":
       return "textarea";
@@ -23,7 +23,7 @@ function mapQuestionType(awellQuestion: Question): string {
       return "date";
     case "EMAIL":
       return "email";
-    case "PHONE":
+    case "TELEPHONE":
       return "text";
     case "MULTIPLE_CHOICE":
       // Determine if it's radio or select based on options
@@ -37,8 +37,6 @@ function mapQuestionType(awellQuestion: Question): string {
       return "radio";
     case "SLIDER":
       return "number";
-    case "ADDRESS":
-      return "textarea";
     case "FILE":
       return "text"; // Fallback for now
     case "SIGNATURE":
@@ -55,7 +53,7 @@ function mapFormQuestion(awellQuestion: Question): FormField {
   const fieldType = mapQuestionType(awellQuestion);
 
   // Add yes/no options for boolean questions
-  if (awellQuestion.questionType === "YES_NO") {
+  if (awellQuestion.userQuestionType === "YES_NO") {
     return {
       id: awellQuestion.id,
       type: "radio",

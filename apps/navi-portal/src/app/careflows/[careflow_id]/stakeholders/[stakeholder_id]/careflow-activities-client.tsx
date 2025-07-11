@@ -1,9 +1,13 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useState, useEffect } from "react";
-import { FormActivityComponent } from "@/components/activities/form-activity";
-import { MessageActivityComponent } from "@/components/activities/message-activity";
-import { ChecklistActivityComponent } from "@/components/activities/checklist-activity";
+import {
+  FormActivity,
+  MessageActivity,
+  ChecklistActivity,
+  type ActivityEventHandlers,
+} from "@awell-health/navi-activities";
 import {
   ActivityFragment,
   FormActivityInput,
@@ -267,9 +271,12 @@ export default function CareflowActivitiesClient({
     }
   }, [expiredData]);
 
-  const handleFormSubmit = async (data: Record<string, unknown>) => {
+  const handleFormSubmit = async (
+    activityId: string,
+    data: Record<string, unknown>
+  ) => {
     console.log("📝 Form submitted with data:", data);
-    console.log("📋 Activity ID:", activeActivity?.id);
+    console.log("📋 Activity ID:", activityId);
 
     // For prototype, just log the submission
     console.log("✅ Form submission logged (prototype mode)");
@@ -291,6 +298,30 @@ export default function CareflowActivitiesClient({
     // For prototype, just log the action
     console.log("✅ Checklist completion logged (prototype mode)");
   };
+
+  // Create unified event handlers for activity events
+  const createActivityEventHandlers = (
+    activityId: string
+  ): ActivityEventHandlers => ({
+    onActivityReady: (event) => {
+      console.log("🎯 Activity ready:", activityId, event);
+    },
+    onActivityProgress: (event) => {
+      console.log("📊 Activity progress:", activityId, event.data);
+    },
+    onActivityComplete: (event) => {
+      console.log("🎉 Activity completed:", activityId, event.data);
+    },
+    onActivityError: (event) => {
+      console.error("❌ Activity error:", activityId, event.data);
+    },
+    onActivityFocus: (event) => {
+      console.log("👁️ Activity focused:", activityId, event);
+    },
+    onActivityBlur: (event) => {
+      console.log("👀 Activity blurred:", activityId, event);
+    },
+  });
 
   const handleActivityClick = (activity: ActivityFragment) => {
     console.log("🔍 Activity clicked:", activity);
@@ -322,14 +353,24 @@ export default function CareflowActivitiesClient({
       case "FORM": {
         const form = getFormFromActivity(activeActivity);
         if (form) {
+          // Convert GraphQL types to navi-activities types
+          const adaptedForm = {
+            ...form,
+            questions: form.questions.map((question) => ({
+              ...question,
+              required: question.required ?? false,
+            })),
+          };
+
           return (
-            <FormActivityComponent
-              formActivity={
-                {
-                  ...activeActivity,
-                  form,
-                } as any
-              } // eslint-disable-line @typescript-eslint/no-explicit-any
+            <FormActivity
+              activity={{
+                ...activeActivity,
+                inputs: {
+                  form: adaptedForm as any, // Type conversion needed for GraphQL compatibility
+                },
+              }}
+              eventHandlers={createActivityEventHandlers(activeActivity.id)}
               onSubmit={handleFormSubmit}
             />
           );
@@ -339,14 +380,21 @@ export default function CareflowActivitiesClient({
       case "MESSAGE": {
         const message = getMessageFromActivity(activeActivity);
         if (message) {
+          // Convert GraphQL types to navi-activities types
+          const adaptedMessage = {
+            ...message,
+            format: message.format ?? "HTML",
+          };
+
           return (
-            <MessageActivityComponent
-              messageActivity={
-                {
-                  ...activeActivity,
-                  message,
-                } as any
-              } // eslint-disable-line @typescript-eslint/no-explicit-any
+            <MessageActivity
+              activity={{
+                ...activeActivity,
+                inputs: {
+                  message: adaptedMessage as any, // Type conversion needed for GraphQL compatibility
+                },
+              }}
+              eventHandlers={createActivityEventHandlers(activeActivity.id)}
               onMarkAsRead={handleMessageMarkAsRead}
             />
           );
@@ -355,8 +403,23 @@ export default function CareflowActivitiesClient({
       }
       case "CHECKLIST": {
         return (
-          <ChecklistActivityComponent
-            checklistActivity={activeActivity as any}
+          <ChecklistActivity
+            activity={{
+              ...activeActivity,
+              inputs: {
+                checklist: {
+                  title: activeActivity.object.name || "Checklist Activity",
+                  items: [
+                    // For prototype, create some dummy checklist items
+                    "Review patient information",
+                    "Check vital signs",
+                    "Update medical records",
+                    "Schedule follow-up appointment",
+                  ],
+                },
+              },
+            }}
+            eventHandlers={createActivityEventHandlers(activeActivity.id)}
             onComplete={handleChecklistComplete}
           />
         );
@@ -369,8 +432,7 @@ export default function CareflowActivitiesClient({
                 Unsupported Activity Type
               </h2>
               <p className="text-muted-foreground mb-4">
-                Activity type "{activeActivity.object.type}" is not yet
-                supported.
+                Activity type {activeActivity.object.type} is not yet supported.
               </p>
               <div className="text-sm text-muted-foreground bg-muted p-4 rounded-lg">
                 <strong>Activity Details:</strong>
@@ -395,7 +457,7 @@ export default function CareflowActivitiesClient({
             Activity Data Missing
           </h2>
           <p className="text-muted-foreground">
-            This activity doesn't have the required data to be displayed.
+            This activity doesn&apos;t have the required data to be displayed.
           </p>
         </div>
       </div>
