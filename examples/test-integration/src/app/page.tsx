@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { loadNavi } from '@awell-health/navi-js';
-import { NaviTestComponent } from './components/navi-test';
+import { useEffect, useState } from "react";
+import { loadNavi } from "@awell-health/navi-js";
+import { NaviTestComponent } from "./components/navi-test";
 
 export default function Home() {
   const [isNaviLoaded, setIsNaviLoaded] = useState(false);
@@ -10,7 +10,7 @@ export default function Home() {
 
   useEffect(() => {
     // Check if Navi is already loaded
-    if (typeof window !== 'undefined' && (window as any).Navi) {
+    if (typeof window !== "undefined" && (window as any).Navi) {
       setIsNaviLoaded(true);
       return;
     }
@@ -18,20 +18,22 @@ export default function Home() {
     // Load Navi SDK using NPM package (Stripe-like approach)
     const initializeNavi = async () => {
       try {
-        console.log('🔄 Loading Navi SDK via @awell-health/navi-js...');
-        
+        console.log("🔄 Loading Navi SDK via @awell-health/navi-js...");
+
         // This will load the script from CDN (or localhost in dev) and make window.Navi available
-        const naviInstance = await loadNavi('pk_test_demo123');
-        
+        const naviInstance = await loadNavi("pk_test_demo123");
+
         if (naviInstance) {
-          console.log('✅ Navi SDK loaded successfully via NPM package');
+          console.log("✅ Navi SDK loaded successfully via NPM package");
           setIsNaviLoaded(true);
         } else {
-          throw new Error('Failed to initialize Navi SDK');
+          throw new Error("Failed to initialize Navi SDK");
         }
       } catch (error) {
-        console.error('❌ Failed to load Navi SDK:', error);
-        setLoadError('Failed to load Navi SDK. Make sure the portal is running on localhost:3000');
+        console.error("❌ Failed to load Navi SDK:", error);
+        setLoadError(
+          "Failed to load Navi SDK. Make sure the portal is running on localhost:3000"
+        );
       }
     };
 
@@ -50,19 +52,23 @@ export default function Home() {
               Testing the customer-facing SDK with a real Next.js application
             </p>
           </div>
-          
+
           {/* Navigation */}
           <div className="flex gap-4 justify-center mb-8">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-semibold text-blue-900 mb-2">JavaScript SDK Test</h3>
+              <h3 className="font-semibold text-blue-900 mb-2">
+                JavaScript SDK Test
+              </h3>
               <p className="text-sm text-blue-700 mb-3">
                 Tests the vanilla JavaScript SDK via iframe embedding
               </p>
               <span className="text-sm text-blue-600">👈 Current page</span>
             </div>
-            
+
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <h3 className="font-semibold text-green-900 mb-2">React SDK Test</h3>
+              <h3 className="font-semibold text-green-900 mb-2">
+                React SDK Test
+              </h3>
               <p className="text-sm text-green-700 mb-3">
                 Tests React components imported directly
               </p>
@@ -74,7 +80,7 @@ export default function Home() {
               </a>
             </div>
           </div>
-          
+
           {/* SDK Loading Status */}
           <div className="mb-8">
             <div className="bg-gray-100 rounded-lg p-4">
@@ -94,7 +100,7 @@ export default function Home() {
               )}
             </div>
           </div>
-          
+
           {/* Integration Code Example */}
           <div className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">
@@ -120,10 +126,10 @@ const instance = navi.renderActivities('#container', {
             </div>
           </div>
         </div>
-        
+
         {/* Test Component */}
         {isNaviLoaded && <NaviTestComponent />}
-        
+
         {/* Instructions */}
         <div className="bg-white rounded-lg shadow-lg p-8 mt-8">
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">
@@ -133,12 +139,27 @@ const instance = navi.renderActivities('#container', {
             <div>
               <h3 className="font-semibold text-gray-800">Prerequisites:</h3>
               <ul className="list-disc ml-6 mt-2 space-y-1">
-                <li>Main portal running on <code className="bg-gray-100 px-2 py-1 rounded">localhost:3000</code></li>
-                <li>Test app running on <code className="bg-gray-100 px-2 py-1 rounded">localhost:3001</code></li>
-                <li>Navi loader built: <code className="bg-gray-100 px-2 py-1 rounded">cd packages/navi-loader && npm run build</code></li>
+                <li>
+                  Main portal running on{" "}
+                  <code className="bg-gray-100 px-2 py-1 rounded">
+                    localhost:3000
+                  </code>
+                </li>
+                <li>
+                  Test app running on{" "}
+                  <code className="bg-gray-100 px-2 py-1 rounded">
+                    localhost:3001
+                  </code>
+                </li>
+                <li>
+                  Navi loader built:{" "}
+                  <code className="bg-gray-100 px-2 py-1 rounded">
+                    cd packages/navi.js && npm run build
+                  </code>
+                </li>
               </ul>
             </div>
-            
+
             <div>
               <h3 className="font-semibold text-gray-800">What to Test:</h3>
               <ul className="list-disc ml-6 mt-2 space-y-1">
@@ -155,4 +176,4 @@ const instance = navi.renderActivities('#container', {
       </div>
     </div>
   );
-} 
+}

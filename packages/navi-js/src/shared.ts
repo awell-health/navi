@@ -25,18 +25,17 @@ const getCDNConfig = () => {
 };
 
 const config = getCDNConfig();
-const NAVI_JS_URL = `${config.origin}/v1/navi-loader.js`;
+const NAVI_JS_URL = `${config.origin}/v1/navi.js`;
 
-const NAVI_JS_URL_REGEX =
-  /^https:\/\/cdn\.navi\.com\/v\d+\/navi-loader\.js(\?.*)?$/;
-const LOCALHOST_REGEX = /^http:\/\/localhost:3000\/navi-loader\.js(\?.*)?$/;
+const NAVI_JS_URL_REGEX = /^https:\/\/cdn\.navi\.com\/v\d+\/navi\.js(\?.*)?$/;
+const LOCALHOST_REGEX = /^http:\/\/localhost:3000\/navi\.js(\?.*)?$/;
 
 const isNaviJSURL = (url: string): boolean =>
   NAVI_JS_URL_REGEX.test(url) || LOCALHOST_REGEX.test(url);
 
 export const findScript = (): HTMLScriptElement | null => {
   const scripts = document.querySelectorAll<HTMLScriptElement>(
-    'script[src*="navi-loader.js"]'
+    'script[src*="navi.js"]'
   );
 
   for (let i = 0; i < scripts.length; i++) {

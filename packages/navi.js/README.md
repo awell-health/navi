@@ -9,6 +9,7 @@ This is the **main loader script** that customers embed in their websites to int
 **🚧 POC Version**: This is a proof-of-concept implementation with mock data for testing the SDK architecture.
 
 **POC Features:**
+
 - ✅ **Script loading** - Loads from localhost:3000 portal
 - ✅ **Activities embedding** - Renders mock activities in iframe
 - ✅ **Branding system** - CSS custom properties for theming
@@ -18,6 +19,7 @@ This is the **main loader script** that customers embed in their websites to int
 ## POC Testing
 
 To test this POC:
+
 1. **Build**: `turbo build --filter=@awell-health/navi-loader`
 2. **Start Portal**: `turbo dev --filter=navi-portal` (localhost:3000)
 3. **Start Test App**: `turbo dev --filter=navi-sdk-test-app` (localhost:3001)
@@ -26,40 +28,43 @@ To test this POC:
 ## Quick Start
 
 ### 1. Load the script (POC)
+
 ```html
-<script src="http://localhost:3000/navi-loader.js"></script>
+<script src="http://localhost:3000/navi.js"></script>
 ```
 
 ### 2. Embed activities
+
 ```javascript
 // Initialize with your publishable key
-const navi = Navi('pk_test_demo123');
+const navi = Navi("pk_test_demo123");
 
 // Render activities into any container
-const instance = navi.renderActivities('#my-container', {
-  pathwayId: 'pathway_patient_intake',
-  stakeholderId: 'stakeholder_demo',
+const instance = navi.renderActivities("#my-container", {
+  pathwayId: "pathway_patient_intake",
+  stakeholderId: "stakeholder_demo",
   branding: {
-    primary: '#3b82f6',
-    secondary: '#6b7280',
-    fontFamily: 'Inter, sans-serif'
-  }
+    primary: "#3b82f6",
+    secondary: "#6b7280",
+    fontFamily: "Inter, sans-serif",
+  },
 });
 ```
 
 ### 3. Listen to events (optional)
+
 ```javascript
 // Listen to SDK events
-instance.on('navi.ready', (data) => {
-  console.log('Navi ready:', data);
+instance.on("navi.ready", (data) => {
+  console.log("Navi ready:", data);
 });
 
-instance.on('navi.activity.completed', (data) => {
-  console.log('Activity completed:', data);
+instance.on("navi.activity.completed", (data) => {
+  console.log("Activity completed:", data);
 });
 
-instance.on('navi.pathway.completed', (data) => {
-  console.log('Pathway completed:', data);
+instance.on("navi.pathway.completed", (data) => {
+  console.log("Pathway completed:", data);
   // Redirect user, show success message, etc.
 });
 ```
@@ -69,61 +74,65 @@ instance.on('navi.pathway.completed', (data) => {
 ```html
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>My Healthcare App</title>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Complete Your Onboarding</h1>
-    
+
     <!-- Container where the care flow will appear -->
     <div id="care-flow-container" style="min-height: 400px;"></div>
-    
+
     <button id="start-flow">Start Care Flow</button>
     <button id="destroy-flow">Close Flow</button>
 
     <!-- Load Navi -->
     <script src="https://cdn.navi.awell.com/v1/loader.js"></script>
-    
+
     <script>
-        let flowInstance = null;
-        
-        document.getElementById('start-flow').addEventListener('click', () => {
-            // Initialize Navi with your publishable key
-            const navi = Navi('pk_test_your_key_here');
-            
-            // Render the care flow
-            flowInstance = navi.renderFlow('flow_onboarding_123', '#care-flow-container', {
-                context: {
-                    patientId: 'patient_123',
-                    source: 'website'
-                }
-            });
-            
-            // Listen to events
-            flowInstance.on('navi.activity.completed', (data) => {
-                console.log('Activity completed:', data.activityId);
-            });
-            
-            flowInstance.on('navi.flow.completed', (data) => {
-                console.log('Flow completed!');
-                // Redirect to next step, show success message, etc.
-                window.location.href = '/dashboard';
-            });
-            
-            flowInstance.on('navi.error', (error) => {
-                console.error('Flow error:', error);
-                alert('Something went wrong. Please try again.');
-            });
+      let flowInstance = null;
+
+      document.getElementById("start-flow").addEventListener("click", () => {
+        // Initialize Navi with your publishable key
+        const navi = Navi("pk_test_your_key_here");
+
+        // Render the care flow
+        flowInstance = navi.renderFlow(
+          "flow_onboarding_123",
+          "#care-flow-container",
+          {
+            context: {
+              patientId: "patient_123",
+              source: "website",
+            },
+          }
+        );
+
+        // Listen to events
+        flowInstance.on("navi.activity.completed", (data) => {
+          console.log("Activity completed:", data.activityId);
         });
-        
-        document.getElementById('destroy-flow').addEventListener('click', () => {
-            if (flowInstance) {
-                flowInstance.destroy();
-                flowInstance = null;
-            }
+
+        flowInstance.on("navi.flow.completed", (data) => {
+          console.log("Flow completed!");
+          // Redirect to next step, show success message, etc.
+          window.location.href = "/dashboard";
         });
+
+        flowInstance.on("navi.error", (error) => {
+          console.error("Flow error:", error);
+          alert("Something went wrong. Please try again.");
+        });
+      });
+
+      document.getElementById("destroy-flow").addEventListener("click", () => {
+        if (flowInstance) {
+          flowInstance.destroy();
+          flowInstance = null;
+        }
+      });
     </script>
-</body>
+  </body>
 </html>
 ```
 
@@ -134,10 +143,11 @@ instance.on('navi.pathway.completed', (data) => {
 Creates a new Navi instance with your publishable key.
 
 ```javascript
-const navi = Navi('pk_test_your_key_here');
+const navi = Navi("pk_test_your_key_here");
 ```
 
 **Parameters:**
+
 - `publishableKey` (string) - Your Navi publishable key (starts with `pk_test_` or `pk_live_`)
 
 **Returns:** Navi API object
@@ -147,12 +157,13 @@ const navi = Navi('pk_test_your_key_here');
 Renders a care flow into the specified container.
 
 ```javascript
-const flowInstance = navi.renderFlow('flow_123', '#container', {
-  context: { patientId: 'patient_123' }
+const flowInstance = navi.renderFlow("flow_123", "#container", {
+  context: { patientId: "patient_123" },
 });
 ```
 
 **Parameters:**
+
 - `flowId` (string) - The ID of the care flow to render
 - `container` (string) - CSS selector for the container element
 - `options` (object, optional) - Configuration options
@@ -167,12 +178,13 @@ const flowInstance = navi.renderFlow('flow_123', '#container', {
 Listen to care flow events.
 
 ```javascript
-flowInstance.on('navi.activity.completed', (data) => {
+flowInstance.on("navi.activity.completed", (data) => {
   // Handle activity completion
 });
 ```
 
 **Available Events:**
+
 - `navi.activity.loaded` - A new activity has loaded
 - `navi.activity.completed` - User completed an activity
 - `navi.flow.completed` - Entire care flow is complete
@@ -189,30 +201,33 @@ flowInstance.destroy();
 ## Integration Patterns
 
 ### E-commerce Checkout Style
+
 ```javascript
 // Embed during checkout process
-const navi = Navi('pk_live_xyz');
-navi.renderFlow('health_screening', '#checkout-health-form');
+const navi = Navi("pk_live_xyz");
+navi.renderFlow("health_screening", "#checkout-health-form");
 ```
 
 ### Patient Portal Integration
+
 ```javascript
 // Embed in patient dashboard
-const navi = Navi('pk_live_xyz');
-const flow = navi.renderFlow('daily_checkin', '#dashboard-widget');
+const navi = Navi("pk_live_xyz");
+const flow = navi.renderFlow("daily_checkin", "#dashboard-widget");
 
-flow.on('navi.flow.completed', () => {
+flow.on("navi.flow.completed", () => {
   // Refresh dashboard data
   location.reload();
 });
 ```
 
 ### Progressive Enhancement
+
 ```javascript
 // Only load if container exists
-if (document.getElementById('navi-container')) {
-  const navi = Navi('pk_live_xyz');
-  navi.renderFlow('intake_form', '#navi-container');
+if (document.getElementById("navi-container")) {
+  const navi = Navi("pk_live_xyz");
+  navi.renderFlow("intake_form", "#navi-container");
 }
 ```
 
@@ -233,7 +248,7 @@ if (document.getElementById('navi-container')) {
 ## Bundle Size
 
 | Build | Size | Gzipped |
-|-------|------|---------|
+| ----- | ---- | ------- |
 | UMD   | ~5KB | ~2KB    |
 | ESM   | ~4KB | ~1.8KB  |
 
@@ -262,4 +277,4 @@ For production implementation details, see the main project documentation.
 
 ## License
 
-MIT 
+MIT

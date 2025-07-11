@@ -25,7 +25,7 @@ This monorepo implements a **CDN + NPM package** distribution model similar to S
 
 ### 🌐 CDN Distribution
 
-- **`packages/navi-loader/`** → Built and deployed to CDN (Google Cloud/Cloudflare/Vercel)
+- **`packages/navi.js/`** → Built and deployed to CDN (Google Cloud/Cloudflare/Vercel)
 - **Global distribution** for optimal performance and caching
 - **Version pinning** for predictable behavior
 
@@ -52,7 +52,7 @@ This monorepo implements a **CDN + NPM package** distribution model similar to S
 
 ```
 🌐 CDN: https://cdn.navi.com
-└── /v1/navi-loader.js          ← JavaScript SDK
+└── /v1/navi.js                 ← JavaScript SDK
 
 🔒 Embed: https://embed.navi.com
 └── /[pathway_id]               ← Iframe content
@@ -65,7 +65,7 @@ This monorepo implements a **CDN + NPM package** distribution model similar to S
 
 ```
 🏢 Portal: localhost:3000
-├── /navi-loader.js             ← Development SDK
+├── /navi.js                    ← Development SDK
 └── /embed/[pathway_id]         ← Iframe content
 
 🧪 Test App: localhost:3001
@@ -86,7 +86,7 @@ React components for customers who want to embed Navi activities directly into t
 
 Shared utilities, TypeScript types, authentication services, and common functionality used across the SDK packages.
 
-### `navi-loader` (CDN Bundle)
+### `navi.js` (CDN Bundle)
 
 The main JavaScript SDK that gets distributed via CDN. Creates secure cross-origin iframes and handles all communication with the Navi embed portal.
 
@@ -143,12 +143,31 @@ navi/
 │   └── navi-portal/              # Embed portal (Vercel deployment)
 ├── packages/
 │   ├── navi-js/                  # NPM wrapper (loads CDN)
-│   ├── navi-loader/              # JavaScript SDK (CDN bundle)
+│   ├── navi.js/                  # JavaScript SDK (CDN bundle)
 │   ├── navi-react/               # React components (NPM)
 │   └── navi-core/                # Shared utilities (NPM)
 ├── examples/
 │   └── test-integration/         # Cross-origin testing app
 └── requirements/                 # Architecture & API documentation
+```
+
+```mermaid
+graph TD
+    A["Customer Website<br/>localhost:3001"] --> B["Install @awell-health/navi-js"]
+    B --> C["loadNavi('pk_test_...')"]
+    C --> D["CDN Request<br/>localhost:3000/v1/navi.js"]
+    D --> E["navi.js SDK<br/>(15KB bundle)"]
+    E --> F["Creates iframe<br/>→ localhost:3000/embed/pathway"]
+    F --> G["Navi Portal<br/>Activities & Forms"]
+
+    H["@awell-health/navi-js-react"] --> I["React Components"]
+    I --> J["Direct Components<br/>(No iframe)"]
+    J --> G
+
+    K["navi-core"] --> L["Shared Types<br/>& Utilities"]
+    L --> E
+    L --> G
+    L --> I
 ```
 
 ## 🔄 Release Management

@@ -1,8 +1,8 @@
 {
-  "name": "@awell-health/navi-loader",
-  "version": "1.0.0-poc",
-  "description": "Navi SDK - UMD loader script for customer websites",
-  "main": "dist/navi-loader.js",
+  "name": "@awell-health/navi-dot-js",
+  "version": "0.0.1-poc",
+  "description": "navi.js file that will be hosted on the awell-health CDN",
+  "main": "dist/navi.js",
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",

@@ -17,8 +17,8 @@ async function generateSecureTokens(environment: TokenEnvironment = "test") {
   try {
     // Sunrise Health - Bright, friendly healthcare
     const sunrisePayload: SessionTokenData = {
-      patientId: "YVXkfvky9cNg84_LK0Cyt",
-      careflowId: "B1G1unpxkSEA",
+      patientId: "Eh4UQbKZKBk6hKd0M7wKk",
+      careflowId: "GeDg7fJmddZi",
       orgId: "sunrise-health",
       tenantId: "_v0nvLX5zCNd",
       environment: "development",

@@ -1,0 +1,931 @@
+{
+  "data": {
+    "careflowActivities": {
+      "pagination": {
+        "offset": 0,
+        "count": 5,
+        "total_count": 5,
+        "__typename": "PaginationOutput"
+      },
+      "sorting": {
+        "field": "date",
+        "direction": "desc",
+        "__typename": "SortingOutput"
+      },
+      "activities": [
+        {
+          "id": "LhsNbUJkY3ehF5T6J5kfP",
+          "stream_id": "GeDg7fJmddZi",
+          "icon_url": null,
+          "subject": {
+            "id": null,
+            "type": "AWELL",
+            "name": "Awell",
+            "__typename": "ActivitySubject"
+          },
+          "action": "ASSIGNED",
+          "date": "2025-07-11T00:29:31.715Z",
+          "object": {
+            "id": "gi8ceU2p8XLo",
+            "type": "CHECKLIST",
+            "name": "my super important checklist",
+            "__typename": "ActivityObject"
+          },
+          "indirect_object": {
+            "id": "Eh4UQbKZKBk6hKd0M7wKk",
+            "type": "PATIENT",
+            "name": "jb belanger",
+            "__typename": "ActivityObject"
+          },
+          "status": "ACTIVE",
+          "resolution": null,
+          "reference_id": "PathwayNavigationNode/290321762",
+          "reference_type": "NAVIGATION",
+          "track": {
+            "id": "n3LQ8CG75N6i",
+            "title": "a track with lots of activity types",
+            "__typename": "ActivityTrack"
+          },
+          "container_name": "step w/message and checklist",
+          "label": {
+            "id": "",
+            "text": "",
+            "color": "green",
+            "__typename": "ActivityLabel"
+          },
+          "sub_activities": [
+            {
+              "id": "b3UYEsIYebB2fiYQRUXvQ",
+              "date": "2025-07-11T00:29:32.715Z",
+              "action": "ACTIVATE",
+              "error": null,
+              "scheduled_date": null,
+              "error_category": null,
+              "text": null,
+              "subject": {
+                "id": null,
+                "type": "AWELL",
+                "name": "Awell",
+                "__typename": "ActivitySubject"
+              },
+              "object": null,
+              "__typename": "SubActivity"
+            }
+          ],
+          "isUserActivity": true,
+          "context": {
+            "instance_id": "RHa078feJisk",
+            "pathway_id": "GeDg7fJmddZi",
+            "track_id": "0cevg171of2L",
+            "step_id": "0wzMpDVMsXLv",
+            "action_id": "RHa078feJisk",
+            "agent_thread_id": null,
+            "agent_id": null,
+            "agent_config_id": null,
+            "run_id": null,
+            "__typename": "PathwayContext"
+          },
+          "stakeholders": null,
+          "action_component": {
+            "definition_id": "wDvOjSdQBKB8",
+            "title": "my super important checklist",
+            "__typename": "ActionComponent"
+          },
+          "inputs": null,
+          "outputs": null,
+          "__typename": "Activity"
+        },
+        {
+          "id": "myeTxhlpRsKwJe7waLI7z",
+          "stream_id": "GeDg7fJmddZi",
+          "icon_url": null,
+          "subject": {
+            "id": null,
+            "type": "AWELL",
+            "name": "Awell",
+            "__typename": "ActivitySubject"
+          },
+          "action": "GENERATED",
+          "date": "2025-07-11T00:29:31.247Z",
+          "object": {
+            "id": "knhvYK49zgcmh17LUrP8J",
+            "type": "CLINICAL_NOTE",
+            "name": "exploring clinical notes",
+            "__typename": "ActivityObject"
+          },
+          "indirect_object": null,
+          "status": "DONE",
+          "resolution": "SUCCESS",
+          "reference_id": "PathwayNavigationNode/290321760",
+          "reference_type": "NAVIGATION",
+          "track": {
+            "id": "n3LQ8CG75N6i",
+            "title": "a track with lots of activity types",
+            "__typename": "ActivityTrack"
+          },
+          "container_name": "step with clinical note",
+          "label": {
+            "id": "",
+            "text": "",
+            "color": "green",
+            "__typename": "ActivityLabel"
+          },
+          "sub_activities": [
+            {
+              "id": "f2rd2JvDjoccLkJLYnoyv",
+              "date": "2025-07-11T00:29:31.247Z",
+              "action": "GENERATED",
+              "error": null,
+              "scheduled_date": null,
+              "error_category": null,
+              "text": null,
+              "subject": {
+                "id": null,
+                "type": "AWELL",
+                "name": "Awell",
+                "__typename": "ActivitySubject"
+              },
+              "object": null,
+              "__typename": "SubActivity"
+            }
+          ],
+          "isUserActivity": false,
+          "context": {
+            "instance_id": "qLhUVejqSeSD",
+            "pathway_id": "GeDg7fJmddZi",
+            "track_id": "0cevg171of2L",
+            "step_id": "OgPYK2Y9udSg",
+            "action_id": "qLhUVejqSeSD",
+            "agent_thread_id": null,
+            "agent_id": null,
+            "agent_config_id": null,
+            "run_id": null,
+            "__typename": "PathwayContext"
+          },
+          "stakeholders": null,
+          "action_component": {
+            "definition_id": "6coh6ZadbwnF",
+            "title": "exploring clinical notes",
+            "__typename": "ActionComponent"
+          },
+          "inputs": null,
+          "outputs": null,
+          "__typename": "Activity"
+        },
+        {
+          "id": "2PYAEuy2VvB3cr1klSGR9",
+          "stream_id": "GeDg7fJmddZi",
+          "icon_url": null,
+          "subject": {
+            "id": null,
+            "type": "AWELL",
+            "name": "Awell",
+            "__typename": "ActivitySubject"
+          },
+          "action": "ASSIGNED",
+          "date": "2025-07-11T00:29:31.226Z",
+          "object": {
+            "id": "IJcZv7lx2Cuw",
+            "type": "FORM",
+            "name": "Form with all question types",
+            "__typename": "ActivityObject"
+          },
+          "indirect_object": {
+            "id": "Eh4UQbKZKBk6hKd0M7wKk",
+            "type": "PATIENT",
+            "name": "jb belanger",
+            "__typename": "ActivityObject"
+          },
+          "status": "ACTIVE",
+          "resolution": null,
+          "reference_id": "PathwayNavigationNode/290321758",
+          "reference_type": "NAVIGATION",
+          "track": {
+            "id": "n3LQ8CG75N6i",
+            "title": "a track with lots of activity types",
+            "__typename": "ActivityTrack"
+          },
+          "container_name": "step with form",
+          "label": {
+            "id": "",
+            "text": "",
+            "color": "green",
+            "__typename": "ActivityLabel"
+          },
+          "sub_activities": [
+            {
+              "id": "ykVuCKLm2M4QCA5K2nMq0",
+              "date": "2025-07-11T00:29:32.226Z",
+              "action": "ACTIVATE",
+              "error": null,
+              "scheduled_date": null,
+              "error_category": null,
+              "text": null,
+              "subject": {
+                "id": null,
+                "type": "AWELL",
+                "name": "Awell",
+                "__typename": "ActivitySubject"
+              },
+              "object": null,
+              "__typename": "SubActivity"
+            }
+          ],
+          "isUserActivity": true,
+          "context": {
+            "instance_id": "4XWeq6mMsY6l",
+            "pathway_id": "GeDg7fJmddZi",
+            "track_id": "0cevg171of2L",
+            "step_id": "sLnBlaRUECAN",
+            "action_id": "4XWeq6mMsY6l",
+            "agent_thread_id": null,
+            "agent_id": null,
+            "agent_config_id": null,
+            "run_id": null,
+            "__typename": "PathwayContext"
+          },
+          "stakeholders": null,
+          "action_component": {
+            "definition_id": "Y7WMTpKZAGOQ",
+            "title": "my comprehensive form",
+            "__typename": "ActionComponent"
+          },
+          "inputs": {
+            "__typename": "FormActivityInputs",
+            "type": "FORM",
+            "form": {
+              "id": "IJcZv7lx2Cuw",
+              "title": "Form with all question types",
+              "trademark": null,
+              "questions": [
+                {
+                  "id": "HMr3m8W7fLX8",
+                  "title": "<p class=\"slate-p\">This is a description question. It&#x27;s doesn&#x27;t collect any data but just shows some text to the user.</p>",
+                  "key": "typePChildrenTextThisIsADescriptionQuestionItsDoesntCollectAnyDataButJustShowsSomeTextToTheUser",
+                  "dataPointValueType": null,
+                  "options": [],
+                  "questionType": "NO_INPUT",
+                  "userQuestionType": "DESCRIPTION",
+                  "questionConfig": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "AbedeWjerXOk",
+                  "title": "Single select (number)",
+                  "key": "singleSelectNumber",
+                  "dataPointValueType": "NUMBER",
+                  "options": [
+                    {
+                      "id": "zOTvuy0usHkb",
+                      "value": 0,
+                      "value_string": "0",
+                      "label": "Option 1",
+                      "__typename": "Option"
+                    },
+                    {
+                      "id": "q6jRNHKATieI",
+                      "value": 1,
+                      "value_string": "1",
+                      "label": "Option 2",
+                      "__typename": "Option"
+                    },
+                    {
+                      "id": "vvMBtwpHl0o5",
+                      "value": 2,
+                      "value_string": "2",
+                      "label": "Option 3",
+                      "__typename": "Option"
+                    }
+                  ],
+                  "questionType": "MULTIPLE_CHOICE",
+                  "userQuestionType": "MULTIPLE_CHOICE",
+                  "questionConfig": {
+                    "recode_enabled": false,
+                    "use_select": false,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "JKsqQSUUMVdV",
+                  "title": "Single select (string)",
+                  "key": "singleSelectString",
+                  "dataPointValueType": "STRING",
+                  "options": [
+                    {
+                      "id": "u9qpd6kPr83f",
+                      "value": -1,
+                      "value_string": "option_1",
+                      "label": "Option 1",
+                      "__typename": "Option"
+                    },
+                    {
+                      "id": "yRy_LwI1refh",
+                      "value": -1,
+                      "value_string": "option_2",
+                      "label": "Option 2",
+                      "__typename": "Option"
+                    },
+                    {
+                      "id": "OOCTmiXXvjpN",
+                      "value": -1,
+                      "value_string": "option_3",
+                      "label": "Option 3",
+                      "__typename": "Option"
+                    },
+                    {
+                      "id": "P32BtMUeLwNN",
+                      "value": -1,
+                      "value_string": "option_4",
+                      "label": "helloo",
+                      "__typename": "Option"
+                    },
+                    {
+                      "id": "rrgEixvMsF9I",
+                      "value": -1,
+                      "value_string": "option_5",
+                      "label": "helloooooo",
+                      "__typename": "Option"
+                    },
+                    {
+                      "id": "seZqcRQb2qDm",
+                      "value": -1,
+                      "value_string": "option_6",
+                      "label": "test",
+                      "__typename": "Option"
+                    }
+                  ],
+                  "questionType": "MULTIPLE_CHOICE",
+                  "userQuestionType": "MULTIPLE_CHOICE",
+                  "questionConfig": {
+                    "recode_enabled": false,
+                    "use_select": false,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": {
+                    "id": "OinyRhXjZVL1",
+                    "boolean_operator": "AND",
+                    "definition_id": "BFTosjA9dcQw8wmwLCh-d",
+                    "conditions": [],
+                    "__typename": "Rule"
+                  },
+                  "__typename": "Question"
+                },
+                {
+                  "id": "QtYUHktvxFoa",
+                  "title": "Multiple select (number)",
+                  "key": "multipleSelectNumber",
+                  "dataPointValueType": "NUMBERS_ARRAY",
+                  "options": [
+                    {
+                      "id": "NRhfKVrRJ1qQ",
+                      "value": 0,
+                      "value_string": "0",
+                      "label": "Option 1",
+                      "__typename": "Option"
+                    },
+                    {
+                      "id": "kbdbxrZP9-cY",
+                      "value": 1,
+                      "value_string": "1",
+                      "label": "Option 2",
+                      "__typename": "Option"
+                    },
+                    {
+                      "id": "7EFDVDtvyZ6h",
+                      "value": 2,
+                      "value_string": "2",
+                      "label": "Option 3",
+                      "__typename": "Option"
+                    },
+                    {
+                      "id": "CKqrKwhPbObE",
+                      "value": 3,
+                      "value_string": "3",
+                      "label": "Option 4",
+                      "__typename": "Option"
+                    }
+                  ],
+                  "questionType": "MULTIPLE_CHOICE",
+                  "userQuestionType": "MULTIPLE_SELECT",
+                  "questionConfig": {
+                    "recode_enabled": false,
+                    "use_select": false,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "itIWCRRzD4ve",
+                  "title": "Multiple select (string)",
+                  "key": "multipleSelectString",
+                  "dataPointValueType": "STRINGS_ARRAY",
+                  "options": [
+                    {
+                      "id": "v3XJP3ZgMyc9",
+                      "value": -1,
+                      "value_string": "some option",
+                      "label": "Option 1",
+                      "__typename": "Option"
+                    },
+                    {
+                      "id": "JYHA_c6UFLJX",
+                      "value": 3232,
+                      "value_string": "3232",
+                      "label": "Option 2",
+                      "__typename": "Option"
+                    },
+                    {
+                      "id": "xmXV065kgDEk",
+                      "value": -1,
+                      "value_string": "another option",
+                      "label": "Option 3",
+                      "__typename": "Option"
+                    },
+                    {
+                      "id": "eCrmxno3fpcy",
+                      "value": -1,
+                      "value_string": "option 4",
+                      "label": "fdsfds",
+                      "__typename": "Option"
+                    }
+                  ],
+                  "questionType": "MULTIPLE_CHOICE",
+                  "userQuestionType": "MULTIPLE_SELECT",
+                  "questionConfig": {
+                    "recode_enabled": false,
+                    "use_select": false,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": {
+                    "id": "sJlYkRgbmffA",
+                    "boolean_operator": "AND",
+                    "definition_id": "pJKUPqNNR68_FY9DYf-nb",
+                    "conditions": [],
+                    "__typename": "Rule"
+                  },
+                  "__typename": "Question"
+                },
+                {
+                  "id": "qCB8jwtO0W88",
+                  "title": "Yes or no? (boolean)",
+                  "key": "yesOrNoBoolean",
+                  "dataPointValueType": "BOOLEAN",
+                  "options": [],
+                  "questionType": "INPUT",
+                  "userQuestionType": "YES_NO",
+                  "questionConfig": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "elcBgq26gF2E",
+                  "title": "Slider",
+                  "key": "slider",
+                  "dataPointValueType": "NUMBER",
+                  "options": [],
+                  "questionType": "INPUT",
+                  "userQuestionType": "SLIDER",
+                  "questionConfig": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": {
+                      "min": 0,
+                      "max": 10,
+                      "step_value": 1,
+                      "display_marks": false,
+                      "min_label": "Min label",
+                      "max_label": "Max label",
+                      "is_value_tooltip_on": false,
+                      "show_min_max_values": false,
+                      "__typename": "SliderConfig"
+                    },
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "rAX3k0PmCX1d",
+                  "title": "Date",
+                  "key": "date",
+                  "dataPointValueType": "DATE",
+                  "options": [],
+                  "questionType": "INPUT",
+                  "userQuestionType": "DATE",
+                  "questionConfig": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "Jhma0A4k2MsO",
+                  "title": "Email",
+                  "key": "email",
+                  "dataPointValueType": "STRING",
+                  "options": [],
+                  "questionType": "INPUT",
+                  "userQuestionType": "EMAIL",
+                  "questionConfig": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "uud3GyT1Llrt",
+                  "title": "Question that collects a numeric value",
+                  "key": "questionThatCollectsANumericValue",
+                  "dataPointValueType": "NUMBER",
+                  "options": [],
+                  "questionType": "INPUT",
+                  "userQuestionType": "NUMBER",
+                  "questionConfig": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "IGi8cYzIcgLe",
+                  "title": "Question that collects a sstring value",
+                  "key": "questionThatCollectsASstringValue",
+                  "dataPointValueType": "STRING",
+                  "options": [],
+                  "questionType": "INPUT",
+                  "userQuestionType": "SHORT_TEXT",
+                  "questionConfig": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "cIcRxPN8ewsa",
+                  "title": "Question that collects a string but long-form (textarea)",
+                  "key": "questionThatCollectsAStringButLongFormTextarea",
+                  "dataPointValueType": "STRING",
+                  "options": [],
+                  "questionType": "INPUT",
+                  "userQuestionType": "LONG_TEXT",
+                  "questionConfig": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "bART0JQwJIz5",
+                  "title": "Question that collects a phone number",
+                  "key": "questionThatCollectsAPhoneNumber",
+                  "dataPointValueType": "TELEPHONE",
+                  "options": [],
+                  "questionType": "INPUT",
+                  "userQuestionType": "TELEPHONE",
+                  "questionConfig": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": {
+                      "default_country": "GB",
+                      "available_countries": [],
+                      "__typename": "PhoneConfig"
+                    },
+                    "number": null,
+                    "multiple_select": null,
+                    "date": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "wRYtMv97PCgr",
+                  "title": "ICD",
+                  "key": "icd",
+                  "dataPointValueType": "STRING",
+                  "options": [],
+                  "questionType": "INPUT",
+                  "userQuestionType": "ICD10_CLASSIFICATION",
+                  "questionConfig": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "r8lfwtes48Ru",
+                  "title": "<p class=\"slate-p\">Another description element</p>",
+                  "key": "typePChildrenTextAnotherDescriptionElement",
+                  "dataPointValueType": null,
+                  "options": [],
+                  "questionType": "NO_INPUT",
+                  "userQuestionType": "DESCRIPTION",
+                  "questionConfig": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                }
+              ],
+              "__typename": "Form"
+            }
+          },
+          "outputs": null,
+          "__typename": "Activity"
+        },
+        {
+          "id": "N0uTnITSUb2mtTX05cVXi",
+          "stream_id": "GeDg7fJmddZi",
+          "icon_url": null,
+          "subject": {
+            "id": null,
+            "type": "AWELL",
+            "name": "Awell",
+            "__typename": "ActivitySubject"
+          },
+          "action": "ASSIGNED",
+          "date": "2025-07-11T00:29:31.202Z",
+          "object": {
+            "id": "y0KbfCuyxzYszR2H85Cru",
+            "type": "MESSAGE",
+            "name": "here's a message",
+            "__typename": "ActivityObject"
+          },
+          "indirect_object": {
+            "id": "Eh4UQbKZKBk6hKd0M7wKk",
+            "type": "PATIENT",
+            "name": "jb belanger",
+            "__typename": "ActivityObject"
+          },
+          "status": "ACTIVE",
+          "resolution": null,
+          "reference_id": "PathwayNavigationNode/290321759",
+          "reference_type": "NAVIGATION",
+          "track": {
+            "id": "n3LQ8CG75N6i",
+            "title": "a track with lots of activity types",
+            "__typename": "ActivityTrack"
+          },
+          "container_name": "step w/message and checklist",
+          "label": {
+            "id": "",
+            "text": "",
+            "color": "green",
+            "__typename": "ActivityLabel"
+          },
+          "sub_activities": [
+            {
+              "id": "7ku4ZJ0oXKlQ1XtlWEJvb",
+              "date": "2025-07-11T00:29:31.202Z",
+              "action": "ACTIVATE",
+              "error": null,
+              "scheduled_date": null,
+              "error_category": null,
+              "text": null,
+              "subject": {
+                "id": null,
+                "type": "AWELL",
+                "name": "Awell",
+                "__typename": "ActivitySubject"
+              },
+              "object": null,
+              "__typename": "SubActivity"
+            },
+            {
+              "id": "uxKqvlfCCzRyZBr0JSJNd",
+              "date": "2025-07-11T00:29:32.202Z",
+              "action": "SEND",
+              "error": null,
+              "scheduled_date": null,
+              "error_category": null,
+              "text": null,
+              "subject": {
+                "id": null,
+                "type": "AWELL",
+                "name": "Awell",
+                "__typename": "ActivitySubject"
+              },
+              "object": null,
+              "__typename": "SubActivity"
+            }
+          ],
+          "isUserActivity": true,
+          "context": {
+            "instance_id": "V4hEcPlbGCCc",
+            "pathway_id": "GeDg7fJmddZi",
+            "track_id": "0cevg171of2L",
+            "step_id": "0wzMpDVMsXLv",
+            "action_id": "V4hEcPlbGCCc",
+            "agent_thread_id": null,
+            "agent_id": null,
+            "agent_config_id": null,
+            "run_id": null,
+            "__typename": "PathwayContext"
+          },
+          "stakeholders": null,
+          "action_component": {
+            "definition_id": "zH2JPZLzVmOq",
+            "title": "my comprehensive message",
+            "__typename": "ActionComponent"
+          },
+          "inputs": null,
+          "outputs": null,
+          "__typename": "Activity"
+        },
+        {
+          "id": "ieyUit4GozaK6sELQgz4Z",
+          "stream_id": "GeDg7fJmddZi",
+          "icon_url": null,
+          "subject": {
+            "id": null,
+            "type": "AWELL",
+            "name": "Awell",
+            "__typename": "ActivitySubject"
+          },
+          "action": "ACTIVATE",
+          "date": "2025-07-11T00:29:30.323Z",
+          "object": {
+            "id": "1CnTTHNYM1Q3",
+            "type": "PATHWAY",
+            "name": "activities of all types",
+            "__typename": "ActivityObject"
+          },
+          "indirect_object": null,
+          "status": "DONE",
+          "resolution": "SUCCESS",
+          "reference_id": "PathwayNavigationNode/290321740",
+          "reference_type": "NAVIGATION",
+          "track": null,
+          "container_name": null,
+          "label": null,
+          "sub_activities": [],
+          "isUserActivity": false,
+          "context": {
+            "instance_id": "GeDg7fJmddZi",
+            "pathway_id": "GeDg7fJmddZi",
+            "track_id": null,
+            "step_id": null,
+            "action_id": null,
+            "agent_thread_id": null,
+            "agent_id": null,
+            "agent_config_id": null,
+            "run_id": null,
+            "__typename": "PathwayContext"
+          },
+          "stakeholders": null,
+          "action_component": null,
+          "inputs": null,
+          "outputs": null,
+          "__typename": "Activity"
+        }
+      ],
+      "success": true,
+      "metadata": {
+        "stakeholders": null,
+        "__typename": "ActivityMetadata"
+      },
+      "__typename": "ActivitiesPayload"
+    }
+  }
+}

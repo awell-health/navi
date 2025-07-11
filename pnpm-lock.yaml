@@ -41,9 +41,9 @@ importers:
       '@apollo/experimental-nextjs-app-support':
         specifier: ^0.12.2
         version: 0.12.2(@apollo/client@3.13.8(@types/react@19.1.8)(graphql-ws@6.0.5(graphql@16.11.0)(ws@8.18.2))(graphql@16.11.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@types/react@19.1.8)(graphql@16.11.0)(next@15.3.3(@babel/core@7.27.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@awell-health/navi-react':
+      '@awell-health/navi-activities':
         specifier: workspace:*
-        version: link:../../packages/navi-react
+        version: link:../../packages/navi-activities
       '@hookform/resolvers':
         specifier: ^5.1.1
         version: 5.1.1(react-hook-form@7.58.0(react@19.1.0))
@@ -283,6 +283,15 @@ importers:
       typescript:
         specifier: ^5.3.0
         version: 5.8.3
+
+  packages/navi-activities:
+    dependencies:
+      react:
+        specifier: ^19.0.0
+        version: 19.1.0
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.1.0(react@19.1.0)
 
   packages/navi-core:
     dependencies:
