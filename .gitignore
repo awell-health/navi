@@ -119,3 +119,4 @@ Thumbs.db
 
 # Stripe example files
 stripe-example-files/
+*storybook.log
