@@ -25,6 +25,7 @@ fragment Activity on Activity {
   session_id
   status
   tenant_id
+  is_user_activity
   sub_activities {
     id
     action

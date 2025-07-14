@@ -122,7 +122,11 @@ export default function CareflowActivitiesClient({
         "📋 Activities loaded from GraphQL:",
         activitiesData.pathwayActivities.activities.length
       );
-      setActivities(activitiesData.pathwayActivities.activities);
+      setActivities(
+        activitiesData.pathwayActivities.activities.filter(
+          (a) => a.is_user_activity
+        )
+      );
     }
   }, [activitiesData, activitiesLoading]);
 
