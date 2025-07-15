@@ -1,18 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { BrandingConfig } from "../../../../packages/navi-core/dist/types/config";
 
 declare global {
   interface Window {
     Navi: (publishableKey: string) => {
-      renderActivities: (
+      render: (
         containerId: string,
         options: any
-      ) => {
+      ) => Promise<{
         destroy: () => void;
         iframe: HTMLIFrameElement;
         on: (event: string, callback: (data: any) => void) => void;
-      };
+      }>;
     };
   }
 }
@@ -26,18 +27,13 @@ export default function HomePage() {
   const [showIframe, setShowIframe] = useState(false);
 
   // Sunrise Health test configuration from generate-tokens
-  const testConfig = {
+  const testConfig: Record<string, string> = {
     publishableKey: "pk_test_demo123",
     pathwayId: "GeDg7fJmddZi", // From Sunrise Health token
     stakeholderId: "Eh4UQbKZKBk6hKd0M7wKk", // From Sunrise Health token
     organizationId: "sunrise-health",
     userId: "user_patient_123",
     sessionId: `session_${Date.now()}`,
-    branding: {
-      primary: "#FF6C4C",
-      secondary: "#004E7C",
-      fontFamily: "Inter, sans-serif",
-    },
   };
 
   // Load navi.js script
@@ -62,7 +58,7 @@ export default function HomePage() {
     setEvents((prev) => [...prev, { type, data, timestamp: new Date() }]);
   };
 
-  const startIframeTest = () => {
+  const startIframeTest = async () => {
     if (!naviLoaded || !window.Navi) {
       alert("Navi.js not loaded yet");
       return;
@@ -71,20 +67,14 @@ export default function HomePage() {
     // Create Navi instance
     const navi = window.Navi(testConfig.publishableKey);
 
-    // Use the real careflows URL instead of embed
-    const careflowsUrl = `http://localhost:3000/careflows/${testConfig.pathwayId}/stakeholders/${testConfig.stakeholderId}`;
-
-    // Render activities with Sunrise Health config pointing to real careflows page
-    const instance = navi.renderActivities("#navi-container", {
-      pathwayId: testConfig.pathwayId,
+    console.log("running iframe test", testConfig);
+    // Render activities with Sunrise Health config (Use Case 2: existing careflow)
+    const instance = await navi.render("#navi-container", {
+      careflowId: testConfig.pathwayId, // Use Case 2: Resume existing care flow
       stakeholderId: testConfig.stakeholderId,
-      organizationId: testConfig.organizationId,
-      userId: testConfig.userId,
-      sessionId: testConfig.sessionId,
-      branding: testConfig.branding,
+      ...(testConfig.branding && { branding: testConfig.branding }),
       size: "standard",
-      // Override the URL to point to the real careflows page
-      embedUrl: careflowsUrl,
+      // Let the API determine the correct embed URL (/embed/[careflow_id])
     });
 
     // Set up comprehensive event logging
@@ -103,14 +93,6 @@ export default function HomePage() {
     eventTypes.forEach((eventType) => {
       instance.on(eventType, (data: any) => {
         console.log(`🎯  ${eventType}:`, data);
-
-        // Handle dynamic iframe resizing
-        if (eventType === "navi.height.changed" && data.height) {
-          console.log(`📏 Resizing iframe to ${data.height}px`);
-          // The navi.js SDK automatically handles the resizing,
-          // but we can add custom logic here if needed
-        }
-
         setEvents((prev) => [
           ...prev,
           {
@@ -124,6 +106,67 @@ export default function HomePage() {
 
     setNaviInstance(instance);
     setShowIframe(true);
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const startNewCareFlowTest = async () => {
+    if (!naviLoaded || !window.Navi) {
+      alert("Navi.js not loaded yet");
+      return;
+    }
+
+    // Create Navi instance
+    const navi = window.Navi(testConfig.publishableKey);
+
+    // Use Case 1: Start new care flow
+    try {
+      const instance = await navi.render("#navi-container", {
+        careflowDefinitionId: "cf_def_patient_intake", // New care flow definition
+        awellPatientId: "patient_new_123", // Optional existing patient
+        stakeholderId: testConfig.stakeholderId,
+        ...(testConfig.branding && {
+          branding: {
+            ...(testConfig.branding as BrandingConfig),
+            welcomeTitle: "New Patient Intake",
+            welcomeSubtitle: "Welcome to the new patient intake",
+          },
+        }),
+        size: "standard",
+      });
+
+      // Set up comprehensive event logging
+      const eventTypes = [
+        "navi.activity.ready",
+        "navi.activity.activate",
+        "navi.activity.progress",
+        "navi.activity.dataChange",
+        "navi.activity.completed",
+        "navi.activity.error",
+        "navi.activity.focus",
+        "navi.activity.blur",
+        "navi.height.changed", // 📏 Dynamic iframe resizing
+      ];
+
+      eventTypes.forEach((eventType) => {
+        instance.on(eventType, (data: any) => {
+          console.log(`🆕 New Care Flow - ${eventType}:`, data);
+          setEvents((prev) => [
+            ...prev,
+            {
+              type: `NEW CF - ${eventType}`,
+              data,
+              timestamp: new Date(),
+            },
+          ]);
+        });
+      });
+
+      setNaviInstance(instance);
+      setShowIframe(true);
+    } catch (error) {
+      console.error("❌ Failed to start new care flow:", error);
+      addEvent("error", { message: "Failed to start new care flow", error });
+    }
   };
 
   const stopIframeTest = () => {
@@ -251,16 +294,6 @@ export default function HomePage() {
                   {testConfig.organizationId}
                 </code>
               </div>
-              <div>
-                <strong>Primary Color:</strong>
-                <span
-                  className="inline-block w-4 h-4 rounded ml-2"
-                  style={{ backgroundColor: testConfig.branding.primary }}
-                ></span>
-                <code className="bg-orange-100 px-1 rounded ml-1">
-                  {testConfig.branding.primary}
-                </code>
-              </div>
             </div>
           </div>
 
@@ -315,9 +348,8 @@ export default function HomePage() {
                     <div className="text-4xl mb-2">🖼️</div>
                     <p>Click "Start Iframe Test" to embed activities</p>
                     <p className="text-sm mt-1">
-                      Will create iframe: localhost:3000/careflows/
-                      {testConfig.pathwayId}/stakeholders/
-                      {testConfig.stakeholderId}
+                      Will create iframe: localhost:3000/embed/
+                      {testConfig.pathwayId}
                     </p>
                   </div>
                 )}

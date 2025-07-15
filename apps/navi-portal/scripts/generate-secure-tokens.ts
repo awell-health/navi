@@ -4,7 +4,7 @@ import { createSessionToken } from "../src/lib/auth/internal/session";
 import type {
   TokenEnvironment,
   SessionTokenData,
-} from "../src/lib/auth/internal/types";
+} from "@awell-health/navi-core";
 
 /**
  * Generate test tokens using secure AES-GCM encryption
@@ -23,6 +23,8 @@ async function generateSecureTokens(environment: TokenEnvironment = "test") {
       tenantId: "_v0nvLX5zCNd",
       environment: "development",
       exp: thirtyDaysFromNow,
+      stakeholderId: "stakeholder_123",
+      authenticationState: "unauthenticated",
     };
 
     const sunriseToken = await createSessionToken(sunrisePayload);
@@ -41,6 +43,8 @@ async function generateSecureTokens(environment: TokenEnvironment = "test") {
       tenantId: "_v0nvLX5zCNd",
       environment: "development",
       exp: thirtyDaysFromNow,
+      stakeholderId: "stakeholder_123",
+      authenticationState: "unauthenticated",
     };
 
     const techCorpToken = await createSessionToken(techCorpPayload);
@@ -59,6 +63,8 @@ async function generateSecureTokens(environment: TokenEnvironment = "test") {
       tenantId: "h1TcvWEcVCU7",
       environment: "development",
       exp: thirtyDaysFromNow, // 5 minutes from now
+      stakeholderId: "stakeholder_123",
+      authenticationState: "unauthenticated",
     };
 
     const defaultToken = await createSessionToken(defaultPayload);
@@ -77,6 +83,8 @@ async function generateSecureTokens(environment: TokenEnvironment = "test") {
       tenantId: "expired_tenant",
       environment,
       exp: Date.now() - 1000, // 1 second ago
+      stakeholderId: "stakeholder_123",
+      authenticationState: "unauthenticated",
     };
 
     const expiredToken = await createSessionToken(expiredPayload);

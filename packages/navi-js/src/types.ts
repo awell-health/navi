@@ -1,28 +1,28 @@
+import type { BrandingConfig } from "@awell-health/navi-core";
+
 export interface NaviInstance {
-  renderActivities: (containerId: string, options: RenderOptions) => NaviEmbedInstance;
+  renderActivities: (
+    containerId: string,
+    options: RenderOptions
+  ) => NaviEmbedInstance;
 }
 
 export interface RenderOptions {
   pathwayId: string;
   stakeholderId?: string;
-  
+
   // For JWT creation - what we need from the customer
-  organizationId?: string;  // Customer's org ID (for JWT aud claim)
-  userId?: string;          // End user ID (for JWT sub claim)
-  sessionId?: string;       // Session tracking
-  
+  organizationId?: string; // Customer's org ID (for JWT aud claim)
+  userId?: string; // End user ID (for JWT sub claim)
+  sessionId?: string; // Session tracking
+
   // UI customization
-  branding?: {
-    primary?: string;
-    secondary?: string;
-    fontFamily?: string;
-    logoUrl?: string;
-  };
-  
+  branding?: BrandingConfig;
+
   // Iframe sizing
-  size?: 'compact' | 'standard' | 'full' | 'custom';
-  height?: number;  // Custom height in pixels
-  width?: string;   // Custom width (e.g., '100%', '800px')
+  size?: "compact" | "standard" | "full" | "custom";
+  height?: number; // Custom height in pixels
+  width?: string; // Custom width (e.g., '100%', '800px')
 }
 
 export interface NaviEmbedInstance {
@@ -50,4 +50,4 @@ declare global {
   interface Window {
     Navi?: NaviConstructor;
   }
-} 
+}

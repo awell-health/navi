@@ -28,9 +28,10 @@ navi-react (Components) ← Direct React integration
 **Dependencies**: Minimal - only essential utilities
 
 ### **Key Responsibilities**
+
 - TypeScript type definitions
 - Authentication utilities (JWT, token validation)
-- GraphQL client configuration  
+- GraphQL client configuration
 - Shared interfaces and enums
 - Validation functions
 - Error handling utilities
@@ -38,31 +39,32 @@ navi-react (Components) ← Direct React integration
 ### **Development Guidelines**
 
 #### **Code Structure**
+
 ```typescript
 // ✅ Good - Pure utilities
 export function validatePublishableKey(key: string): boolean {
-  return key.startsWith('pk_test_') || key.startsWith('pk_live_');
+  return key.startsWith("pk_test_") || key.startsWith("pk_live_");
 }
 
-// ✅ Good - Type definitions
-export interface BrandingConfig {
-  primary?: string;
-  secondary?: string;
-  fontFamily?: string;
-  logoUrl?: string;
-}
+// ✅ Good - Use shared types from navi-core
+import type { BrandingConfig } from "@awell-health/navi-core";
+
+// BrandingConfig is defined in navi-core/src/types/config.ts
+// and shared across all packages to avoid duplication
 
 // ❌ Bad - No side effects or globals
 window.naviCore = {}; // Don't do this
 ```
 
 #### **Testing Requirements**
+
 - **Unit tests**: Every exported function
 - **Type tests**: Interface compatibility
 - **Edge cases**: Validation functions
 - **No integration tests**: Pure utilities only
 
 #### **API Stability Rules**
+
 - **NEVER remove** exported functions/types
 - **NEVER change** existing interfaces (breaking)
 - **ALWAYS** maintain backward compatibility
@@ -70,6 +72,7 @@ window.naviCore = {}; // Don't do this
 - **CAN add** new utility functions
 
 #### **Performance Considerations**
+
 - **Tree-shakeable exports**: Each function separately exportable
 - **No large dependencies**: Keep bundle minimal
 - **Lazy loading**: Heavy utilities should be optional imports
@@ -84,6 +87,7 @@ window.naviCore = {}; // Don't do this
 **Runtime**: Edge or Node.js (use Runtime Decision Matrix)
 
 ### **Key Responsibilities**
+
 - Embed route (`/embed/[pathway_id]`)
 - JWT token creation and validation
 - Activity rendering inside iframes
@@ -93,7 +97,8 @@ window.naviCore = {}; // Don't do this
 
 ### **Development Guidelines**
 
-#### **Embed Route Contract** 
+#### **Embed Route Contract**
+
 ```typescript
 // ✅ Required route signature - CANNOT change without major version
 GET /embed/[pathway_id]?pk={key}&instance_id={id}&org_id={org}&user_id={user}&session_id={session}&stakeholder_id={stakeholder}&branding={json}
@@ -108,6 +113,7 @@ interface NaviEmbedMessage {
 ```
 
 #### **Security Requirements**
+
 - **JWT validation**: Proper signature verification
 - **Origin validation**: Secure cross-origin messaging
 - **HIPAA compliance**: Structured logging, no PII in logs
@@ -115,12 +121,14 @@ interface NaviEmbedMessage {
 - **Input sanitization**: All query parameters
 
 #### **Performance Requirements**
+
 - **First Contentful Paint**: < 1000ms on 4G mobile
 - **Time to Interactive**: < 2500ms
 - **Bundle optimization**: Code splitting, dynamic imports
 - **Edge runtime preferred**: For global distribution
 
 #### **Testing Requirements**
+
 - **Cross-origin tests**: Verify postMessage communication
 - **JWT validation tests**: Token creation and verification
 - **Performance tests**: Lighthouse CI integration
@@ -128,13 +136,14 @@ interface NaviEmbedMessage {
 - **Error boundary tests**: Graceful failure handling
 
 #### **Branding System**
+
 ```typescript
 // ✅ Branding implementation pattern
 const branding = await getBrandingByOrgId(orgId);
 const themeCSS = generateThemeCSS(branding);
 
 // Apply CSS custom properties
-document.documentElement.style.setProperty('--primary-color', branding.primary);
+document.documentElement.style.setProperty("--primary-color", branding.primary);
 ```
 
 ---
@@ -147,6 +156,7 @@ document.documentElement.style.setProperty('--primary-color', branding.primary);
 **Distribution**: CDN only (cannot be bundled)
 
 ### **Key Responsibilities**
+
 - Global `window.Navi` API
 - Iframe creation and management
 - Cross-origin postMessage handling
@@ -157,6 +167,7 @@ document.documentElement.style.setProperty('--primary-color', branding.primary);
 ### **Development Guidelines**
 
 #### **Global API Stability**
+
 ```typescript
 // ✅ NEVER change this signature - customer-facing API
 declare global {
@@ -167,7 +178,10 @@ declare global {
 
 // ✅ NEVER remove methods - breaking change
 interface NaviInstance {
-  renderActivities: (containerId: string, options: RenderOptions) => NaviEmbedInstance;
+  renderActivities: (
+    containerId: string,
+    options: RenderOptions
+  ) => NaviEmbedInstance;
 }
 
 // ✅ Can add optional properties to options
@@ -181,14 +195,16 @@ interface RenderOptions {
 ```
 
 #### **Cross-Origin Security**
+
 ```typescript
 // ✅ Strict origin validation
 const handleMessage = (event: MessageEvent) => {
   // Development vs production origins
-  const allowedOrigins = process.env.NODE_ENV === 'development' 
-    ? ['http://localhost:3000']
-    : ['https://embed.navi.com'];
-    
+  const allowedOrigins =
+    process.env.NODE_ENV === "development"
+      ? ["http://localhost:3000"]
+      : ["https://embed.navi.com"];
+
   if (!allowedOrigins.includes(event.origin)) {
     return; // Ignore unauthorized messages
   }
@@ -196,6 +212,7 @@ const handleMessage = (event: MessageEvent) => {
 ```
 
 #### **Bundle Size Optimization**
+
 - **No external dependencies**: Inline everything needed
 - **Tree shaking**: Remove unused code paths
 - **Minification**: UglifyJS/Terser aggressive settings
@@ -203,17 +220,21 @@ const handleMessage = (event: MessageEvent) => {
 - **Bundle analysis**: Regular size monitoring
 
 #### **Error Handling**
+
 ```typescript
 // ✅ Customer-friendly error handling
 try {
-  const instance = navi.renderActivities('#container', options);
+  const instance = navi.renderActivities("#container", options);
 } catch (error) {
   // ✅ Actionable error messages
-  throw new Error(`Navi SDK: Container '#container' not found. Please ensure the element exists before calling renderActivities.`);
+  throw new Error(
+    `Navi SDK: Container '#container' not found. Please ensure the element exists before calling renderActivities.`
+  );
 }
 ```
 
 #### **Testing Requirements**
+
 - **Cross-origin tests**: iframe ↔ parent communication
 - **Bundle size tests**: Automated size limit checking
 - **Integration tests**: Full customer flow simulation
@@ -230,6 +251,7 @@ try {
 **Distribution**: NPM only
 
 ### **Key Responsibilities**
+
 - CDN script loading (like `@stripe/stripe-js`)
 - Environment detection (localhost vs CDN)
 - TypeScript type definitions
@@ -239,13 +261,14 @@ try {
 ### **Development Guidelines**
 
 #### **CDN Loading Pattern**
+
 ```typescript
 // ✅ Stripe-like loading pattern
 export const loadNavi: LoadNavi = async (publishableKey: string) => {
   // ✅ Cannot bundle - must load from CDN
   const script = await loadScript(); // Loads from CDN
   if (!script) return null;
-  
+
   return script(publishableKey);
 };
 
@@ -254,30 +277,33 @@ export const loadNavi: LoadNavi = async (publishableKey: string) => {
 ```
 
 #### **Version Mapping Management**
+
 ```typescript
 // ✅ Map NPM version to CDN version
 const CDN_VERSION_MAP = {
-  '1.0.0': 'v1.0.0',
-  '1.1.0': 'v1.1.0',
-  '1.2.0': 'v1.2.0'
+  "1.0.0": "v1.0.0",
+  "1.1.0": "v1.1.0",
+  "1.2.0": "v1.2.0",
 };
 
 // ✅ Environment-aware URLs
 const getCDNUrl = () => {
-  const version = CDN_VERSION_MAP[_VERSION] || 'v1';
-  return process.env.NODE_ENV === 'development'
+  const version = CDN_VERSION_MAP[_VERSION] || "v1";
+  return process.env.NODE_ENV === "development"
     ? `http://localhost:3000/navi-loader.js`
     : `https://cdn.navi.com/${version}/navi-loader.js`;
 };
 ```
 
 #### **TypeScript Integration**
+
 - **Full type coverage**: Complete API definitions
 - **Ambient declarations**: Global `window.Navi` types
 - **Generic safety**: Proper inference
 - **Export organization**: Clean public API
 
 #### **Testing Requirements**
+
 - **CDN loading tests**: Script injection and loading
 - **Environment tests**: localhost vs production URLs
 - **Type tests**: TypeScript compilation
@@ -293,8 +319,9 @@ const getCDNUrl = () => {
 **Distribution**: NPM package
 
 ### **Key Responsibilities**
+
 - React context provider
-- Activity rendering components  
+- Activity rendering components
 - Custom hooks for Navi integration
 - State management
 - Component lifecycle handling
@@ -302,68 +329,82 @@ const getCDNUrl = () => {
 ### **Development Guidelines**
 
 #### **Component Architecture**
+
 ```tsx
 // ✅ Provider pattern
-export function NaviProvider({ publishableKey, pathwayId, branding, children }: NaviProviderProps) {
+export function NaviProvider({
+  publishableKey,
+  pathwayId,
+  branding,
+  children,
+}: NaviProviderProps) {
   // ✅ Stable state management
   const [naviState, setNaviState] = useState<NaviContextType>(initialState);
-  
+
   // ✅ Memoized context value
-  const contextValue = useMemo(() => ({
-    ...naviState,
-    publishableKey,
-    pathwayId
-  }), [naviState, publishableKey, pathwayId]);
-  
+  const contextValue = useMemo(
+    () => ({
+      ...naviState,
+      publishableKey,
+      pathwayId,
+    }),
+    [naviState, publishableKey, pathwayId]
+  );
+
   return (
-    <NaviContext.Provider value={contextValue}>
-      {children}
-    </NaviContext.Provider>
+    <NaviContext.Provider value={contextValue}>{children}</NaviContext.Provider>
   );
 }
 ```
 
 #### **Hooks Rules Compliance**
+
 ```tsx
 // ✅ Proper hooks usage
 export function MockActivitiesLoader() {
   const { publishableKey, pathwayId, branding, isLoading, error } = useNavi();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [events, setEvents] = useState<Event[]>([]);
-  
+
   // ✅ All hooks at top level before conditionals
   const embedUrl = useMemo(() => {
-    if (!pathwayId || !publishableKey) return '';
+    if (!pathwayId || !publishableKey) return "";
     return buildEmbedUrl(pathwayId, publishableKey, branding);
   }, [pathwayId, publishableKey, branding]);
-  
+
   // ✅ Then conditional returns
   if (isLoading) return <LoadingSpinner />;
   if (error) return <ErrorMessage error={error} />;
-  
+
   return <iframe ref={iframeRef} src={embedUrl} />;
 }
 ```
 
 #### **Performance Optimization**
+
 ```tsx
 // ✅ Memoization for expensive operations
-const processedData = useMemo(() => 
-  heavyDataProcessing(rawData), [rawData]
-);
+const processedData = useMemo(() => heavyDataProcessing(rawData), [rawData]);
 
 // ✅ Stable callback references
-const handleMessage = useCallback((event: MessageEvent) => {
-  // Handle iframe messages
-}, [instanceId]);
+const handleMessage = useCallback(
+  (event: MessageEvent) => {
+    // Handle iframe messages
+  },
+  [instanceId]
+);
 
 // ✅ Avoid recreating objects in render
-const style = useMemo(() => ({
-  fontFamily: branding?.fontFamily || 'Inter, sans-serif'
-}), [branding?.fontFamily]);
+const style = useMemo(
+  () => ({
+    fontFamily: branding?.fontFamily || "Inter, sans-serif",
+  }),
+  [branding?.fontFamily]
+);
 ```
 
 #### **Accessibility Requirements**
+
 - **WCAG 2.1 AA**: All components compliant
 - **Keyboard navigation**: Full keyboard accessibility
 - **Screen readers**: Proper ARIA labels
@@ -371,6 +412,7 @@ const style = useMemo(() => ({
 - **Color contrast**: Minimum 4.5:1 ratio
 
 #### **Testing Requirements**
+
 - **Component tests**: React Testing Library
 - **Hook tests**: Custom hook behavior
 - **Integration tests**: Provider + consumer patterns
@@ -382,16 +424,18 @@ const style = useMemo(() => ({
 ## 🔧 Cross-Package Coordination
 
 ### **Dependency Updates**
+
 ```bash
 # ✅ Update dependencies in order
 1. Update navi-core types
 2. Update navi-portal to use new types
 3. Update navi-loader if embed API changed
-4. Update navi-js if loader API changed  
+4. Update navi-js if loader API changed
 5. Update navi-react if core types changed
 ```
 
 ### **Breaking Change Coordination**
+
 ```typescript
 // ✅ When changing core types
 // 1. Update API-CONTRACTS.md FIRST
@@ -402,6 +446,7 @@ const style = useMemo(() => ({
 ```
 
 ### **Testing Integration**
+
 ```bash
 # ✅ Always test the full flow
 pnpm dev  # localhost:3000 + localhost:3001
@@ -415,6 +460,7 @@ pnpm dev  # localhost:3000 + localhost:3001
 ## 📋 Quality Gates
 
 ### **Pre-Merge Checklist**
+
 - [ ] All package tests pass
 - [ ] Cross-package integration tested
 - [ ] Bundle sizes within limits
@@ -423,10 +469,11 @@ pnpm dev  # localhost:3000 + localhost:3001
 - [ ] Accessibility standards maintained
 
 ### **Release Readiness**
+
 - [ ] Changesets generated for affected packages
 - [ ] Version coordination planned
 - [ ] CDN deployment strategy ready
 - [ ] Customer migration path documented
 - [ ] Rollback procedures tested
 
-This ensures every package maintains high quality while working together as a cohesive SDK system! 🚀 
+This ensures every package maintains high quality while working together as a cohesive SDK system! 🚀

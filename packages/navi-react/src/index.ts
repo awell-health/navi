@@ -1,2 +1,2 @@
-export { NaviProvider, useNavi } from './navi-provider';
-export { MockActivitiesLoader } from './mock-activities-loader'; 
+export { NaviProvider, useNavi } from "./navi-provider";
+export { NaviEmbed } from "./navi-embed";

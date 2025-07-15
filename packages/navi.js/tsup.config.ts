@@ -21,6 +21,12 @@ export default defineConfig({
     options.outbase = "./";
     // Set the global name to be accessible as window.Navi
     options.globalName = "NaviLoader";
+    // Replace process.env.NODE_ENV for browser compatibility
+    options.define = {
+      "process.env.NODE_ENV": JSON.stringify(
+        process.env.NODE_ENV || "development"
+      ),
+    };
   },
   onSuccess: 'echo "✅ Navi loader built successfully"',
 });

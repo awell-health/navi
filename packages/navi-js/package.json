@@ -31,6 +31,9 @@
   "engines": {
     "node": ">=12.16"
   },
+  "dependencies": {
+    "@awell-health/navi-core": "workspace:*"
+  },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.0.0",
     "@rollup/plugin-replace": "^5.0.0",

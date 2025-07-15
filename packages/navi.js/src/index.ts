@@ -3,34 +3,41 @@
  * Built with Turborepo + tsup
  */
 
+import type { BrandingConfig } from "@awell-health/navi-core";
+
 interface NaviInstance {
-  renderActivities: (
+  render: (
     containerId: string,
     options: RenderOptions
-  ) => NaviEmbedInstance;
+  ) => Promise<NaviEmbedInstance>;
 }
 
 interface RenderOptions {
-  pathwayId: string;
-  stakeholderId?: string;
-
-  // For JWT creation - what we need from the customer
-  organizationId?: string; // Customer's org ID (for JWT aud claim)
-  userId?: string; // End user ID (for JWT sub claim)
-  sessionId?: string; // Session tracking
-
-  // UI customization
-  branding?: {
-    primary?: string;
-    secondary?: string;
-    fontFamily?: string;
-    logoUrl?: string;
+  // Use Case 1: Start new careflow
+  careflowDefinitionId?: string;
+  patientIdentifier?: {
+    system: string;
+    value: string;
   };
+  awellPatientId?: string;
 
-  // Iframe sizing - demonstrate different embed sizes
+  // Use Case 2: Resume existing careflow
+  careflowId?: string;
+  careflowToken?: string; // Alternative to session creation
+  trackId?: string;
+  activityId?: string;
+
+  // Legacy support (backward compatibility)
+  pathwayId?: string; // Maps to careflowId
+
+  // Common options
+  stakeholderId?: string;
+  branding?: BrandingConfig;
+
+  // Iframe sizing
   size?: "compact" | "standard" | "full" | "custom";
-  height?: number; // Custom height in pixels
-  width?: string; // Custom width (e.g., '100%', '800px')
+  height?: number;
+  width?: string;
 
   // Custom embed URL override (for testing)
   embedUrl?: string;
@@ -55,17 +62,17 @@ class NaviLoader {
 
   createNavi(publishableKey: string): NaviInstance {
     return {
-      renderActivities: (containerId: string, options: RenderOptions) => {
-        return this.renderActivities(publishableKey, containerId, options);
+      render: async (containerId: string, options: RenderOptions) => {
+        return this.render(publishableKey, containerId, options);
       },
     };
   }
 
-  private renderActivities(
+  private async render(
     publishableKey: string,
     containerId: string,
     options: RenderOptions
-  ): NaviEmbedInstance {
+  ): Promise<NaviEmbedInstance> {
     const container = document.querySelector(containerId);
     if (!container) {
       throw new Error(`Container ${containerId} not found`);
@@ -74,8 +81,11 @@ class NaviLoader {
     // Generate unique instance ID
     const instanceId = `navi-${Math.random().toString(36).substr(2, 9)}`;
 
-    // Create iframe
-    const iframe = this.createIframe(instanceId, publishableKey, options);
+    // Determine which use case and get session/redirect info
+    const sessionInfo = await this.createSession(publishableKey, options);
+
+    // Create iframe with the redirect URL from session creation
+    const iframe = this.createIframe(instanceId, sessionInfo, options);
 
     // Create embed instance
     const instance: NaviEmbedInstance = {
@@ -96,45 +106,115 @@ class NaviLoader {
     return instance;
   }
 
+  private async createSession(
+    publishableKey: string,
+    options: RenderOptions
+  ): Promise<{ redirectUrl: string; careflowId: string; patientId: string }> {
+    const baseUrl =
+      process.env.NODE_ENV === "production"
+        ? "https://embed.navi.com"
+        : "http://localhost:3000";
+
+    // Use Case 1: Start new care flow
+    if (options.careflowDefinitionId) {
+      const response = await fetch(`${baseUrl}/api/start-careflow`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          publishableKey,
+          careflowDefinitionId: options.careflowDefinitionId,
+          awellPatientId: options.awellPatientId,
+          patientIdentifier: options.patientIdentifier,
+          stakeholderId: options.stakeholderId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to start care flow: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(`Failed to start care flow: ${data.error}`);
+      }
+
+      return {
+        redirectUrl: data.redirectUrl,
+        careflowId: data.careflowId,
+        patientId: data.patientId,
+      };
+    }
+
+    // Use Case 2: Resume existing care flow
+    const careflowId = options.careflowId || options.pathwayId; // Support legacy pathwayId
+    if (careflowId) {
+      const response = await fetch(`${baseUrl}/api/create-careflow-session`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          publishableKey,
+          careflowId,
+          trackId: options.trackId,
+          activityId: options.activityId,
+          stakeholderId: options.stakeholderId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to create care flow session: ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(`Failed to create care flow session: ${data.error}`);
+      }
+
+      return {
+        redirectUrl: data.redirectUrl,
+        careflowId: data.careflowId,
+        patientId: data.patientId,
+      };
+    }
+
+    throw new Error(
+      "Either careflowDefinitionId or careflowId must be provided"
+    );
+  }
+
   private createIframe(
     instanceId: string,
-    publishableKey: string,
+    sessionInfo: { redirectUrl: string; careflowId: string; patientId: string },
     options: RenderOptions
   ): HTMLIFrameElement {
     const iframe = document.createElement("iframe");
 
-    // Build embed URL - use custom embedUrl if provided, otherwise default embed pattern
+    // Use the redirect URL from session creation
     let embedUrl: URL;
     if (options.embedUrl) {
       embedUrl = new URL(options.embedUrl);
     } else {
-      // Default embed URL pattern
-      embedUrl = new URL(`http://localhost:3000/embed/${options.pathwayId}`);
+      const baseUrl =
+        process.env.NODE_ENV === "production"
+          ? "https://embed.navi.com"
+          : "http://localhost:3000";
+      embedUrl = new URL(sessionInfo.redirectUrl, baseUrl);
     }
 
-    // Add common parameters
-    embedUrl.searchParams.set("pk", publishableKey);
+    // Add instance_id parameter for iframe communication
     embedUrl.searchParams.set("instance_id", instanceId);
 
-    // JWT creation parameters - what we'll need for real authentication
-    if (options.organizationId) {
-      embedUrl.searchParams.set("org_id", options.organizationId);
-    }
-    if (options.userId) {
-      embedUrl.searchParams.set("user_id", options.userId);
-    }
-    if (options.sessionId) {
-      embedUrl.searchParams.set("session_id", options.sessionId);
-    }
-    if (options.stakeholderId) {
-      embedUrl.searchParams.set("stakeholder_id", options.stakeholderId);
-    }
-
+    // Add branding supplements if provided
     if (options.branding) {
       embedUrl.searchParams.set("branding", JSON.stringify(options.branding));
     }
 
-    // Configure iframe with size options
+    // Configure iframe with session-based URL
     iframe.src = embedUrl.toString();
     iframe.id = instanceId;
     iframe.setAttribute("data-navi-instance", instanceId);

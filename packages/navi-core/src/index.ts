@@ -2,10 +2,7 @@
 export * from "./types";
 
 // Export utility functions
-export { generateCSSCustomProperties, NaviClient, AuthClient } from "./utils";
-
-// Re-export classes for backwards compatibility
-export { NaviClient as default } from "./utils";
+export { generateCSSCustomProperties } from "./utils";
 
 export {
   type BaseActivityProps,

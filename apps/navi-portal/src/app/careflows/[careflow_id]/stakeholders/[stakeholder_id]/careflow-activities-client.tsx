@@ -160,9 +160,6 @@ function CareflowActivitiesContent({
     document.body.style.height = "auto";
     document.documentElement.style.height = "auto";
 
-    // Force reflow
-    document.body.offsetHeight;
-
     const body = document.body;
     const html = document.documentElement;
 

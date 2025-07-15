@@ -1,3 +1,10 @@
+/**
+ * Internal Organization Branding Interface
+ *
+ * Note: For external APIs and shared components, use BrandingConfig from navi-core.
+ * This interface is for internal portal use and includes extended properties
+ * for detailed theming that are not exposed in the public API.
+ */
 export interface OrgBranding {
   orgId: string;
   branding: {
@@ -24,27 +31,27 @@ export interface OrgBranding {
     fontFamilyBody?: string;
     fontFamilyHeading?: string;
     fontFamilyMono?: string;
-    
+
     // Typography - Font sizes
-    fontSizeXs?: string;     // 0.75rem
-    fontSizeSm?: string;     // 0.875rem
-    fontSizeBase?: string;   // 1rem
-    fontSizeLg?: string;     // 1.125rem
-    fontSizeXl?: string;     // 1.25rem
-    fontSize2xl?: string;    // 1.5rem
-    fontSize3xl?: string;    // 1.875rem
-    fontSize4xl?: string;    // 2.25rem
-    
+    fontSizeXs?: string; // 0.75rem
+    fontSizeSm?: string; // 0.875rem
+    fontSizeBase?: string; // 1rem
+    fontSizeLg?: string; // 1.125rem
+    fontSizeXl?: string; // 1.25rem
+    fontSize2xl?: string; // 1.5rem
+    fontSize3xl?: string; // 1.875rem
+    fontSize4xl?: string; // 2.25rem
+
     // Typography - Line heights
-    lineHeightTight?: string;  // 1.25
+    lineHeightTight?: string; // 1.25
     lineHeightNormal?: string; // 1.5
     lineHeightRelaxed?: string; // 1.625
-    
+
     // Typography - Font weights
-    fontWeightNormal?: string;  // 400
-    fontWeightMedium?: string;  // 500
+    fontWeightNormal?: string; // 400
+    fontWeightMedium?: string; // 500
     fontWeightSemibold?: string; // 600
-    fontWeightBold?: string;    // 700
+    fontWeightBold?: string; // 700
     fontWeightExtrabold?: string; // 800
 
     // Radii

@@ -1,17 +1,44 @@
 /**
- * Authentication Configuration
+ * Token Environment Types
  */
-export interface AuthConfig {
-  publishableKey: string;
-  apiUrl?: string;
+export type TokenEnvironment =
+  | "local"
+  | "test"
+  | "development"
+  | "staging"
+  | "sandbox"
+  | "production-eu"
+  | "production-us"
+  | "production-uk";
+
+/**
+ * Authentication State Types
+ */
+export type AuthenticationState =
+  | "unauthenticated"
+  | "verified"
+  | "authenticated";
+
+/**
+ * Session Token Data Structure (Encrypted)
+ */
+export interface SessionTokenData {
+  patientId: string;
+  careflowId: string;
+  stakeholderId: string;
+  orgId: string;
+  tenantId: string;
+  environment: TokenEnvironment;
+  authenticationState: AuthenticationState;
+  exp: number;
 }
 
 /**
- * Authentication Token
+ * Session Data Structure (In Memory)
  */
-export interface AuthToken {
-  token: string;
-  expiresAt: number;
+export interface SessionData extends Omit<SessionTokenData, "exp"> {
+  sessionId: string;
+  expiresAt: Date;
 }
 
 /**
@@ -19,19 +46,13 @@ export interface AuthToken {
  */
 export interface JWTPayload {
   sub: string; // careflow_id
-  stakeholder_id: string; // patient_id
+  stakeholder_id: string; // stakeholder performing actions (patient, care coordinator, etc.)
+  patient_id: string; // patient the care flow belongs to
   tenant_id: string;
   org_id: string;
   environment: string;
-  iss: string; // issuer
+  authentication_state: string; // unauthenticated, verified, authenticated
+  iss: string; // issuer - Kong uses this to lookup the consumer
   exp: number; // expiration timestamp
   iat: number; // issued at timestamp
-}
-
-/**
- * Authentication Result
- */
-export interface AuthResult {
-  jwt: string;
-  payload: JWTPayload;
 }
