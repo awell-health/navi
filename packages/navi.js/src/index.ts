@@ -137,6 +137,7 @@ class NaviLoader {
     // Configure iframe with size options
     iframe.src = embedUrl.toString();
     iframe.id = instanceId;
+    iframe.setAttribute("data-navi-instance", instanceId);
 
     // Apply sizing based on options
     const { width, height } = this.getIframeDimensions(options);
@@ -183,12 +184,12 @@ class NaviLoader {
 
     // Only handle Navi messages
     if (source !== "navi") {
-      console.warn("🚫 Navi.js: Rejecting message from wrong source:", source);
+      console.debug("🚫 Navi.js: Rejecting message from wrong source:", source);
       return;
     }
 
     const instance = this.instances.get(instance_id);
-    console.log("🔍 Navi.js: Instance lookup:", {
+    console.debug("🔍 Navi.js: Instance lookup:", {
       instance_id,
       found: !!instance,
       availableInstances: Array.from(this.instances.keys()),
@@ -229,7 +230,7 @@ class NaviLoader {
         this.handleActivityEvent(instance, "blur", data);
         break;
       default:
-        console.log("🔍 Navi.js: Unknown message type:", type);
+        console.warn("🔍 Navi.js: Unknown message type:", type);
     }
   }
 
@@ -240,11 +241,24 @@ class NaviLoader {
 
     if (iframe) {
       iframe.style.height = `${height}px`;
-      console.log(
-        "📏 Navi.js: Height updated to",
+      console.debug(
+        "✅ SUCCESS: Height updated to",
         height,
         "px for instance",
         instanceId
+      );
+    } else {
+      const allIframes = document.querySelectorAll("iframe");
+      console.warn(
+        "❌ FAILED: No iframe found with selector:",
+        `iframe[data-navi-instance="${instanceId}"]`,
+        "All iframes:",
+        Array.from(allIframes).map((iframe) => ({
+          id: iframe.id,
+          attributes: Array.from(iframe.attributes)
+            .map((attr) => `${attr.name}="${attr.value}"`)
+            .join(", "),
+        }))
       );
     }
   }
@@ -366,8 +380,8 @@ class NaviLoader {
   // Add version and debug info
   (window as any).Navi.version = "1.0.0-poc";
   (window as any).Navi.debug = () => {
-    console.log("🚀 Navi Loader initialized with Turborepo");
-    console.log("📊 Active instances:", (loader as any).instances.size);
+    console.debug("🚀 Navi Loader initialized with Turborepo");
+    console.debug("📊 Active instances:", (loader as any).instances.size);
   };
 
   console.log("🚀 Navi Loader ready");

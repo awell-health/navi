@@ -97,11 +97,20 @@ export default function HomePage() {
       "navi.activity.error",
       "navi.activity.focus",
       "navi.activity.blur",
+      "navi.height.changed", // 📏 Dynamic iframe resizing
     ];
 
     eventTypes.forEach((eventType) => {
       instance.on(eventType, (data: any) => {
         console.log(`🎯  ${eventType}:`, data);
+
+        // Handle dynamic iframe resizing
+        if (eventType === "navi.height.changed" && data.height) {
+          console.log(`📏 Resizing iframe to ${data.height}px`);
+          // The navi.js SDK automatically handles the resizing,
+          // but we can add custom logic here if needed
+        }
+
         setEvents((prev) => [
           ...prev,
           {
@@ -153,7 +162,12 @@ export default function HomePage() {
 
           <p className="text-gray-600 mb-8">
             Testing complete event integration between navi-portal and navi.js
-            using Sunrise Health test data
+            using Sunrise Health test data. The iframe will automatically resize
+            based on content height changes via{" "}
+            <code className="bg-gray-100 px-1 rounded text-sm">
+              navi.height.changed
+            </code>{" "}
+            events.
           </p>
 
           {/* Status Indicators */}
@@ -285,7 +299,7 @@ export default function HomePage() {
           </div>
 
           {/* Main Content Grid */}
-          <div className="grid lg:grid-cols-2 gap-8">
+          <div className="grid gap-8">
             {/* Iframe Container */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -294,7 +308,7 @@ export default function HomePage() {
 
               <div
                 id="navi-container"
-                className="border border-gray-200 rounded-lg min-h-[400px] bg-gray-50 flex items-center justify-center"
+                className="border border-gray-200 rounded-lg min-h-[300px] bg-gray-50 flex items-center justify-center transition-all duration-300 ease-in-out"
               >
                 {!showIframe && (
                   <div className="text-center text-gray-500">
@@ -371,15 +385,19 @@ export default function HomePage() {
                 component mounted
               </div>
               <div>
-                <strong>3.</strong> <code>navi.activity.progress</code> - User
+                <strong>3.</strong> <code>navi.height.changed</code> - Iframe
+                automatically resizes to content
+              </div>
+              <div>
+                <strong>4.</strong> <code>navi.activity.progress</code> - User
                 interacts with form/checklist
               </div>
               <div>
-                <strong>4.</strong> <code>navi.activity.completed</code> -
+                <strong>5.</strong> <code>navi.activity.completed</code> -
                 Activity finished
               </div>
               <div>
-                <strong>5.</strong> <code>navi.activity.focus/blur</code> -
+                <strong>6.</strong> <code>navi.activity.focus/blur</code> -
                 Focus state changes
               </div>
             </div>
