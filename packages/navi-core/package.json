@@ -15,7 +15,8 @@
     "clean": "rm -rf dist",
     "test": "vitest",
     "test:run": "vitest run",
-    "lint": "eslint src --ext .ts"
+    "lint": "eslint src --ext .ts",
+    "codegen": "graphql-codegen --config codegen.yml"
   },
   "keywords": [
     "navi",
@@ -43,6 +44,9 @@
     "zod": "^3.25.64"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.2",
+    "@graphql-codegen/typescript": "^4.1.1",
+    "@graphql-codegen/typescript-operations": "^4.6.1",
     "@rollup/plugin-node-resolve": "^15.3.0",
     "@rollup/plugin-typescript": "^12.1.4",
     "@types/node": "^20",

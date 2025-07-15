@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="max-width-lg w-full text-center">
+    <div className="min-h-full bg-background flex items-center justify-center p-4">
+      <div className="w-full text-center">
         <div className="bg-card border border-customborder rounded-lg p-8 shadow-md">
           {/* 404 Illustration */}
           <div className="mb-6">
@@ -27,13 +27,13 @@ export default function NotFound() {
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button asChild>
-              <Link href="/">Go Home</Link>
-            </Button>
+            <Link href="/">
+              <Button>Go Home</Button>
+            </Link>
 
-            <Button variant="outline" onClick={() => window.history.back()}>
-              Go Back
-            </Button>
+            <Link href="#" onClick={() => window.history.back()}>
+              <Button variant="outline">Go Back</Button>
+            </Link>
           </div>
 
           {/* Help Text */}

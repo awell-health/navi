@@ -29,7 +29,6 @@ export const sunriseHealthBranding: OrgBranding["branding"] = {
   fontFamilyHeading: '"Poppins", system-ui, sans-serif',
   fontWeightBold: "600",
   fontSizeBase: "16px",
-  lineHeightBase: "1.5",
 
   // Radii
   radiusSm: "4px",
@@ -53,8 +52,12 @@ export const sunriseHealthBranding: OrgBranding["branding"] = {
   shadowSm: "0 1px 2px rgba(0,0,0,0.04)",
   shadowMd: "0 4px 6px rgba(0,0,0,0.08)",
 
+  stackSpacing: "sm",
+
   // Welcome page customization
   logoUrl: "https://cdn.awell.health/sunrise-health/logo.svg",
+  logoWidth: "200px",
+  logoHeight: "100px",
   faviconUrl: "https://cdn.awell.health/sunrise-health/favicon.ico",
   welcomeTitle: "Welcome to Sunrise Health",
   welcomeSubtitle: "Your personalized care journey starts here",
@@ -86,7 +89,6 @@ export const techCorpBranding: OrgBranding["branding"] = {
   fontFamilyHeading: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
   fontWeightBold: "700",
   fontSizeBase: "14px",
-  lineHeightBase: "1.6",
 
   // Sharp, modern radii
   radiusSm: "2px",
@@ -109,6 +111,8 @@ export const techCorpBranding: OrgBranding["branding"] = {
   // Subtle shadows for dark theme
   shadowSm: "0 1px 2px rgba(0,0,0,0.3)",
   shadowMd: "0 4px 6px rgba(0,0,0,0.4)",
+
+  stackSpacing: "xs",
 
   // Welcome page customization
   logoUrl: "https://cdn.awell.health/techcorp/logo-white.svg",
@@ -142,7 +146,6 @@ export const bakerProBranding: OrgBranding["branding"] = {
   fontFamilyHeading: '"Inter", system-ui, sans-serif',
   fontWeightBold: "600",
   fontSizeBase: "16px",
-  lineHeightBase: "1.5",
 
   // Radii
   radiusSm: "4px",
@@ -165,6 +168,8 @@ export const bakerProBranding: OrgBranding["branding"] = {
   // Shadow tokens
   shadowSm: "0 1px 2px rgba(0,0,0,0.05)",
   shadowMd: "0 4px 6px rgba(0,0,0,0.1)",
+
+  stackSpacing: "md",
 
   // Welcome page customization
   logoUrl: "https://cdn.awell.health/baker-pro/logo.svg",

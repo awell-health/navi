@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
 import React from "react";
+import { Typography } from ".";
+import Link from "next/link";
+import Image from "next/image";
 
 export function SlateViewer({ value }: { value: any[] }) {
   return (
@@ -22,18 +27,18 @@ function Element({ node }: { node: any }) {
 
   switch (node.type) {
     case "h1":
-      return <h1>{children}</h1>;
+      return <Typography.H1>{children}</Typography.H1>;
     case "h2":
-      return <h2>{children}</h2>;
+      return <Typography.H2>{children}</Typography.H2>;
     case "h3":
-      return <h3>{children}</h3>;
+      return <Typography.H3>{children}</Typography.H3>;
     case "p":
-      return <p>{children}</p>;
+      return <Typography.P>{children}</Typography.P>;
     case "a":
       return (
-        <a href={node.url} target="_blank" rel="noopener noreferrer">
+        <Link href={node.url} target="_blank" rel="noopener noreferrer">
           {children}
-        </a>
+        </Link>
       );
     case "ol":
       return <ol>{children}</ol>;
@@ -42,7 +47,7 @@ function Element({ node }: { node: any }) {
     case "li":
       return <li>{children}</li>;
     case "lic": // "list item content" in nested Slate structure
-      return <>{children}</>;
+      return <Typography.P>{children}</Typography.P>;
     case "media_embed":
       return (
         <div style={{ margin: "1em 0" }}>
@@ -60,7 +65,7 @@ function Element({ node }: { node: any }) {
     case "img":
       return (
         <figure style={{ margin: "1em 0" }}>
-          <img
+          <Image
             src={node.url}
             alt={getPlainText(node.caption)}
             style={{ maxWidth: "100%" }}

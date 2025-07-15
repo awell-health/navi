@@ -1,5 +1,6 @@
 fragment Activity on Activity {
   id
+  type
   action
   careflow_id
   container_name

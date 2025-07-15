@@ -1,175 +1,424 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { loadNavi } from "@awell-health/navi-js";
-import { NaviTestComponent } from "./components/navi-test";
+import { useState, useEffect } from "react";
 
-export default function Home() {
-  const [isNaviLoaded, setIsNaviLoaded] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
+declare global {
+  interface Window {
+    Navi: (publishableKey: string) => {
+      renderActivities: (
+        containerId: string,
+        options: any
+      ) => {
+        destroy: () => void;
+        iframe: HTMLIFrameElement;
+        on: (event: string, callback: (data: any) => void) => void;
+      };
+    };
+  }
+}
 
+export default function HomePage() {
+  const [naviLoaded, setNaviLoaded] = useState(false);
+  const [naviInstance, setNaviInstance] = useState<any>(null);
+  const [events, setEvents] = useState<
+    Array<{ type: string; data: any; timestamp: Date }>
+  >([]);
+  const [showIframe, setShowIframe] = useState(false);
+
+  // Sunrise Health test configuration from generate-tokens
+  const testConfig = {
+    publishableKey: "pk_test_demo123",
+    pathwayId: "GeDg7fJmddZi", // From Sunrise Health token
+    stakeholderId: "Eh4UQbKZKBk6hKd0M7wKk", // From Sunrise Health token
+    organizationId: "sunrise-health",
+    userId: "user_patient_123",
+    sessionId: `session_${Date.now()}`,
+    branding: {
+      primary: "#FF6C4C",
+      secondary: "#004E7C",
+      fontFamily: "Inter, sans-serif",
+    },
+  };
+
+  // Load navi.js script
   useEffect(() => {
-    // Check if Navi is already loaded
-    if (typeof window !== "undefined" && (window as any).Navi) {
-      setIsNaviLoaded(true);
+    const script = document.createElement("script");
+    script.src = "http://localhost:3000/navi.js";
+    script.onload = () => {
+      console.log("✅ Navi.js loaded successfully");
+      setNaviLoaded(true);
+    };
+    script.onerror = () => {
+      console.error("❌ Failed to load navi.js");
+    };
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, []);
+
+  const addEvent = (type: string, data: any) => {
+    setEvents((prev) => [...prev, { type, data, timestamp: new Date() }]);
+  };
+
+  const startIframeTest = () => {
+    if (!naviLoaded || !window.Navi) {
+      alert("Navi.js not loaded yet");
       return;
     }
 
-    // Load Navi SDK using NPM package (Stripe-like approach)
-    const initializeNavi = async () => {
-      try {
-        console.log("🔄 Loading Navi SDK via @awell-health/navi-js...");
+    // Create Navi instance
+    const navi = window.Navi(testConfig.publishableKey);
 
-        // This will load the script from CDN (or localhost in dev) and make window.Navi available
-        const naviInstance = await loadNavi("pk_test_demo123");
+    // Use the real careflows URL instead of embed
+    const careflowsUrl = `http://localhost:3000/careflows/${testConfig.pathwayId}/stakeholders/${testConfig.stakeholderId}`;
 
-        if (naviInstance) {
-          console.log("✅ Navi SDK loaded successfully via NPM package");
-          setIsNaviLoaded(true);
-        } else {
-          throw new Error("Failed to initialize Navi SDK");
-        }
-      } catch (error) {
-        console.error("❌ Failed to load Navi SDK:", error);
-        setLoadError(
-          "Failed to load Navi SDK. Make sure the portal is running on localhost:3000"
-        );
-      }
-    };
+    // Render activities with Sunrise Health config pointing to real careflows page
+    const instance = navi.renderActivities("#navi-container", {
+      pathwayId: testConfig.pathwayId,
+      stakeholderId: testConfig.stakeholderId,
+      organizationId: testConfig.organizationId,
+      userId: testConfig.userId,
+      sessionId: testConfig.sessionId,
+      branding: testConfig.branding,
+      size: "standard",
+      // Override the URL to point to the real careflows page
+      embedUrl: careflowsUrl,
+    });
 
-    initializeNavi();
-  }, []);
+    // Set up comprehensive event logging
+    const eventTypes = [
+      "navi.activity.ready",
+      "navi.activity.activate",
+      "navi.activity.progress",
+      "navi.activity.dataChange",
+      "navi.activity.completed",
+      "navi.activity.error",
+      "navi.activity.focus",
+      "navi.activity.blur",
+    ];
+
+    eventTypes.forEach((eventType) => {
+      instance.on(eventType, (data: any) => {
+        console.log(`🎯  ${eventType}:`, data);
+        setEvents((prev) => [
+          ...prev,
+          {
+            type: eventType,
+            data,
+            timestamp: new Date(),
+          },
+        ]);
+      });
+    });
+
+    setNaviInstance(instance);
+    setShowIframe(true);
+  };
+
+  const stopIframeTest = () => {
+    if (naviInstance) {
+      naviInstance.destroy();
+      setNaviInstance(null);
+    }
+    setShowIframe(false);
+  };
+
+  const clearEvents = () => {
+    setEvents([]);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4">
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-blue-600 mb-4">
-              🚀 Navi SDK Test Integration
-            </h1>
-            <p className="text-gray-600 text-lg">
-              Testing the customer-facing SDK with a real Next.js application
-            </p>
-          </div>
-
-          {/* Navigation */}
-          <div className="flex gap-4 justify-center mb-8">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-semibold text-blue-900 mb-2">
-                JavaScript SDK Test
-              </h3>
-              <p className="text-sm text-blue-700 mb-3">
-                Tests the vanilla JavaScript SDK via iframe embedding
-              </p>
-              <span className="text-sm text-blue-600">👈 Current page</span>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🧪</span>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Navi SDK Test Suite
+              </h1>
             </div>
-
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <h3 className="font-semibold text-green-900 mb-2">
-                React SDK Test
-              </h3>
-              <p className="text-sm text-green-700 mb-3">
-                Tests React components imported directly
-              </p>
+            <div className="flex gap-2">
               <a
                 href="/react-demo"
-                className="inline-block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
               >
-                Go to React Demo →
+                React Demo →
               </a>
             </div>
           </div>
 
-          {/* SDK Loading Status */}
-          <div className="mb-8">
-            <div className="bg-gray-100 rounded-lg p-4">
-              <h3 className="font-semibold text-gray-800 mb-2">SDK Status</h3>
-              {loadError ? (
-                <div className="text-red-600 bg-red-50 p-3 rounded border border-red-200">
-                  ❌ {loadError}
-                </div>
-              ) : isNaviLoaded ? (
-                <div className="text-green-600 bg-green-50 p-3 rounded border border-green-200">
-                  ✅ Navi SDK loaded successfully
-                </div>
-              ) : (
-                <div className="text-blue-600 bg-blue-50 p-3 rounded border border-blue-200">
-                  🔄 Loading Navi SDK...
-                </div>
-              )}
+          <p className="text-gray-600 mb-8">
+            Testing complete event integration between navi-portal and navi.js
+            using Sunrise Health test data
+          </p>
+
+          {/* Status Indicators */}
+          <div className="grid md:grid-cols-3 gap-4 mb-8">
+            <div
+              className={`p-4 rounded-lg border ${
+                naviLoaded
+                  ? "bg-green-50 border-green-200"
+                  : "bg-yellow-50 border-yellow-200"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <span
+                  className={naviLoaded ? "text-green-600" : "text-yellow-600"}
+                >
+                  {naviLoaded ? "✅" : "⏳"}
+                </span>
+                <span className="font-medium">Navi.js Loader</span>
+              </div>
+              <p className="text-sm text-gray-600 mt-1">
+                {naviLoaded
+                  ? "Ready for embedding"
+                  : "Loading from localhost:3000..."}
+              </p>
+            </div>
+
+            <div
+              className={`p-4 rounded-lg border ${
+                showIframe
+                  ? "bg-blue-50 border-blue-200"
+                  : "bg-gray-50 border-gray-200"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <span
+                  className={showIframe ? "text-blue-600" : "text-gray-400"}
+                >
+                  {showIframe ? "🖼️" : "⏸️"}
+                </span>
+                <span className="font-medium">Iframe Active</span>
+              </div>
+              <p className="text-sm text-gray-600 mt-1">
+                {showIframe
+                  ? "Cross-origin messaging enabled"
+                  : "No active iframe"}
+              </p>
+            </div>
+
+            <div className="p-4 rounded-lg border bg-purple-50 border-purple-200">
+              <div className="flex items-center gap-2">
+                <span className="text-purple-600">📡</span>
+                <span className="font-medium">Events Captured</span>
+              </div>
+              <p className="text-sm text-gray-600 mt-1">
+                {events.length} events logged
+              </p>
             </div>
           </div>
 
-          {/* Integration Code Example */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-              Integration Example
-            </h2>
-            <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-              <pre>{`// Install via NPM
-npm install @awell-health/navi-js
-
-// Load Navi SDK (Stripe-like approach)
-import { loadNavi } from '@awell-health/navi-js';
-
-const navi = await loadNavi('pk_test_demo123');
-const instance = navi.renderActivities('#container', {
-  pathwayId: 'pathway_patient_intake',
-  stakeholderId: 'stakeholder_demo',
-  branding: {
-    primary: '#3b82f6',
-    secondary: '#6b7280',
-    fontFamily: 'Inter, sans-serif'
-  }
-});`}</pre>
+          {/* Test Configuration */}
+          <div className="mb-8 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+            <h3 className="font-semibold text-orange-900 mb-2">
+              🌅 Sunrise Health Test Configuration
+            </h3>
+            <div className="grid md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <strong>Pathway ID:</strong>{" "}
+                <code className="bg-orange-100 px-1 rounded">
+                  {testConfig.pathwayId}
+                </code>
+              </div>
+              <div>
+                <strong>Stakeholder ID:</strong>{" "}
+                <code className="bg-orange-100 px-1 rounded">
+                  {testConfig.stakeholderId}
+                </code>
+              </div>
+              <div>
+                <strong>Organization:</strong>{" "}
+                <code className="bg-orange-100 px-1 rounded">
+                  {testConfig.organizationId}
+                </code>
+              </div>
+              <div>
+                <strong>Primary Color:</strong>
+                <span
+                  className="inline-block w-4 h-4 rounded ml-2"
+                  style={{ backgroundColor: testConfig.branding.primary }}
+                ></span>
+                <code className="bg-orange-100 px-1 rounded ml-1">
+                  {testConfig.branding.primary}
+                </code>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Test Component */}
-        {isNaviLoaded && <NaviTestComponent />}
+          {/* Controls */}
+          <div className="flex gap-4 mb-8">
+            <button
+              onClick={startIframeTest}
+              disabled={!naviLoaded || showIframe}
+              className={`px-6 py-2 rounded-md font-medium transition-colors ${
+                !naviLoaded || showIframe
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 text-white"
+              }`}
+            >
+              🚀 Start Iframe Test
+            </button>
 
-        {/* Instructions */}
-        <div className="bg-white rounded-lg shadow-lg p-8 mt-8">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-            🧪 Testing Instructions
-          </h2>
-          <div className="space-y-4 text-gray-600">
+            <button
+              onClick={stopIframeTest}
+              disabled={!showIframe}
+              className={`px-6 py-2 rounded-md font-medium transition-colors ${
+                !showIframe
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-red-600 hover:bg-red-700 text-white"
+              }`}
+            >
+              🛑 Stop Test
+            </button>
+
+            <button
+              onClick={clearEvents}
+              className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md font-medium transition-colors"
+            >
+              🗑️ Clear Events
+            </button>
+          </div>
+
+          {/* Main Content Grid */}
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Iframe Container */}
             <div>
-              <h3 className="font-semibold text-gray-800">Prerequisites:</h3>
-              <ul className="list-disc ml-6 mt-2 space-y-1">
-                <li>
-                  Main portal running on{" "}
-                  <code className="bg-gray-100 px-2 py-1 rounded">
-                    localhost:3000
-                  </code>
-                </li>
-                <li>
-                  Test app running on{" "}
-                  <code className="bg-gray-100 px-2 py-1 rounded">
-                    localhost:3001
-                  </code>
-                </li>
-                <li>
-                  Navi loader built:{" "}
-                  <code className="bg-gray-100 px-2 py-1 rounded">
-                    cd packages/navi.js && npm run build
-                  </code>
-                </li>
-              </ul>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                📱 Navi.js Iframe Integration
+              </h3>
+
+              <div
+                id="navi-container"
+                className="border border-gray-200 rounded-lg min-h-[400px] bg-gray-50 flex items-center justify-center"
+              >
+                {!showIframe && (
+                  <div className="text-center text-gray-500">
+                    <div className="text-4xl mb-2">🖼️</div>
+                    <p>Click "Start Iframe Test" to embed activities</p>
+                    <p className="text-sm mt-1">
+                      Will create iframe: localhost:3000/careflows/
+                      {testConfig.pathwayId}/stakeholders/
+                      {testConfig.stakeholderId}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
 
+            {/* Events Log */}
             <div>
-              <h3 className="font-semibold text-gray-800">What to Test:</h3>
-              <ul className="list-disc ml-6 mt-2 space-y-1">
-                <li>SDK loads without errors</li>
-                <li>Different publishable keys work</li>
-                <li>Branding changes apply correctly</li>
-                <li>Mock data displays properly</li>
-                <li>Iframe resizing works</li>
-                <li>Event communication works</li>
-              </ul>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  📡 Event Stream
+                </h3>
+                <span className="text-sm text-gray-600">
+                  {events.length} events
+                </span>
+              </div>
+
+              <div className="border border-gray-200 rounded-lg bg-gray-50 h-[400px] overflow-y-auto p-4">
+                {events.length === 0 ? (
+                  <div className="text-center text-gray-500 mt-20">
+                    <div className="text-2xl mb-2">📡</div>
+                    <p>No events yet</p>
+                    <p className="text-sm">
+                      Start the iframe test to see activity events
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {events.slice(-10).map((event, index) => (
+                      <div
+                        key={index}
+                        className="bg-white p-3 rounded border text-sm"
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-mono text-blue-600 font-medium">
+                            {event.type}
+                          </span>
+                          <span className="text-gray-500 text-xs">
+                            {event.timestamp.toLocaleTimeString()}
+                          </span>
+                        </div>
+                        <pre className="text-xs text-gray-700 whitespace-pre-wrap overflow-x-auto">
+                          {JSON.stringify(event.data, null, 2)}
+                        </pre>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Expected Events Guide */}
+          <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 className="font-semibold text-blue-900 mb-2">
+              📋 Expected Event Flow
+            </h3>
+            <div className="text-sm text-blue-800 space-y-1">
+              <div>
+                <strong>1.</strong> <code>navi.ready</code> - Iframe loaded and
+                ready
+              </div>
+              <div>
+                <strong>2.</strong> <code>navi.activity.ready</code> - Activity
+                component mounted
+              </div>
+              <div>
+                <strong>3.</strong> <code>navi.activity.progress</code> - User
+                interacts with form/checklist
+              </div>
+              <div>
+                <strong>4.</strong> <code>navi.activity.completed</code> -
+                Activity finished
+              </div>
+              <div>
+                <strong>5.</strong> <code>navi.activity.focus/blur</code> -
+                Focus state changes
+              </div>
+            </div>
+          </div>
+
+          {/* Direct Link for Manual Testing */}
+          <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <h3 className="font-semibold text-gray-900 mb-2">
+              🔗 Direct Testing Links
+            </h3>
+            <div className="space-y-2 text-sm">
+              <div>
+                <strong>Real Careflows Page (React Providers):</strong>
+                <a
+                  href={`http://localhost:3000/careflows/${testConfig.pathwayId}/stakeholders/${testConfig.stakeholderId}?instance_id=manual-test`}
+                  target="_blank"
+                  className="ml-2 text-blue-600 hover:underline font-mono"
+                >
+                  localhost:3000/careflows/{testConfig.pathwayId}/stakeholders/
+                  {testConfig.stakeholderId}
+                </a>
+              </div>
+              <div>
+                <strong>Embed URL (Fallback):</strong>
+                <a
+                  href={`http://localhost:3000/embed/${testConfig.pathwayId}?instance_id=manual-test&stakeholder_id=${testConfig.stakeholderId}`}
+                  target="_blank"
+                  className="ml-2 text-gray-600 hover:underline font-mono text-xs"
+                >
+                  localhost:3000/embed/{testConfig.pathwayId}
+                </a>
+              </div>
+              <div>
+                <strong>Magic Link:</strong>
+                <span className="ml-2 text-gray-600">
+                  Generate with <code>pnpm generate-tokens</code> (Sunrise
+                  Health)
+                </span>
+              </div>
             </div>
           </div>
         </div>

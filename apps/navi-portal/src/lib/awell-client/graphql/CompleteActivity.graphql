@@ -1,0 +1,11 @@
+mutation CompleteActivity($input: CompleteActivityInput!) {
+  completeActivity(input: $input) {
+    success
+    code
+    message
+    activity {
+      ...Activity
+    }
+    data
+  }
+}

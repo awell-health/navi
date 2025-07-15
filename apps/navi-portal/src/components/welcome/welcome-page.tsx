@@ -17,7 +17,7 @@ export function WelcomePage({ branding, onContinue }: WelcomePageProps) {
     branding?.welcomeSubtitle || awellDefaultBranding.branding.welcomeSubtitle;
 
   return (
-    <main className="min-h-screen bg-background flex items-center justify-center p-4">
+    <main className="min-h-0 bg-background flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-6 text-center">
         {/* Optional organization logo */}
         {logoUrl && (
@@ -62,7 +62,7 @@ export function generateWelcomePageHTML(
     branding?.welcomeSubtitle || awellDefaultBranding.branding.welcomeSubtitle;
 
   return `
-<main class="min-h-screen bg-background flex items-center justify-center p-4" style="min-height: 100vh; background-color: var(--background); display: flex; align-items: center; justify-content: center; padding: 1rem; font-family: var(--font-body, system-ui, sans-serif); font-size: var(--font-size-base, 1rem); line-height: var(--line-height-base, 1.5);">
+<main class="min-h-0 bg-background flex items-center justify-center p-4" style="background-color: var(--background); display: flex; align-items: center; justify-content: center; padding: 1rem; font-family: var(--font-body, system-ui, sans-serif); font-size: var(--font-size-base, 1rem); line-height: var(--line-height-base, 1.5);">
   <div class="max-w-md w-full space-y-6 text-center" style="max-width: 28rem; width: 100%; text-align: center;">
     ${
       logoUrl

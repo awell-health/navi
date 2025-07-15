@@ -15,6 +15,7 @@ generates:
       withRefetchFn: false
       apolloReactCommonImportFrom: "@apollo/client"
       apolloReactHooksImportFrom: "@apollo/client"
+      enumsAsTypes: true
       scalars:
         JSON: unknown
         SafeDate: string

@@ -300,7 +300,16 @@ Branding: ${branding ? "Custom" : "Default (Awell)"}
           const careflowId = '${tokenData.careflowId}';
           const stakeholderId = '${tokenData.patientId}';
           
-          window.location.href = \`/careflows/\${careflowId}/stakeholders/\${stakeholderId}\`;
+          // Preserve instance_id parameter if it exists
+          const urlParams = new URLSearchParams(window.location.search);
+          const instanceId = urlParams.get('instance_id');
+          
+          let redirectUrl = \`/careflows/\${careflowId}/stakeholders/\${stakeholderId}\`;
+          if (instanceId) {
+            redirectUrl += \`?instance_id=\${instanceId}\`;
+          }
+          
+          window.location.href = redirectUrl;
           
         } catch (error) {
           console.error('❌ Failed to redirect to activities:', error);

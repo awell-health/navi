@@ -1,34 +1,30 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
+import { Activities } from "@/components/activities/index";
+import { ActivityProvider } from "@/lib/activity-provider";
 import {
+  ActivityType,
+  ChecklistActivity,
   FormActivity,
   MessageActivity,
-  ChecklistActivity,
   type ActivityEventHandlers,
-} from "@awell-health/navi-activities";
+} from "@awell-health/navi-core";
 import {
   ActivityFragment,
   FormActivityInput,
   MessageActivityInput,
-  useOnActivityCompletedSubscription,
-  useOnActivityCreatedSubscription,
-  useOnActivityUpdatedSubscription,
-  useOnActivityExpiredSubscription,
-  usePathwayActivitiesQuery,
 } from "@/lib/awell-client/generated/graphql";
-
-interface ActivityEvent {
-  id: string;
-  type: "created" | "updated" | "completed" | "expired";
-  activity: ActivityFragment;
-  timestamp: Date;
-}
+import { useActivity } from "@/lib/activity-provider";
+import { ActivityHeader } from "@/components/activity-header";
+import { ActivityDrawer } from "@/components/activity-drawer";
+import { cn } from "@/lib/utils";
+import { useBranding } from "@/lib/branding-provider";
 
 interface CareflowActivitiesClientProps {
-  initialActivities?: ActivityFragment[];
   careflowId: string;
+  stakeholderId: string;
 }
 
 // Helper function to check if activity has form input
@@ -49,21 +45,6 @@ function getMessageFromActivity(
     return activity.inputs.message || null;
   }
   return null;
-}
-
-// Helper function to get activity title
-function getActivityTitle(activity: ActivityFragment): string {
-  const form = getFormFromActivity(activity);
-  if (form) {
-    return form.title;
-  }
-
-  const message = getMessageFromActivity(activity);
-  if (message) {
-    return message.subject;
-  }
-
-  return activity.object.name || `${activity.object.type} Activity`;
 }
 
 // Helper function to check if activity can be displayed
@@ -87,193 +68,86 @@ function canDisplayActivity(activity: ActivityFragment): boolean {
 }
 
 export default function CareflowActivitiesClient({
-  initialActivities,
   careflowId,
+  stakeholderId,
 }: CareflowActivitiesClientProps) {
-  const [activities, setActivities] = useState<ActivityFragment[]>(
-    initialActivities || []
-  );
-  const [events, setEvents] = useState<ActivityEvent[]>([]);
-  const [activeActivity, setActiveActivity] = useState<ActivityFragment | null>(
-    null
-  );
+  // Get instanceId from URL params for event forwarding
+  const searchParams = useSearchParams();
+  const instanceId = searchParams.get("instance_id");
 
-  // Fetch activities if not provided initially
-  const {
-    data: activitiesData,
-    loading: activitiesLoading,
-    error: activitiesError,
-  } = usePathwayActivitiesQuery({
-    variables: {
-      pathway_id: careflowId,
-    },
-    skip: !!initialActivities, // Skip query if we have initial activities
+  // Debug logging to see what's happening with instanceId
+  console.log("🔍 CareflowActivitiesClient Debug:", {
+    careflowId,
+    stakeholderId,
+    instanceId,
+    searchParams: Object.fromEntries(searchParams.entries()),
+    url: typeof window !== "undefined" ? window.location.href : "SSR",
   });
 
-  // Update activities when query data is received
-  useEffect(() => {
-    console.log(
-      "🔍 Activities data:",
-      activitiesData,
-      `activitiesLoading: ${activitiesLoading}`
-    );
-    if (activitiesData?.pathwayActivities?.activities) {
-      console.log(
-        "📋 Activities loaded from GraphQL:",
-        activitiesData.pathwayActivities.activities.length
-      );
-      setActivities(
-        activitiesData.pathwayActivities.activities.filter(
-          (a) => a.is_user_activity
-        )
-      );
-    }
-  }, [activitiesData, activitiesLoading]);
+  // Handle activity activation for event forwarding
+  const handleActivityActivate = useCallback(
+    (activityId: string, activity: ActivityFragment) => {
+      console.log("🎯 Activity activated:", activityId);
 
-  // Set default active activity when activities change
-  useEffect(() => {
-    if (activities.length > 0 && !activeActivity) {
-      // Find the first active activity that can be displayed
-      const defaultActivity = activities.find(
-        (activity) =>
-          activity.status === "ACTIVE" && canDisplayActivity(activity)
-      );
-
-      if (defaultActivity) {
-        console.log("🎯 Setting default active activity:", defaultActivity.id);
-        setActiveActivity(defaultActivity);
-      } else {
-        // If no active displayable activities, just pick the first one that can be displayed
-        const firstDisplayableActivity = activities.find(canDisplayActivity);
-        if (firstDisplayableActivity) {
-          console.log(
-            "🎯 Setting first displayable activity:",
-            firstDisplayableActivity.id
-          );
-          setActiveActivity(firstDisplayableActivity);
-        }
+      // Forward activate event to parent window via postMessage
+      if (instanceId) {
+        window.parent.postMessage(
+          {
+            source: "navi",
+            instance_id: instanceId,
+            type: "navi.activity.activate",
+            activity_id: activityId,
+            activity_type: activity.object.type,
+            data: {
+              activityId,
+              activityType: activity.object.type,
+              activityName: activity.object.name,
+              status: activity.status,
+            },
+            timestamp: Date.now(),
+          },
+          "*"
+        );
       }
-    }
-  }, [activities, activeActivity]);
+    },
+    [instanceId]
+  );
 
-  // Subscribe to activity events for this careflow
-  const { data: completedData } = useOnActivityCompletedSubscription({
-    variables: { careflow_id: careflowId },
-  });
+  return (
+    <ActivityProvider
+      careflowId={careflowId}
+      stakeholderId={stakeholderId}
+      onActivityActivate={handleActivityActivate}
+    >
+      <CareflowActivitiesContent instanceId={instanceId} />
+    </ActivityProvider>
+  );
+}
 
-  const { data: createdData } = useOnActivityCreatedSubscription({
-    variables: { careflow_id: careflowId },
-  });
+// Inner component that uses the useActivity hook
+function CareflowActivitiesContent({
+  instanceId,
+}: {
+  instanceId: string | null;
+}) {
+  const {
+    activeActivity,
+    isLoading,
+    error,
+    setActiveActivity,
+    markActivityAsViewed,
+  } = useActivity();
+  const { getStackSpacing } = useBranding();
 
-  const { data: updatedData } = useOnActivityUpdatedSubscription({
-    variables: { careflow_id: careflowId },
-  });
+  // State for activity drawer
+  const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);
 
-  const { data: expiredData } = useOnActivityExpiredSubscription({
-    variables: { careflow_id: careflowId },
-  });
-
-  // Handle subscription events
+  // Mark the active activity as viewed when it changes
   useEffect(() => {
-    if (completedData?.activityCompleted) {
-      const activity = completedData.activityCompleted;
-      console.log("🎉 Activity completed:", activity.id);
-
-      // Update activities list
-      setActivities((prev) =>
-        prev.map((a) => (a.id === activity.id ? activity : a))
-      );
-
-      // Add to events
-      setEvents((prev) =>
-        [
-          {
-            id: activity.id,
-            type: "completed" as const,
-            activity,
-            timestamp: new Date(),
-          },
-          ...prev,
-        ].slice(0, 10)
-      ); // Keep only last 10 events
+    if (activeActivity) {
+      markActivityAsViewed(activeActivity.id);
     }
-  }, [completedData]);
-
-  useEffect(() => {
-    if (createdData?.activityCreated) {
-      const activity = createdData.activityCreated;
-      console.log("🆕 Activity created:", activity.id);
-
-      // Add to activities list if not already present
-      setActivities((prev) => {
-        const exists = prev.some((a) => a.id === activity.id);
-        return exists ? prev : [activity, ...prev];
-      });
-
-      // Add to events
-      setEvents((prev) =>
-        [
-          {
-            id: activity.id,
-            type: "created" as const,
-            activity,
-            timestamp: new Date(),
-          },
-          ...prev,
-        ].slice(0, 10)
-      );
-    }
-  }, [createdData]);
-
-  useEffect(() => {
-    if (updatedData?.activityUpdated) {
-      const activity = updatedData.activityUpdated;
-      console.log("📝 Activity updated:", activity.id);
-
-      // Update activities list
-      setActivities((prev) =>
-        prev.map((a) => (a.id === activity.id ? activity : a))
-      );
-
-      // Add to events
-      setEvents((prev) =>
-        [
-          {
-            id: activity.id,
-            type: "updated" as const,
-            activity,
-            timestamp: new Date(),
-          },
-          ...prev,
-        ].slice(0, 10)
-      );
-    }
-  }, [updatedData]);
-
-  useEffect(() => {
-    if (expiredData?.activityExpired) {
-      const activity = expiredData.activityExpired;
-      console.log("⏰ Activity expired:", activity.id);
-
-      // Update activities list
-      setActivities((prev) =>
-        prev.map((a) => (a.id === activity.id ? activity : a))
-      );
-
-      // Add to events
-      setEvents((prev) =>
-        [
-          {
-            id: activity.id,
-            type: "expired" as const,
-            activity,
-            timestamp: new Date(),
-          },
-          ...prev,
-        ].slice(0, 10)
-      );
-    }
-  }, [expiredData]);
+  }, [activeActivity, markActivityAsViewed]);
 
   const handleFormSubmit = async (
     activityId: string,
@@ -303,34 +177,183 @@ export default function CareflowActivitiesClient({
     console.log("✅ Checklist completion logged (prototype mode)");
   };
 
-  // Create unified event handlers for activity events
+  // Handle activity list icon click
+  const handleActivityListClick = () => {
+    console.log("📋 Activity list clicked");
+    setIsActivityDrawerOpen(true);
+  };
+
+  // Create unified event handlers for activity events with postMessage forwarding
   const createActivityEventHandlers = (
     activityId: string
   ): ActivityEventHandlers => ({
     onActivityReady: (event) => {
       console.log("🎯 Activity ready:", activityId, event);
+      console.log(
+        "🔍 Debug - instanceId:",
+        instanceId,
+        "typeof:",
+        typeof instanceId
+      );
+
+      // Forward to parent window via postMessage
+      if (instanceId) {
+        const message = {
+          source: "navi",
+          instance_id: instanceId,
+          type: "navi.activity.ready",
+          activity_id: activityId,
+          activity_type: event.activityType,
+          data: event.data,
+          timestamp: event.timestamp,
+        };
+        console.log("📤 Sending postMessage:", message);
+        window.parent.postMessage(message, "*");
+      } else {
+        console.warn(
+          "⚠️ Not sending postMessage - instanceId is null/undefined"
+        );
+      }
+    },
+    onActivityActivate: (event) => {
+      console.log("🎯 Activity activated:", activityId, event);
+
+      // Forward to parent window via postMessage
+      if (instanceId) {
+        window.parent.postMessage(
+          {
+            source: "navi",
+            instance_id: instanceId,
+            type: "navi.activity.activate",
+            activity_id: activityId,
+            activity_type: event.activityType,
+            data: event.data,
+            timestamp: event.timestamp,
+          },
+          "*"
+        );
+      }
     },
     onActivityProgress: (event) => {
       console.log("📊 Activity progress:", activityId, event.data);
+
+      // Forward to parent window via postMessage
+      if (instanceId) {
+        window.parent.postMessage(
+          {
+            source: "navi",
+            instance_id: instanceId,
+            type: "navi.activity.progress",
+            activity_id: activityId,
+            activity_type: event.activityType,
+            data: event.data,
+            timestamp: event.timestamp,
+          },
+          "*"
+        );
+      }
+    },
+    onActivityDataChange: (event) => {
+      console.log("📝 Activity data change:", activityId, event.data);
+
+      // Forward to parent window via postMessage
+      if (instanceId) {
+        window.parent.postMessage(
+          {
+            source: "navi",
+            instance_id: instanceId,
+            type: "navi.activity.data-change",
+            activity_id: activityId,
+            activity_type: event.activityType,
+            data: event.data,
+            timestamp: event.timestamp,
+          },
+          "*"
+        );
+      }
     },
     onActivityComplete: (event) => {
       console.log("🎉 Activity completed:", activityId, event.data);
+
+      // Forward to parent window via postMessage
+      if (instanceId) {
+        window.parent.postMessage(
+          {
+            source: "navi",
+            instance_id: instanceId,
+            type: "navi.activity.completed",
+            activity_id: activityId,
+            activity_type: event.activityType,
+            data: event.data,
+            timestamp: event.timestamp,
+          },
+          "*"
+        );
+      }
     },
     onActivityError: (event) => {
       console.error("❌ Activity error:", activityId, event.data);
+
+      // Forward to parent window via postMessage
+      if (instanceId) {
+        window.parent.postMessage(
+          {
+            source: "navi",
+            instance_id: instanceId,
+            type: "navi.activity.error",
+            activity_id: activityId,
+            activity_type: event.activityType,
+            data: event.data,
+            timestamp: event.timestamp,
+          },
+          "*"
+        );
+      }
     },
     onActivityFocus: (event) => {
       console.log("👁️ Activity focused:", activityId, event);
+
+      // Forward to parent window via postMessage
+      if (instanceId) {
+        window.parent.postMessage(
+          {
+            source: "navi",
+            instance_id: instanceId,
+            type: "navi.activity.focus",
+            activity_id: activityId,
+            activity_type: event.activityType,
+            data: event.data,
+            timestamp: event.timestamp,
+          },
+          "*"
+        );
+      }
     },
     onActivityBlur: (event) => {
       console.log("👀 Activity blurred:", activityId, event);
+
+      // Forward to parent window via postMessage
+      if (instanceId) {
+        window.parent.postMessage(
+          {
+            source: "navi",
+            instance_id: instanceId,
+            type: "navi.activity.blur",
+            activity_id: activityId,
+            activity_type: event.activityType,
+            data: event.data,
+            timestamp: event.timestamp,
+          },
+          "*"
+        );
+      }
     },
   });
 
   const handleActivityClick = (activity: ActivityFragment) => {
     console.log("🔍 Activity clicked:", activity);
     if (canDisplayActivity(activity)) {
-      setActiveActivity(activity);
+      setActiveActivity(activity.id);
     } else {
       console.warn("⚠️ Cannot display activity type:", activity.object.type);
     }
@@ -357,23 +380,10 @@ export default function CareflowActivitiesClient({
       case "FORM": {
         const form = getFormFromActivity(activeActivity);
         if (form) {
-          // Convert GraphQL types to navi-activities types
-          const adaptedForm = {
-            ...form,
-            questions: form.questions.map((question) => ({
-              ...question,
-              required: question.required ?? false,
-            })),
-          };
-
+          const formActivity = new FormActivity(activeActivity as ActivityType);
           return (
-            <FormActivity
-              activity={{
-                ...activeActivity,
-                inputs: {
-                  form: adaptedForm as any, // Type conversion needed for GraphQL compatibility
-                },
-              }}
+            <Activities.Form
+              activity={formActivity}
               eventHandlers={createActivityEventHandlers(activeActivity.id)}
               onSubmit={handleFormSubmit}
             />
@@ -384,20 +394,13 @@ export default function CareflowActivitiesClient({
       case "MESSAGE": {
         const message = getMessageFromActivity(activeActivity);
         if (message) {
-          // Convert GraphQL types to navi-activities types
-          const adaptedMessage = {
-            ...message,
-            format: message.format ?? "HTML",
-          };
+          const messageActivity = new MessageActivity(
+            activeActivity as ActivityType
+          );
 
           return (
-            <MessageActivity
-              activity={{
-                ...activeActivity,
-                inputs: {
-                  message: adaptedMessage as any, // Type conversion needed for GraphQL compatibility
-                },
-              }}
+            <Activities.Message
+              activity={messageActivity}
               eventHandlers={createActivityEventHandlers(activeActivity.id)}
               onMarkAsRead={handleMessageMarkAsRead}
             />
@@ -406,23 +409,12 @@ export default function CareflowActivitiesClient({
         break;
       }
       case "CHECKLIST": {
+        const checklistActivity = new ChecklistActivity(
+          activeActivity as ActivityType
+        );
         return (
-          <ChecklistActivity
-            activity={{
-              ...activeActivity,
-              inputs: {
-                checklist: {
-                  title: activeActivity.object.name || "Checklist Activity",
-                  items: [
-                    // For prototype, create some dummy checklist items
-                    "Review patient information",
-                    "Check vital signs",
-                    "Update medical records",
-                    "Schedule follow-up appointment",
-                  ],
-                },
-              },
-            }}
+          <Activities.Checklist
+            activity={checklistActivity}
             eventHandlers={createActivityEventHandlers(activeActivity.id)}
             onComplete={handleChecklistComplete}
           />
@@ -468,40 +460,10 @@ export default function CareflowActivitiesClient({
     );
   };
 
-  const getEventIcon = (type: ActivityEvent["type"]) => {
-    switch (type) {
-      case "created":
-        return "🆕";
-      case "updated":
-        return "📝";
-      case "completed":
-        return "🎉";
-      case "expired":
-        return "⏰";
-      default:
-        return "📋";
-    }
-  };
-
-  const getEventColor = (type: ActivityEvent["type"]) => {
-    switch (type) {
-      case "created":
-        return "text-blue-600 bg-blue-50";
-      case "updated":
-        return "text-yellow-600 bg-yellow-50";
-      case "completed":
-        return "text-green-600 bg-green-50";
-      case "expired":
-        return "text-red-600 bg-red-50";
-      default:
-        return "text-gray-600 bg-gray-50";
-    }
-  };
-
   // Show loading state
-  if (activitiesLoading) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-0 bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading activities...</p>
@@ -511,170 +473,43 @@ export default function CareflowActivitiesClient({
   }
 
   // Show error state
-  if (activitiesError) {
+  if (error) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-0 bg-background flex items-center justify-center">
         <div className="text-center">
           <p className="text-destructive mb-4">Failed to load activities</p>
-          <p className="text-sm text-muted-foreground">
-            {activitiesError.message}
-          </p>
+          <p className="text-sm text-muted-foreground">{error}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Activities Drawer */}
-      <aside className="w-80 bg-card border-r border-customborder p-6 overflow-y-auto">
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold text-foreground mb-2">
-            Activities
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Your assigned tasks and forms
-          </p>
-        </div>
+    <div className="min-h-0 bg-background flex">
+      <main
+        className={cn("flex-1 flex flex-col", {
+          "gap-2": getStackSpacing() === "xs",
+          "gap-4": getStackSpacing() === "sm",
+          "gap-6": getStackSpacing() === "md" || !getStackSpacing(),
+          "gap-8":
+            getStackSpacing() === "lg" ||
+            getStackSpacing() === "xl" ||
+            getStackSpacing() === "2xl",
+        })}
+      >
+        {/* Header */}
+        <ActivityHeader onActivityListClick={handleActivityListClick} />
 
-        <div className="space-y-3">
-          {activities.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-sm text-muted-foreground mb-2">
-                No activities found
-              </p>
-              <p className="text-xs text-muted-foreground">
-                This careflow may not have started yet or all activities are
-                complete.
-              </p>
-            </div>
-          ) : (
-            activities.map((activity) => {
-              const isSelected = activeActivity?.id === activity.id;
-              const canDisplay = canDisplayActivity(activity);
-
-              return (
-                <div
-                  key={activity.id}
-                  className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                    isSelected
-                      ? "border-primary bg-primary/10"
-                      : activity.status === "ACTIVE"
-                      ? "border-primary bg-primary/5 hover:bg-primary/10"
-                      : "border-customborder bg-muted/50 hover:bg-muted"
-                  } ${!canDisplay ? "opacity-60" : ""}`}
-                  onClick={() => handleActivityClick(activity)}
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-medium text-sm text-foreground">
-                      {getActivityTitle(activity)}
-                    </h3>
-                    <div className="flex items-center gap-2">
-                      {isSelected && (
-                        <span className="text-xs px-2 py-1 rounded-full bg-primary text-primary-foreground">
-                          Selected
-                        </span>
-                      )}
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full ${
-                          activity.status === "ACTIVE"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-600"
-                        }`}
-                      >
-                        {activity.status}
-                      </span>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Type: {activity.object.type}
-                    {!canDisplay && " (Preview not available)"}
-                  </p>
-
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(activity.date).toLocaleDateString()}
-                  </p>
-
-                  {activity.status === "ACTIVE" && canDisplay && (
-                    <div className="mt-3 pt-3 border-t border-customborder">
-                      <span className="text-xs font-medium text-primary">
-                        Click to view →
-                      </span>
-                    </div>
-                  )}
-                </div>
-              );
-            })
-          )}
-        </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <main className="flex-1 flex">
         {/* Activity Content */}
         <div className="flex-1 overflow-y-auto">{renderActiveActivity()}</div>
-
-        {/* Live Events Panel */}
-        <aside className="w-80 bg-muted/30 border-l border-customborder p-4 overflow-y-auto">
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              Live Events
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Real-time activity updates
-            </p>
-          </div>
-
-          {events.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-sm text-muted-foreground">No events yet...</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Events will appear here in real-time
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {events.map((event, index) => (
-                <div
-                  key={`${event.id}-${event.timestamp.getTime()}-${index}`}
-                  className={`p-3 rounded-lg border ${getEventColor(
-                    event.type
-                  )}`}
-                >
-                  <div className="flex items-start gap-2">
-                    <span className="text-lg">{getEventIcon(event.type)}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-medium uppercase tracking-wide">
-                          {event.type}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {event.timestamp.toLocaleTimeString()}
-                        </span>
-                      </div>
-                      <p className="text-sm font-medium truncate">
-                        {getActivityTitle(event.activity)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {event.activity.object.type} • {event.activity.status}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {events.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-customborder">
-              <p className="text-xs text-muted-foreground text-center">
-                Showing last {events.length} events
-              </p>
-            </div>
-          )}
-        </aside>
       </main>
+
+      {/* Activity Drawer */}
+      <ActivityDrawer
+        open={isActivityDrawerOpen}
+        onOpenChange={setIsActivityDrawerOpen}
+        onActivityClick={handleActivityClick}
+      />
     </div>
   );
 }

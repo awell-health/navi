@@ -6,7 +6,7 @@ import type {
 import type {
   ConversationalFormStep,
   FormField,
-} from "@/components/ui/conversational-form";
+} from "@/components/activities/conversational-form";
 
 /**
  * Map Awell question type to conversational form field type
