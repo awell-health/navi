@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { getBrandingAction } from "@/app/actions";
+import { BrandingProvider } from "@/lib/branding-provider";
+import { awellDefaultBranding } from "@/lib/branding/defaults";
 import "./globals.css";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -25,12 +28,16 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { themeCSS, orgId, hasCustomBranding } = await getBrandingAction();
+  const { themeCSS, orgId, hasCustomBranding, branding } =
+    await getBrandingAction();
 
   console.log("🏗️  Layout: Rendering with branding", {
     orgId,
     hasCustomBranding,
   });
+
+  // Ensure we always have a branding object (fallback to defaults)
+  const finalBranding = branding || awellDefaultBranding.branding;
 
   return (
     <html lang="en">
@@ -38,9 +45,17 @@ export default async function RootLayout({
         <style dangerouslySetInnerHTML={{ __html: themeCSS }} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={cn(
+          `${geistSans.variable} ${geistMono.variable} antialiased p-6 flex flex-col justify-center`
+        )}
       >
-        {children}
+        <BrandingProvider
+          branding={finalBranding}
+          orgId={orgId}
+          hasCustomBranding={hasCustomBranding}
+        >
+          {children}
+        </BrandingProvider>
       </body>
     </html>
   );

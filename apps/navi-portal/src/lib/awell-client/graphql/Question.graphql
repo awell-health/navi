@@ -5,6 +5,7 @@ fragment Question on Question {
   definition_id
   placeholder
   questionType
+  userQuestionType
   required
   options {
     id

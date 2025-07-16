@@ -53,8 +53,11 @@ jobs:
       - name: Set up environment for build
         run: cp apps/navi-portal/.env.test apps/navi-portal/.env
 
+      - name: Build packages
+        run: pnpm build:packages
+
       - name: Build navi-portal app
-        run: pnpm --filter navi-portal build
+        run: pnpm build:portal
 
       - name: Cache build artifacts
         uses: actions/cache@v4

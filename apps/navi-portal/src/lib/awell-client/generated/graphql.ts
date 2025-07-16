@@ -33,11 +33,13 @@ export type Activity = {
   __typename?: 'Activity';
   action: ActivityAction;
   careflow_id: Scalars['String']['output'];
+  completion_context?: Maybe<CompletionContextGraphQl>;
   container_name?: Maybe<Scalars['String']['output']>;
   date: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   indirect_object?: Maybe<ActivityObject>;
   inputs?: Maybe<ActivityInput>;
+  is_user_activity: Scalars['Boolean']['output'];
   object: ActivityObject;
   outputs?: Maybe<ActivityOutput>;
   pathway_definition_id: Scalars['String']['output'];
@@ -45,26 +47,36 @@ export type Activity = {
   reference_type: ActivityReferenceType;
   resolution?: Maybe<ActivityResolution>;
   session_id?: Maybe<Scalars['String']['output']>;
+  stakeholders?: Maybe<Array<ActivityObject>>;
   status: ActivityStatus;
   sub_activities: Array<SubActivity>;
   tenant_id: Scalars['String']['output'];
 };
 
-export enum ActivityAction {
-  Activated = 'ACTIVATED',
-  Assigned = 'ASSIGNED',
-  Completed = 'COMPLETED',
-  Computed = 'COMPUTED',
-  Delegated = 'DELEGATED',
-  Deleted = 'DELETED',
-  Discarded = 'DISCARDED',
-  Expired = 'EXPIRED',
-  Failed = 'FAILED',
-  Postponed = 'POSTPONED',
-  Scheduled = 'SCHEDULED',
-  Started = 'STARTED',
-  Stopped = 'STOPPED'
-}
+export type ActivityAction =
+  | 'ACTIVATE'
+  | 'ADDED'
+  | 'ASSIGNED'
+  | 'COMPLETE'
+  | 'COMPUTED'
+  | 'DELEGATED'
+  | 'DELIVER'
+  | 'DISCARDED'
+  | 'EXPIRED'
+  | 'FAILED'
+  | 'FAILED_TO_SEND'
+  | 'GENERATED'
+  | 'IS_WAITING_ON'
+  | 'POSTPONED'
+  | 'PROCESSED'
+  | 'READ'
+  | 'REMIND'
+  | 'REPORTED'
+  | 'SCHEDULED'
+  | 'SEND'
+  | 'SKIPPED'
+  | 'STOPPED'
+  | 'SUBMITTED';
 
 export type ActivityForm = {
   __typename?: 'ActivityForm';
@@ -79,13 +91,14 @@ export type ActivityInput = {
   type: ActivityInputType;
 };
 
-export enum ActivityInputType {
-  Calculation = 'CALCULATION',
-  DynamicForm = 'DYNAMIC_FORM',
-  Extension = 'EXTENSION',
-  Form = 'FORM',
-  Message = 'MESSAGE'
-}
+export type ActivityInputType =
+  | 'CALCULATION'
+  | 'CHECKLIST'
+  | 'CLINICAL_NOTE'
+  | 'DYNAMIC_FORM'
+  | 'EXTENSION'
+  | 'FORM'
+  | 'MESSAGE';
 
 export type ActivityMessage = {
   __typename?: 'ActivityMessage';
@@ -105,30 +118,39 @@ export type ActivityObject = {
   type: ActivityObjectType;
 };
 
-export enum ActivityObjectType {
-  Agent = 'AGENT',
-  Calculation = 'CALCULATION',
-  Checklist = 'CHECKLIST',
-  Form = 'FORM',
-  Message = 'MESSAGE',
-  Patient = 'PATIENT',
-  Plugin = 'PLUGIN',
-  PluginAction = 'PLUGIN_ACTION',
-  Stakeholder = 'STAKEHOLDER',
-  Timer = 'TIMER',
-  User = 'USER'
-}
+export type ActivityObjectType =
+  | 'ACTION'
+  | 'AGENT'
+  | 'API_CALL'
+  | 'CALCULATION'
+  | 'CHECKLIST'
+  | 'CLINICAL_NOTE'
+  | 'DECISION'
+  | 'EMR_REPORT'
+  | 'EMR_REQUEST'
+  | 'EVALUATED_RULE'
+  | 'FORM'
+  | 'MESSAGE'
+  | 'PATHWAY'
+  | 'PATIENT'
+  | 'PLUGIN'
+  | 'PLUGIN_ACTION'
+  | 'REMINDER'
+  | 'STAKEHOLDER'
+  | 'STEP'
+  | 'TIMER'
+  | 'TRACK'
+  | 'USER';
 
 export type ActivityOutput = {
   type: ActivityOutputType;
 };
 
-export enum ActivityOutputType {
-  Calculation = 'CALCULATION',
-  DynamicForm = 'DYNAMIC_FORM',
-  Extension = 'EXTENSION',
-  Form = 'FORM'
-}
+export type ActivityOutputType =
+  | 'CALCULATION'
+  | 'DYNAMIC_FORM'
+  | 'EXTENSION'
+  | 'FORM';
 
 export type ActivityPayload = {
   __typename?: 'ActivityPayload';
@@ -138,29 +160,26 @@ export type ActivityPayload = {
   success: Scalars['Boolean']['output'];
 };
 
-export enum ActivityReferenceType {
-  Agent = 'AGENT',
-  Navigation = 'NAVIGATION',
-  Orchestration = 'ORCHESTRATION',
-  Reminder = 'REMINDER'
-}
+export type ActivityReferenceType =
+  | 'AGENT'
+  | 'NAVIGATION'
+  | 'ORCHESTRATION'
+  | 'REMINDER';
 
-export enum ActivityResolution {
-  Cancelled = 'CANCELLED',
-  Expired = 'EXPIRED',
-  Failure = 'FAILURE',
-  Success = 'SUCCESS'
-}
+export type ActivityResolution =
+  | 'CANCELLED'
+  | 'EXPIRED'
+  | 'FAILURE'
+  | 'SUCCESS';
 
-export enum ActivityStatus {
-  Active = 'ACTIVE',
-  Cancelled = 'CANCELLED',
-  Done = 'DONE',
-  Failed = 'FAILED',
-  Postponed = 'POSTPONED',
-  Scheduled = 'SCHEDULED',
-  Stopped = 'STOPPED'
-}
+export type ActivityStatus =
+  | 'ACTIVE'
+  | 'CANCELLED'
+  | 'DONE'
+  | 'FAILED'
+  | 'POSTPONED'
+  | 'SCHEDULED'
+  | 'STOPPED';
 
 export type CalculationActivityInput = ActivityInput & {
   __typename?: 'CalculationActivityInput';
@@ -182,6 +201,71 @@ export type CalculationField = {
   value: Scalars['JSON']['output'];
   value_type?: Maybe<Scalars['String']['output']>;
 };
+
+export type Checklist = {
+  __typename?: 'Checklist';
+  items: Array<Scalars['String']['output']>;
+  title: Scalars['String']['output'];
+};
+
+export type ChecklistActivityInput = ActivityInput & {
+  __typename?: 'ChecklistActivityInput';
+  checklist?: Maybe<Checklist>;
+  type: ActivityInputType;
+};
+
+export type ClinicalNote = {
+  __typename?: 'ClinicalNote';
+  context: Array<GeneratedClinicalNoteContextField>;
+  id: Scalars['ID']['output'];
+  narratives: Array<GeneratedClinicalNoteNarrative>;
+};
+
+export type ClinicalNoteActivityInput = ActivityInput & {
+  __typename?: 'ClinicalNoteActivityInput';
+  clinicalNote?: Maybe<ClinicalNote>;
+  type: ActivityInputType;
+};
+
+export type CompleteActivityInput = {
+  activity_id: Scalars['ID']['input'];
+  completion_context: CompletionContextInput;
+  input_data?: InputMaybe<Scalars['JSON']['input']>;
+  input_type: ActivityInputType;
+};
+
+export type CompleteActivityPayload = {
+  __typename?: 'CompleteActivityPayload';
+  activity?: Maybe<Activity>;
+  code: Scalars['String']['output'];
+  data?: Maybe<Scalars['JSON']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
+};
+
+export type CompletionContextGraphQl = {
+  __typename?: 'CompletionContextGraphQL';
+  completed_at: Scalars['String']['output'];
+  user_email?: Maybe<Scalars['String']['output']>;
+  user_id?: Maybe<Scalars['String']['output']>;
+  user_name?: Maybe<Scalars['String']['output']>;
+  user_type: CompletionContextUserType;
+};
+
+export type CompletionContextInput = {
+  completed_at: Scalars['String']['input'];
+  user_email?: InputMaybe<Scalars['String']['input']>;
+  user_id?: InputMaybe<Scalars['String']['input']>;
+  user_name?: InputMaybe<Scalars['String']['input']>;
+  user_type: CompletionContextUserType;
+};
+
+export type CompletionContextUserType =
+  | 'AGENT'
+  | 'AUTHENTICATED_USER'
+  | 'PATIENT'
+  | 'SYSTEM'
+  | 'UNAUTHENTICATED_USER';
 
 export type CreateActivityInput = {
   careflow_id: Scalars['String']['input'];
@@ -247,6 +331,20 @@ export type FormActivityOutput = ActivityOutput & {
   type: ActivityOutputType;
 };
 
+export type GeneratedClinicalNoteContextField = {
+  __typename?: 'GeneratedClinicalNoteContextField';
+  key: Scalars['String']['output'];
+  value: Scalars['String']['output'];
+};
+
+export type GeneratedClinicalNoteNarrative = {
+  __typename?: 'GeneratedClinicalNoteNarrative';
+  body: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  key: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+};
+
 export type MessageActivityInput = ActivityInput & {
   __typename?: 'MessageActivityInput';
   message?: Maybe<ActivityMessage>;
@@ -261,16 +359,21 @@ export type MessageAttachment = {
   url: Scalars['String']['output'];
 };
 
-export enum MessageFormat {
-  Html = 'HTML',
-  Markdown = 'MARKDOWN',
-  Slate = 'SLATE'
-}
+export type MessageFormat =
+  | 'HTML'
+  | 'MARKDOWN'
+  | 'SLATE';
 
 export type Mutation = {
   __typename?: 'Mutation';
+  completeActivity: CompleteActivityPayload;
   createActivity: ActivityPayload;
   updateActivity: ActivityPayload;
+};
+
+
+export type MutationCompleteActivityArgs = {
+  input: CompleteActivityInput;
 };
 
 
@@ -326,6 +429,7 @@ export type Question = {
   questionType: QuestionType;
   required?: Maybe<Scalars['Boolean']['output']>;
   title: Scalars['String']['output'];
+  userQuestionType: UserQuestionType;
 };
 
 export type QuestionOption = {
@@ -335,21 +439,10 @@ export type QuestionOption = {
   value: Scalars['String']['output'];
 };
 
-export enum QuestionType {
-  Address = 'ADDRESS',
-  Date = 'DATE',
-  Email = 'EMAIL',
-  File = 'FILE',
-  Input = 'INPUT',
-  LongText = 'LONG_TEXT',
-  MultipleChoice = 'MULTIPLE_CHOICE',
-  MultipleSelect = 'MULTIPLE_SELECT',
-  Number = 'NUMBER',
-  Phone = 'PHONE',
-  Signature = 'SIGNATURE',
-  Slider = 'SLIDER',
-  YesNo = 'YES_NO'
-}
+export type QuestionType =
+  | 'INPUT'
+  | 'MULTIPLE_CHOICE'
+  | 'NO_INPUT';
 
 export type SortingInput = {
   direction?: Scalars['String']['input'];
@@ -426,7 +519,32 @@ export type UpdateActivityInput = {
   output_data?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type ActivityFragment = { __typename?: 'Activity', id: string, action: ActivityAction, careflow_id: string, container_name?: string | null, date: string, pathway_definition_id: string, reference_id: string, reference_type: ActivityReferenceType, resolution?: ActivityResolution | null, session_id?: string | null, status: ActivityStatus, tenant_id: string, indirect_object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null, object: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null }, sub_activities: Array<{ __typename?: 'SubActivity', id: string, action: ActivityAction, object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null }>, inputs?: { __typename: 'CalculationActivityInput', type: ActivityInputType, calculationFields?: Array<{ __typename?: 'CalculationField', id: string, key: string, label: string, value: unknown, value_type?: string | null }> | null } | { __typename: 'DynamicFormActivityInput', type: ActivityInputType, dynamicForm?: { __typename?: 'DynamicForm', key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'DynamicQuestion', id: string, key: string, title: string, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'ExtensionActivityInput', type: ActivityInputType, extensionFields?: unknown | null } | { __typename: 'FormActivityInput', type: ActivityInputType, form?: { __typename?: 'ActivityForm', id: string, key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'Question', id: string, key: string, title: string, definition_id?: string | null, placeholder?: string | null, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'MessageActivityInput', type: ActivityInputType, message?: { __typename?: 'ActivityMessage', id: string, subject: string, body: string, format?: MessageFormat | null, attachments?: Array<{ __typename?: 'MessageAttachment', id: string, name: string, type: string, url: string }> | null } | null } | null, outputs?: { __typename: 'CalculationActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'DynamicFormActivityOutput', type: ActivityOutputType, response?: unknown | null } | { __typename: 'ExtensionActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'FormActivityOutput', type: ActivityOutputType, response?: unknown | null } | null };
+export type UserQuestionType =
+  | 'DATE'
+  | 'DESCRIPTION'
+  | 'EMAIL'
+  | 'FILE'
+  | 'ICD10_CLASSIFICATION'
+  | 'IMAGE'
+  | 'LONG_TEXT'
+  | 'MULTIPLE_CHOICE'
+  | 'MULTIPLE_CHOICE_GRID'
+  | 'MULTIPLE_SELECT'
+  | 'NUMBER'
+  | 'SHORT_TEXT'
+  | 'SIGNATURE'
+  | 'SLIDER'
+  | 'TELEPHONE'
+  | 'YES_NO';
+
+export type ActivityFragment = { __typename?: 'Activity', id: string, action: ActivityAction, careflow_id: string, container_name?: string | null, date: string, pathway_definition_id: string, reference_id: string, reference_type: ActivityReferenceType, resolution?: ActivityResolution | null, session_id?: string | null, status: ActivityStatus, tenant_id: string, is_user_activity: boolean, indirect_object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null, object: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null }, sub_activities: Array<{ __typename?: 'SubActivity', id: string, action: ActivityAction, object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null }>, inputs?: { __typename: 'CalculationActivityInput', type: ActivityInputType, calculationFields?: Array<{ __typename?: 'CalculationField', id: string, key: string, label: string, value: unknown, value_type?: string | null }> | null } | { __typename: 'ChecklistActivityInput', type: ActivityInputType, checklist?: { __typename?: 'Checklist', title: string, items: Array<string> } | null } | { __typename: 'ClinicalNoteActivityInput', type: ActivityInputType, clinicalNote?: { __typename?: 'ClinicalNote', id: string, narratives: Array<{ __typename?: 'GeneratedClinicalNoteNarrative', id: string, key: string, title: string, body: string }>, context: Array<{ __typename?: 'GeneratedClinicalNoteContextField', key: string, value: string }> } | null } | { __typename: 'DynamicFormActivityInput', type: ActivityInputType, dynamicForm?: { __typename?: 'DynamicForm', key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'DynamicQuestion', id: string, key: string, title: string, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'ExtensionActivityInput', type: ActivityInputType, extensionFields?: unknown | null } | { __typename: 'FormActivityInput', type: ActivityInputType, form?: { __typename?: 'ActivityForm', id: string, key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'Question', id: string, key: string, title: string, definition_id?: string | null, placeholder?: string | null, questionType: QuestionType, userQuestionType: UserQuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'MessageActivityInput', type: ActivityInputType, message?: { __typename?: 'ActivityMessage', id: string, subject: string, body: string, format?: MessageFormat | null, attachments?: Array<{ __typename?: 'MessageAttachment', id: string, name: string, type: string, url: string }> | null } | null } | null, outputs?: { __typename: 'CalculationActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'DynamicFormActivityOutput', type: ActivityOutputType, response?: unknown | null } | { __typename: 'ExtensionActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'FormActivityOutput', type: ActivityOutputType, response?: unknown | null } | null };
+
+export type CompleteActivityMutationVariables = Exact<{
+  input: CompleteActivityInput;
+}>;
+
+
+export type CompleteActivityMutation = { __typename?: 'Mutation', completeActivity: { __typename?: 'CompleteActivityPayload', success: boolean, code: string, message?: string | null, data?: unknown | null, activity?: { __typename?: 'Activity', id: string, action: ActivityAction, careflow_id: string, container_name?: string | null, date: string, pathway_definition_id: string, reference_id: string, reference_type: ActivityReferenceType, resolution?: ActivityResolution | null, session_id?: string | null, status: ActivityStatus, tenant_id: string, is_user_activity: boolean, indirect_object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null, object: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null }, sub_activities: Array<{ __typename?: 'SubActivity', id: string, action: ActivityAction, object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null }>, inputs?: { __typename: 'CalculationActivityInput', type: ActivityInputType, calculationFields?: Array<{ __typename?: 'CalculationField', id: string, key: string, label: string, value: unknown, value_type?: string | null }> | null } | { __typename: 'ChecklistActivityInput', type: ActivityInputType, checklist?: { __typename?: 'Checklist', title: string, items: Array<string> } | null } | { __typename: 'ClinicalNoteActivityInput', type: ActivityInputType, clinicalNote?: { __typename?: 'ClinicalNote', id: string, narratives: Array<{ __typename?: 'GeneratedClinicalNoteNarrative', id: string, key: string, title: string, body: string }>, context: Array<{ __typename?: 'GeneratedClinicalNoteContextField', key: string, value: string }> } | null } | { __typename: 'DynamicFormActivityInput', type: ActivityInputType, dynamicForm?: { __typename?: 'DynamicForm', key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'DynamicQuestion', id: string, key: string, title: string, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'ExtensionActivityInput', type: ActivityInputType, extensionFields?: unknown | null } | { __typename: 'FormActivityInput', type: ActivityInputType, form?: { __typename?: 'ActivityForm', id: string, key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'Question', id: string, key: string, title: string, definition_id?: string | null, placeholder?: string | null, questionType: QuestionType, userQuestionType: UserQuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'MessageActivityInput', type: ActivityInputType, message?: { __typename?: 'ActivityMessage', id: string, subject: string, body: string, format?: MessageFormat | null, attachments?: Array<{ __typename?: 'MessageAttachment', id: string, name: string, type: string, url: string }> | null } | null } | null, outputs?: { __typename: 'CalculationActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'DynamicFormActivityOutput', type: ActivityOutputType, response?: unknown | null } | { __typename: 'ExtensionActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'FormActivityOutput', type: ActivityOutputType, response?: unknown | null } | null } | null } };
 
 export type DynamicQuestionFragment = { __typename?: 'DynamicQuestion', id: string, key: string, title: string, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null };
 
@@ -435,44 +553,44 @@ export type GetActivityQueryVariables = Exact<{
 }>;
 
 
-export type GetActivityQuery = { __typename?: 'Query', activity: { __typename?: 'ActivityPayload', success: boolean, activity?: { __typename?: 'Activity', id: string, action: ActivityAction, careflow_id: string, container_name?: string | null, date: string, pathway_definition_id: string, reference_id: string, reference_type: ActivityReferenceType, resolution?: ActivityResolution | null, session_id?: string | null, status: ActivityStatus, tenant_id: string, indirect_object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null, object: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null }, sub_activities: Array<{ __typename?: 'SubActivity', id: string, action: ActivityAction, object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null }>, inputs?: { __typename: 'CalculationActivityInput', type: ActivityInputType, calculationFields?: Array<{ __typename?: 'CalculationField', id: string, key: string, label: string, value: unknown, value_type?: string | null }> | null } | { __typename: 'DynamicFormActivityInput', type: ActivityInputType, dynamicForm?: { __typename?: 'DynamicForm', key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'DynamicQuestion', id: string, key: string, title: string, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'ExtensionActivityInput', type: ActivityInputType, extensionFields?: unknown | null } | { __typename: 'FormActivityInput', type: ActivityInputType, form?: { __typename?: 'ActivityForm', id: string, key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'Question', id: string, key: string, title: string, definition_id?: string | null, placeholder?: string | null, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'MessageActivityInput', type: ActivityInputType, message?: { __typename?: 'ActivityMessage', id: string, subject: string, body: string, format?: MessageFormat | null, attachments?: Array<{ __typename?: 'MessageAttachment', id: string, name: string, type: string, url: string }> | null } | null } | null, outputs?: { __typename: 'CalculationActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'DynamicFormActivityOutput', type: ActivityOutputType, response?: unknown | null } | { __typename: 'ExtensionActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'FormActivityOutput', type: ActivityOutputType, response?: unknown | null } | null } | null } };
+export type GetActivityQuery = { __typename?: 'Query', activity: { __typename?: 'ActivityPayload', success: boolean, activity?: { __typename?: 'Activity', id: string, action: ActivityAction, careflow_id: string, container_name?: string | null, date: string, pathway_definition_id: string, reference_id: string, reference_type: ActivityReferenceType, resolution?: ActivityResolution | null, session_id?: string | null, status: ActivityStatus, tenant_id: string, is_user_activity: boolean, indirect_object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null, object: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null }, sub_activities: Array<{ __typename?: 'SubActivity', id: string, action: ActivityAction, object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null }>, inputs?: { __typename: 'CalculationActivityInput', type: ActivityInputType, calculationFields?: Array<{ __typename?: 'CalculationField', id: string, key: string, label: string, value: unknown, value_type?: string | null }> | null } | { __typename: 'ChecklistActivityInput', type: ActivityInputType, checklist?: { __typename?: 'Checklist', title: string, items: Array<string> } | null } | { __typename: 'ClinicalNoteActivityInput', type: ActivityInputType, clinicalNote?: { __typename?: 'ClinicalNote', id: string, narratives: Array<{ __typename?: 'GeneratedClinicalNoteNarrative', id: string, key: string, title: string, body: string }>, context: Array<{ __typename?: 'GeneratedClinicalNoteContextField', key: string, value: string }> } | null } | { __typename: 'DynamicFormActivityInput', type: ActivityInputType, dynamicForm?: { __typename?: 'DynamicForm', key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'DynamicQuestion', id: string, key: string, title: string, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'ExtensionActivityInput', type: ActivityInputType, extensionFields?: unknown | null } | { __typename: 'FormActivityInput', type: ActivityInputType, form?: { __typename?: 'ActivityForm', id: string, key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'Question', id: string, key: string, title: string, definition_id?: string | null, placeholder?: string | null, questionType: QuestionType, userQuestionType: UserQuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'MessageActivityInput', type: ActivityInputType, message?: { __typename?: 'ActivityMessage', id: string, subject: string, body: string, format?: MessageFormat | null, attachments?: Array<{ __typename?: 'MessageAttachment', id: string, name: string, type: string, url: string }> | null } | null } | null, outputs?: { __typename: 'CalculationActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'DynamicFormActivityOutput', type: ActivityOutputType, response?: unknown | null } | { __typename: 'ExtensionActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'FormActivityOutput', type: ActivityOutputType, response?: unknown | null } | null } | null } };
 
 export type OnActivityCompletedSubscriptionVariables = Exact<{
   careflow_id: Scalars['String']['input'];
 }>;
 
 
-export type OnActivityCompletedSubscription = { __typename?: 'Subscription', activityCompleted: { __typename?: 'Activity', id: string, action: ActivityAction, careflow_id: string, container_name?: string | null, date: string, pathway_definition_id: string, reference_id: string, reference_type: ActivityReferenceType, resolution?: ActivityResolution | null, session_id?: string | null, status: ActivityStatus, tenant_id: string, indirect_object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null, object: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null }, sub_activities: Array<{ __typename?: 'SubActivity', id: string, action: ActivityAction, object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null }>, inputs?: { __typename: 'CalculationActivityInput', type: ActivityInputType, calculationFields?: Array<{ __typename?: 'CalculationField', id: string, key: string, label: string, value: unknown, value_type?: string | null }> | null } | { __typename: 'DynamicFormActivityInput', type: ActivityInputType, dynamicForm?: { __typename?: 'DynamicForm', key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'DynamicQuestion', id: string, key: string, title: string, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'ExtensionActivityInput', type: ActivityInputType, extensionFields?: unknown | null } | { __typename: 'FormActivityInput', type: ActivityInputType, form?: { __typename?: 'ActivityForm', id: string, key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'Question', id: string, key: string, title: string, definition_id?: string | null, placeholder?: string | null, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'MessageActivityInput', type: ActivityInputType, message?: { __typename?: 'ActivityMessage', id: string, subject: string, body: string, format?: MessageFormat | null, attachments?: Array<{ __typename?: 'MessageAttachment', id: string, name: string, type: string, url: string }> | null } | null } | null, outputs?: { __typename: 'CalculationActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'DynamicFormActivityOutput', type: ActivityOutputType, response?: unknown | null } | { __typename: 'ExtensionActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'FormActivityOutput', type: ActivityOutputType, response?: unknown | null } | null } };
+export type OnActivityCompletedSubscription = { __typename?: 'Subscription', activityCompleted: { __typename?: 'Activity', id: string, action: ActivityAction, careflow_id: string, container_name?: string | null, date: string, pathway_definition_id: string, reference_id: string, reference_type: ActivityReferenceType, resolution?: ActivityResolution | null, session_id?: string | null, status: ActivityStatus, tenant_id: string, is_user_activity: boolean, indirect_object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null, object: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null }, sub_activities: Array<{ __typename?: 'SubActivity', id: string, action: ActivityAction, object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null }>, inputs?: { __typename: 'CalculationActivityInput', type: ActivityInputType, calculationFields?: Array<{ __typename?: 'CalculationField', id: string, key: string, label: string, value: unknown, value_type?: string | null }> | null } | { __typename: 'ChecklistActivityInput', type: ActivityInputType, checklist?: { __typename?: 'Checklist', title: string, items: Array<string> } | null } | { __typename: 'ClinicalNoteActivityInput', type: ActivityInputType, clinicalNote?: { __typename?: 'ClinicalNote', id: string, narratives: Array<{ __typename?: 'GeneratedClinicalNoteNarrative', id: string, key: string, title: string, body: string }>, context: Array<{ __typename?: 'GeneratedClinicalNoteContextField', key: string, value: string }> } | null } | { __typename: 'DynamicFormActivityInput', type: ActivityInputType, dynamicForm?: { __typename?: 'DynamicForm', key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'DynamicQuestion', id: string, key: string, title: string, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'ExtensionActivityInput', type: ActivityInputType, extensionFields?: unknown | null } | { __typename: 'FormActivityInput', type: ActivityInputType, form?: { __typename?: 'ActivityForm', id: string, key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'Question', id: string, key: string, title: string, definition_id?: string | null, placeholder?: string | null, questionType: QuestionType, userQuestionType: UserQuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'MessageActivityInput', type: ActivityInputType, message?: { __typename?: 'ActivityMessage', id: string, subject: string, body: string, format?: MessageFormat | null, attachments?: Array<{ __typename?: 'MessageAttachment', id: string, name: string, type: string, url: string }> | null } | null } | null, outputs?: { __typename: 'CalculationActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'DynamicFormActivityOutput', type: ActivityOutputType, response?: unknown | null } | { __typename: 'ExtensionActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'FormActivityOutput', type: ActivityOutputType, response?: unknown | null } | null } };
 
 export type OnActivityCreatedSubscriptionVariables = Exact<{
   careflow_id: Scalars['String']['input'];
 }>;
 
 
-export type OnActivityCreatedSubscription = { __typename?: 'Subscription', activityCreated: { __typename?: 'Activity', id: string, action: ActivityAction, careflow_id: string, container_name?: string | null, date: string, pathway_definition_id: string, reference_id: string, reference_type: ActivityReferenceType, resolution?: ActivityResolution | null, session_id?: string | null, status: ActivityStatus, tenant_id: string, indirect_object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null, object: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null }, sub_activities: Array<{ __typename?: 'SubActivity', id: string, action: ActivityAction, object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null }>, inputs?: { __typename: 'CalculationActivityInput', type: ActivityInputType, calculationFields?: Array<{ __typename?: 'CalculationField', id: string, key: string, label: string, value: unknown, value_type?: string | null }> | null } | { __typename: 'DynamicFormActivityInput', type: ActivityInputType, dynamicForm?: { __typename?: 'DynamicForm', key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'DynamicQuestion', id: string, key: string, title: string, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'ExtensionActivityInput', type: ActivityInputType, extensionFields?: unknown | null } | { __typename: 'FormActivityInput', type: ActivityInputType, form?: { __typename?: 'ActivityForm', id: string, key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'Question', id: string, key: string, title: string, definition_id?: string | null, placeholder?: string | null, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'MessageActivityInput', type: ActivityInputType, message?: { __typename?: 'ActivityMessage', id: string, subject: string, body: string, format?: MessageFormat | null, attachments?: Array<{ __typename?: 'MessageAttachment', id: string, name: string, type: string, url: string }> | null } | null } | null, outputs?: { __typename: 'CalculationActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'DynamicFormActivityOutput', type: ActivityOutputType, response?: unknown | null } | { __typename: 'ExtensionActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'FormActivityOutput', type: ActivityOutputType, response?: unknown | null } | null } };
+export type OnActivityCreatedSubscription = { __typename?: 'Subscription', activityCreated: { __typename?: 'Activity', id: string, action: ActivityAction, careflow_id: string, container_name?: string | null, date: string, pathway_definition_id: string, reference_id: string, reference_type: ActivityReferenceType, resolution?: ActivityResolution | null, session_id?: string | null, status: ActivityStatus, tenant_id: string, is_user_activity: boolean, indirect_object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null, object: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null }, sub_activities: Array<{ __typename?: 'SubActivity', id: string, action: ActivityAction, object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null }>, inputs?: { __typename: 'CalculationActivityInput', type: ActivityInputType, calculationFields?: Array<{ __typename?: 'CalculationField', id: string, key: string, label: string, value: unknown, value_type?: string | null }> | null } | { __typename: 'ChecklistActivityInput', type: ActivityInputType, checklist?: { __typename?: 'Checklist', title: string, items: Array<string> } | null } | { __typename: 'ClinicalNoteActivityInput', type: ActivityInputType, clinicalNote?: { __typename?: 'ClinicalNote', id: string, narratives: Array<{ __typename?: 'GeneratedClinicalNoteNarrative', id: string, key: string, title: string, body: string }>, context: Array<{ __typename?: 'GeneratedClinicalNoteContextField', key: string, value: string }> } | null } | { __typename: 'DynamicFormActivityInput', type: ActivityInputType, dynamicForm?: { __typename?: 'DynamicForm', key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'DynamicQuestion', id: string, key: string, title: string, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'ExtensionActivityInput', type: ActivityInputType, extensionFields?: unknown | null } | { __typename: 'FormActivityInput', type: ActivityInputType, form?: { __typename?: 'ActivityForm', id: string, key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'Question', id: string, key: string, title: string, definition_id?: string | null, placeholder?: string | null, questionType: QuestionType, userQuestionType: UserQuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'MessageActivityInput', type: ActivityInputType, message?: { __typename?: 'ActivityMessage', id: string, subject: string, body: string, format?: MessageFormat | null, attachments?: Array<{ __typename?: 'MessageAttachment', id: string, name: string, type: string, url: string }> | null } | null } | null, outputs?: { __typename: 'CalculationActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'DynamicFormActivityOutput', type: ActivityOutputType, response?: unknown | null } | { __typename: 'ExtensionActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'FormActivityOutput', type: ActivityOutputType, response?: unknown | null } | null } };
 
 export type OnActivityExpiredSubscriptionVariables = Exact<{
   careflow_id: Scalars['String']['input'];
 }>;
 
 
-export type OnActivityExpiredSubscription = { __typename?: 'Subscription', activityExpired: { __typename?: 'Activity', id: string, action: ActivityAction, careflow_id: string, container_name?: string | null, date: string, pathway_definition_id: string, reference_id: string, reference_type: ActivityReferenceType, resolution?: ActivityResolution | null, session_id?: string | null, status: ActivityStatus, tenant_id: string, indirect_object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null, object: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null }, sub_activities: Array<{ __typename?: 'SubActivity', id: string, action: ActivityAction, object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null }>, inputs?: { __typename: 'CalculationActivityInput', type: ActivityInputType, calculationFields?: Array<{ __typename?: 'CalculationField', id: string, key: string, label: string, value: unknown, value_type?: string | null }> | null } | { __typename: 'DynamicFormActivityInput', type: ActivityInputType, dynamicForm?: { __typename?: 'DynamicForm', key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'DynamicQuestion', id: string, key: string, title: string, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'ExtensionActivityInput', type: ActivityInputType, extensionFields?: unknown | null } | { __typename: 'FormActivityInput', type: ActivityInputType, form?: { __typename?: 'ActivityForm', id: string, key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'Question', id: string, key: string, title: string, definition_id?: string | null, placeholder?: string | null, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'MessageActivityInput', type: ActivityInputType, message?: { __typename?: 'ActivityMessage', id: string, subject: string, body: string, format?: MessageFormat | null, attachments?: Array<{ __typename?: 'MessageAttachment', id: string, name: string, type: string, url: string }> | null } | null } | null, outputs?: { __typename: 'CalculationActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'DynamicFormActivityOutput', type: ActivityOutputType, response?: unknown | null } | { __typename: 'ExtensionActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'FormActivityOutput', type: ActivityOutputType, response?: unknown | null } | null } };
+export type OnActivityExpiredSubscription = { __typename?: 'Subscription', activityExpired: { __typename?: 'Activity', id: string, action: ActivityAction, careflow_id: string, container_name?: string | null, date: string, pathway_definition_id: string, reference_id: string, reference_type: ActivityReferenceType, resolution?: ActivityResolution | null, session_id?: string | null, status: ActivityStatus, tenant_id: string, is_user_activity: boolean, indirect_object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null, object: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null }, sub_activities: Array<{ __typename?: 'SubActivity', id: string, action: ActivityAction, object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null }>, inputs?: { __typename: 'CalculationActivityInput', type: ActivityInputType, calculationFields?: Array<{ __typename?: 'CalculationField', id: string, key: string, label: string, value: unknown, value_type?: string | null }> | null } | { __typename: 'ChecklistActivityInput', type: ActivityInputType, checklist?: { __typename?: 'Checklist', title: string, items: Array<string> } | null } | { __typename: 'ClinicalNoteActivityInput', type: ActivityInputType, clinicalNote?: { __typename?: 'ClinicalNote', id: string, narratives: Array<{ __typename?: 'GeneratedClinicalNoteNarrative', id: string, key: string, title: string, body: string }>, context: Array<{ __typename?: 'GeneratedClinicalNoteContextField', key: string, value: string }> } | null } | { __typename: 'DynamicFormActivityInput', type: ActivityInputType, dynamicForm?: { __typename?: 'DynamicForm', key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'DynamicQuestion', id: string, key: string, title: string, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'ExtensionActivityInput', type: ActivityInputType, extensionFields?: unknown | null } | { __typename: 'FormActivityInput', type: ActivityInputType, form?: { __typename?: 'ActivityForm', id: string, key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'Question', id: string, key: string, title: string, definition_id?: string | null, placeholder?: string | null, questionType: QuestionType, userQuestionType: UserQuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'MessageActivityInput', type: ActivityInputType, message?: { __typename?: 'ActivityMessage', id: string, subject: string, body: string, format?: MessageFormat | null, attachments?: Array<{ __typename?: 'MessageAttachment', id: string, name: string, type: string, url: string }> | null } | null } | null, outputs?: { __typename: 'CalculationActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'DynamicFormActivityOutput', type: ActivityOutputType, response?: unknown | null } | { __typename: 'ExtensionActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'FormActivityOutput', type: ActivityOutputType, response?: unknown | null } | null } };
 
 export type OnActivityUpdatedSubscriptionVariables = Exact<{
   careflow_id: Scalars['String']['input'];
 }>;
 
 
-export type OnActivityUpdatedSubscription = { __typename?: 'Subscription', activityUpdated: { __typename?: 'Activity', id: string, action: ActivityAction, careflow_id: string, container_name?: string | null, date: string, pathway_definition_id: string, reference_id: string, reference_type: ActivityReferenceType, resolution?: ActivityResolution | null, session_id?: string | null, status: ActivityStatus, tenant_id: string, indirect_object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null, object: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null }, sub_activities: Array<{ __typename?: 'SubActivity', id: string, action: ActivityAction, object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null }>, inputs?: { __typename: 'CalculationActivityInput', type: ActivityInputType, calculationFields?: Array<{ __typename?: 'CalculationField', id: string, key: string, label: string, value: unknown, value_type?: string | null }> | null } | { __typename: 'DynamicFormActivityInput', type: ActivityInputType, dynamicForm?: { __typename?: 'DynamicForm', key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'DynamicQuestion', id: string, key: string, title: string, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'ExtensionActivityInput', type: ActivityInputType, extensionFields?: unknown | null } | { __typename: 'FormActivityInput', type: ActivityInputType, form?: { __typename?: 'ActivityForm', id: string, key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'Question', id: string, key: string, title: string, definition_id?: string | null, placeholder?: string | null, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'MessageActivityInput', type: ActivityInputType, message?: { __typename?: 'ActivityMessage', id: string, subject: string, body: string, format?: MessageFormat | null, attachments?: Array<{ __typename?: 'MessageAttachment', id: string, name: string, type: string, url: string }> | null } | null } | null, outputs?: { __typename: 'CalculationActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'DynamicFormActivityOutput', type: ActivityOutputType, response?: unknown | null } | { __typename: 'ExtensionActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'FormActivityOutput', type: ActivityOutputType, response?: unknown | null } | null } };
+export type OnActivityUpdatedSubscription = { __typename?: 'Subscription', activityUpdated: { __typename?: 'Activity', id: string, action: ActivityAction, careflow_id: string, container_name?: string | null, date: string, pathway_definition_id: string, reference_id: string, reference_type: ActivityReferenceType, resolution?: ActivityResolution | null, session_id?: string | null, status: ActivityStatus, tenant_id: string, is_user_activity: boolean, indirect_object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null, object: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null }, sub_activities: Array<{ __typename?: 'SubActivity', id: string, action: ActivityAction, object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null }>, inputs?: { __typename: 'CalculationActivityInput', type: ActivityInputType, calculationFields?: Array<{ __typename?: 'CalculationField', id: string, key: string, label: string, value: unknown, value_type?: string | null }> | null } | { __typename: 'ChecklistActivityInput', type: ActivityInputType, checklist?: { __typename?: 'Checklist', title: string, items: Array<string> } | null } | { __typename: 'ClinicalNoteActivityInput', type: ActivityInputType, clinicalNote?: { __typename?: 'ClinicalNote', id: string, narratives: Array<{ __typename?: 'GeneratedClinicalNoteNarrative', id: string, key: string, title: string, body: string }>, context: Array<{ __typename?: 'GeneratedClinicalNoteContextField', key: string, value: string }> } | null } | { __typename: 'DynamicFormActivityInput', type: ActivityInputType, dynamicForm?: { __typename?: 'DynamicForm', key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'DynamicQuestion', id: string, key: string, title: string, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'ExtensionActivityInput', type: ActivityInputType, extensionFields?: unknown | null } | { __typename: 'FormActivityInput', type: ActivityInputType, form?: { __typename?: 'ActivityForm', id: string, key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'Question', id: string, key: string, title: string, definition_id?: string | null, placeholder?: string | null, questionType: QuestionType, userQuestionType: UserQuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'MessageActivityInput', type: ActivityInputType, message?: { __typename?: 'ActivityMessage', id: string, subject: string, body: string, format?: MessageFormat | null, attachments?: Array<{ __typename?: 'MessageAttachment', id: string, name: string, type: string, url: string }> | null } | null } | null, outputs?: { __typename: 'CalculationActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'DynamicFormActivityOutput', type: ActivityOutputType, response?: unknown | null } | { __typename: 'ExtensionActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'FormActivityOutput', type: ActivityOutputType, response?: unknown | null } | null } };
 
 export type PathwayActivitiesQueryVariables = Exact<{
   pathway_id: Scalars['String']['input'];
 }>;
 
 
-export type PathwayActivitiesQuery = { __typename?: 'Query', pathwayActivities: { __typename?: 'ActivitiesPayload', success: boolean, totalCount?: number | null, activities: Array<{ __typename?: 'Activity', id: string, action: ActivityAction, careflow_id: string, container_name?: string | null, date: string, pathway_definition_id: string, reference_id: string, reference_type: ActivityReferenceType, resolution?: ActivityResolution | null, session_id?: string | null, status: ActivityStatus, tenant_id: string, indirect_object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null, object: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null }, sub_activities: Array<{ __typename?: 'SubActivity', id: string, action: ActivityAction, object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null }>, inputs?: { __typename: 'CalculationActivityInput', type: ActivityInputType, calculationFields?: Array<{ __typename?: 'CalculationField', id: string, key: string, label: string, value: unknown, value_type?: string | null }> | null } | { __typename: 'DynamicFormActivityInput', type: ActivityInputType, dynamicForm?: { __typename?: 'DynamicForm', key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'DynamicQuestion', id: string, key: string, title: string, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'ExtensionActivityInput', type: ActivityInputType, extensionFields?: unknown | null } | { __typename: 'FormActivityInput', type: ActivityInputType, form?: { __typename?: 'ActivityForm', id: string, key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'Question', id: string, key: string, title: string, definition_id?: string | null, placeholder?: string | null, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'MessageActivityInput', type: ActivityInputType, message?: { __typename?: 'ActivityMessage', id: string, subject: string, body: string, format?: MessageFormat | null, attachments?: Array<{ __typename?: 'MessageAttachment', id: string, name: string, type: string, url: string }> | null } | null } | null, outputs?: { __typename: 'CalculationActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'DynamicFormActivityOutput', type: ActivityOutputType, response?: unknown | null } | { __typename: 'ExtensionActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'FormActivityOutput', type: ActivityOutputType, response?: unknown | null } | null }> } };
+export type PathwayActivitiesQuery = { __typename?: 'Query', pathwayActivities: { __typename?: 'ActivitiesPayload', success: boolean, totalCount?: number | null, activities: Array<{ __typename?: 'Activity', id: string, action: ActivityAction, careflow_id: string, container_name?: string | null, date: string, pathway_definition_id: string, reference_id: string, reference_type: ActivityReferenceType, resolution?: ActivityResolution | null, session_id?: string | null, status: ActivityStatus, tenant_id: string, is_user_activity: boolean, indirect_object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null, object: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null }, sub_activities: Array<{ __typename?: 'SubActivity', id: string, action: ActivityAction, object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null }>, inputs?: { __typename: 'CalculationActivityInput', type: ActivityInputType, calculationFields?: Array<{ __typename?: 'CalculationField', id: string, key: string, label: string, value: unknown, value_type?: string | null }> | null } | { __typename: 'ChecklistActivityInput', type: ActivityInputType, checklist?: { __typename?: 'Checklist', title: string, items: Array<string> } | null } | { __typename: 'ClinicalNoteActivityInput', type: ActivityInputType, clinicalNote?: { __typename?: 'ClinicalNote', id: string, narratives: Array<{ __typename?: 'GeneratedClinicalNoteNarrative', id: string, key: string, title: string, body: string }>, context: Array<{ __typename?: 'GeneratedClinicalNoteContextField', key: string, value: string }> } | null } | { __typename: 'DynamicFormActivityInput', type: ActivityInputType, dynamicForm?: { __typename?: 'DynamicForm', key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'DynamicQuestion', id: string, key: string, title: string, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'ExtensionActivityInput', type: ActivityInputType, extensionFields?: unknown | null } | { __typename: 'FormActivityInput', type: ActivityInputType, form?: { __typename?: 'ActivityForm', id: string, key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'Question', id: string, key: string, title: string, definition_id?: string | null, placeholder?: string | null, questionType: QuestionType, userQuestionType: UserQuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null }> } | null } | { __typename: 'MessageActivityInput', type: ActivityInputType, message?: { __typename?: 'ActivityMessage', id: string, subject: string, body: string, format?: MessageFormat | null, attachments?: Array<{ __typename?: 'MessageAttachment', id: string, name: string, type: string, url: string }> | null } | null } | null, outputs?: { __typename: 'CalculationActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'DynamicFormActivityOutput', type: ActivityOutputType, response?: unknown | null } | { __typename: 'ExtensionActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'FormActivityOutput', type: ActivityOutputType, response?: unknown | null } | null }> } };
 
-export type QuestionFragment = { __typename?: 'Question', id: string, key: string, title: string, definition_id?: string | null, placeholder?: string | null, questionType: QuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null };
+export type QuestionFragment = { __typename?: 'Question', id: string, key: string, title: string, definition_id?: string | null, placeholder?: string | null, questionType: QuestionType, userQuestionType: UserQuestionType, required?: boolean | null, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value: string }> | null };
 
 export const QuestionFragmentDoc = gql`
     fragment Question on Question {
@@ -482,6 +600,7 @@ export const QuestionFragmentDoc = gql`
   definition_id
   placeholder
   questionType
+  userQuestionType
   required
   options {
     id
@@ -532,6 +651,7 @@ export const ActivityFragmentDoc = gql`
   session_id
   status
   tenant_id
+  is_user_activity
   sub_activities {
     id
     action
@@ -598,6 +718,29 @@ export const ActivityFragmentDoc = gql`
       type
       extensionFields: fields
     }
+    ... on ChecklistActivityInput {
+      type
+      checklist {
+        title
+        items
+      }
+    }
+    ... on ClinicalNoteActivityInput {
+      type
+      clinicalNote {
+        id
+        narratives {
+          id
+          key
+          title
+          body
+        }
+        context {
+          key
+          value
+        }
+      }
+    }
   }
   outputs {
     __typename
@@ -622,6 +765,45 @@ export const ActivityFragmentDoc = gql`
 }
     ${QuestionFragmentDoc}
 ${DynamicQuestionFragmentDoc}`;
+export const CompleteActivityDocument = gql`
+    mutation CompleteActivity($input: CompleteActivityInput!) {
+  completeActivity(input: $input) {
+    success
+    code
+    message
+    activity {
+      ...Activity
+    }
+    data
+  }
+}
+    ${ActivityFragmentDoc}`;
+export type CompleteActivityMutationFn = ApolloReactCommon.MutationFunction<CompleteActivityMutation, CompleteActivityMutationVariables>;
+
+/**
+ * __useCompleteActivityMutation__
+ *
+ * To run a mutation, you first call `useCompleteActivityMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCompleteActivityMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [completeActivityMutation, { data, loading, error }] = useCompleteActivityMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCompleteActivityMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CompleteActivityMutation, CompleteActivityMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<CompleteActivityMutation, CompleteActivityMutationVariables>(CompleteActivityDocument, options);
+      }
+export type CompleteActivityMutationHookResult = ReturnType<typeof useCompleteActivityMutation>;
+export type CompleteActivityMutationResult = ApolloReactCommon.MutationResult<CompleteActivityMutation>;
+export type CompleteActivityMutationOptions = ApolloReactCommon.BaseMutationOptions<CompleteActivityMutation, CompleteActivityMutationVariables>;
 export const GetActivityDocument = gql`
     query GetActivity($id: ID!) {
   activity(id: $id) {

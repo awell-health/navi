@@ -13,7 +13,7 @@ export default [
     plugins: [
       resolve(),
       typescript({
-        tsconfig: "./tsconfig.json",
+        tsconfig: "./tsconfig.build.json",
         declaration: true,
         declarationDir: "dist",
       }),
@@ -30,9 +30,9 @@ export default [
     plugins: [
       resolve(),
       typescript({
-        tsconfig: "./tsconfig.json",
-        declaration: false,
-        declarationDir: null,
+        tsconfig: "./tsconfig.build.json",
+        declaration: true,
+        declarationDir: "dist",
       }),
     ],
     external: ["graphql", "jose", "zod"],

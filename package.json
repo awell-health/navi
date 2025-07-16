@@ -20,7 +20,11 @@
     "changeset": "changeset",
     "changeset:version": "changeset version",
     "changeset:publish": "changeset publish",
-    "start:portal": "pnpm --filter=navi-portal run start"
+    "start:portal": "pnpm --filter=navi-portal run start",
+    "codegen": "pnpm codegen:core && pnpm codegen:portal",
+    "codegen:core": "pnpm --filter=@awell-health/navi-core run codegen",
+    "codegen:portal": "pnpm --filter=navi-portal run codegen",
+    "storybook": "pnpm --filter=navi-portal run storybook"
   },
   "engines": {
     "node": ">=22"
@@ -29,7 +33,7 @@
   "dependencies": {},
   "devDependencies": {
     "@changesets/cli": "^2.27.9",
-    "turbo": "^2.3.4", 
+    "turbo": "^2.3.4",
     "typescript": "^5",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",

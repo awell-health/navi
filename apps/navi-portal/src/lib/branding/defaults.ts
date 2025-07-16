@@ -1,4 +1,4 @@
-import { type ThemeTokens } from "./types";
+import type { OrgBranding, ThemeTokens } from "./types";
 
 export const awellDefaultTheme: ThemeTokens = {
   // Primary palette
@@ -44,7 +44,11 @@ export const awellDefaultTheme: ThemeTokens = {
   "--nav-height": "56px",
 };
 
-export const awellDefaultBranding = {
+/**
+ * Awell's default branding configuration
+ * Used as a fallback when no custom branding is available
+ */
+export const awellDefaultBranding: OrgBranding = {
   orgId: "awell-dev",
   branding: {
     // Core palette
@@ -65,18 +69,47 @@ export const awellDefaultBranding = {
     error: "#dc2626",
     onError: "#ffffff",
 
-    // Typography
+    // Typography - Font families
     fontFamilyBody: "system-ui, sans-serif",
     fontFamilyHeading: "system-ui, sans-serif",
+    fontFamilyMono: "ui-monospace, monospace",
+    
+    // Typography - Font sizes
+    fontSizeXs: "0.75rem",
+    fontSizeSm: "0.875rem",
+    fontSizeBase: "1rem",
+    fontSizeLg: "1.125rem",
+    fontSizeXl: "1.25rem",
+    fontSize2xl: "1.5rem",
+    fontSize3xl: "1.875rem",
+    fontSize4xl: "2.25rem",
+    
+    // Typography - Line heights
+    lineHeightTight: "1.25",
+    lineHeightNormal: "1.5",
+    lineHeightRelaxed: "1.625",
+    
+    // Typography - Font weights
+    fontWeightNormal: "400",
+    fontWeightMedium: "500",
+    fontWeightSemibold: "600",
+    fontWeightBold: "700",
+    fontWeightExtrabold: "800",
 
     // Radii
     radiusSm: "0.5rem",
     radiusMd: "1rem",
     radiusLg: "1.5rem",
 
+    // Spacing
+    stackSpacing: "sm",
+
     // Welcome page defaults
     welcomeTitle: "Welcome to your care journey",
     welcomeSubtitle: "Let's get started with your next steps",
     faviconUrl: "/favicon-16x16.png", // Default Awell favicon
+    logoUrl: undefined, // No default logo
+    logoWidth: "200px",
+    logoHeight: "80px",
   },
 };

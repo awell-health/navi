@@ -3,17 +3,16 @@ export {
   createSessionToken,
   decryptSessionToken,
   isValidSessionToken,
-} from './internal/session';
+} from "./internal/session";
 
 // JWT management
-export {
-  createJWT,
-  verifyJWT,
-} from './external/jwt';
+export { createJWT, verifyJWT } from "./external/jwt";
 
-// Types
+// Types (re-exported from navi-core)
 export type {
   SessionTokenData,
   SessionData,
   TokenEnvironment,
-} from './internal/types';
+  AuthenticationState,
+  JWTPayload,
+} from "@awell-health/navi-core/src/types";

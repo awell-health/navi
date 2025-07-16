@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@awell-health/navi-js": "workspace:*",
-    "@awell-health/navi-react": "workspace:*",
+    "@awell-health/navi-js-react": "workspace:*",
     "next": "^15.3.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -20,7 +20,7 @@
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "autoprefixer": "^10.4.16",
-    "eslint": "^8.57.0",
+    "eslint": "^9",
     "eslint-config-next": "^15.0.0",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.3.6",

@@ -1,4 +1,4 @@
-import type { SessionTokenData } from "./types";
+import type { SessionTokenData } from "@awell-health/navi-core/src/types";
 import { env } from "@/env";
 
 export function isValidSessionToken(obj: unknown): obj is SessionTokenData {
@@ -7,8 +7,11 @@ export function isValidSessionToken(obj: unknown): obj is SessionTokenData {
     obj !== null &&
     "patientId" in obj &&
     "careflowId" in obj &&
+    "stakeholderId" in obj &&
     "orgId" in obj &&
+    "tenantId" in obj &&
     "environment" in obj &&
+    "authenticationState" in obj &&
     "exp" in obj
   );
 }

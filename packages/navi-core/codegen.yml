@@ -1,0 +1,14 @@
+overwrite: true
+schema:
+  - ../../../awell-next/packages/module-navi/src/graphql/schema.graphql
+generates:
+  src/generated/graphql.ts:
+    plugins:
+      - "typescript"
+    config:
+      onlyOperationTypes: false
+      skipTypename: true
+      enumsAsTypes: true
+      scalars:
+        JSON: unknown
+        SafeDate: string

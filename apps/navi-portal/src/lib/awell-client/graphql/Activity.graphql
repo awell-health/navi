@@ -1,5 +1,6 @@
 fragment Activity on Activity {
   id
+  type
   action
   careflow_id
   container_name
@@ -25,6 +26,7 @@ fragment Activity on Activity {
   session_id
   status
   tenant_id
+  is_user_activity
   sub_activities {
     id
     action
@@ -90,6 +92,29 @@ fragment Activity on Activity {
     ... on ExtensionActivityInput {
       type
       extensionFields: fields
+    }
+    ... on ChecklistActivityInput {
+      type
+      checklist {
+        title
+        items
+      }
+    }
+    ... on ClinicalNoteActivityInput {
+      type
+      clinicalNote {
+        id
+        narratives {
+          id
+          key
+          title
+          body
+        }
+        context {
+          key
+          value
+        }
+      }
     }
   }
   outputs {

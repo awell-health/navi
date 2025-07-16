@@ -1,0 +1,303 @@
+---
+globs: **/*event*,examples/**/*.ts,packages/navi.js/**/*,**/*messaging*
+alwaysApply: false
+---
+
+# Event System Architecture Guide
+
+**🎯 Purpose**: Quick reference for AI agents working with activity events and postMessage communication.
+
+## 🏗️ **Event Flow Overview**
+
+```
+React Components → useActivityEvents → postMessage → navi.js → Customer
+     (portal)         (hook)           (cross-origin)   (SDK)    (callbacks)
+```
+
+## 📋 **Three-Layer System**
+
+### **Layer 1: navi-core (Source of Truth)**
+
+**File**: `packages/navi-core/src/types/activity-event.ts`
+
+```typescript
+// Internal event format (dash-separated)
+"activity-ready"; // Component mounted
+"activity-activate"; // Activity became active
+"activity-progress"; // Progress tracking
+"activity-data-change"; // Real-time data updates
+"activity-complete"; // Activity finished
+"activity-error"; // Error occurred
+"activity-focus"; // Activity focused
+"activity-blur"; // Activity blurred
+```
+
+### **Layer 2: navi-portal (Event Emission)**
+
+**File**: `apps/navi-portal/src/hooks/use-activity-events.tsx`
+
+```typescript
+// React hook converts to postMessage
+emitActivityEvent("activity-ready");
+  ↓
+window.parent.postMessage({
+  source: "navi",
+  type: "navi.activity.ready",
+  instance_id: "navi-abc123"
+}, "*");
+```
+
+### **Layer 3: navi.js (Customer API)**
+
+**File**: `packages/navi.js/src/index.ts` (lines 159-279)
+
+```typescript
+// Customer-facing events (dot notation)
+instance.on("navi.activity.ready", callback);
+instance.on("navi.activity.dataChange", callback); // ← camelCase conversion
+```
+
+## 🔄 **Event Name Transformations**
+
+| navi-core              | postMessage                 | Customer API               |
+| ---------------------- | --------------------------- | -------------------------- |
+| `activity-ready`       | `navi.activity.ready`       | `navi.activity.ready`      |
+| `activity-data-change` | `navi.activity.data-change` | `navi.activity.dataChange` |
+| `activity-complete`    | `navi.activity.completed`   | `navi.activity.completed`  |
+
+## 📊 **Event Data Structures**
+
+### **Basic Event**
+
+```typescript
+interface ActivityEvent {
+  type: string;
+  activityId: string;
+  activityType: "FORM" | "MESSAGE" | "CHECKLIST";
+  data?: any;
+  timestamp: number;
+}
+```
+
+### **Common Event Data**
+
+```typescript
+// Progress events
+{ progress: 3, total: 5 }
+
+// Data change events
+{ field: "patient_name", value: "John", currentData: {...} }
+
+// Completion events
+{ submissionData: { patient_name: "John", age: 30 } }
+
+// Error events
+{ error: "Validation failed", field: "patient_name" }
+```
+
+## 🛠️ **Implementation Examples**
+
+### **Portal: Emit Event**
+
+```typescript
+const { emitActivityEvent } = useActivityEvents(activityId, "FORM");
+emitActivityEvent("activity-progress", { progress: 2, total: 5 });
+```
+
+### **navi.js: Handle Event**
+
+```typescript
+case "navi.activity.data-change":
+  this.handleActivityEvent(instance, "dataChange", data);  // ← camelCase
+```
+
+### **Customer: Listen to Event**
+
+```typescript
+instance.on("navi.activity.dataChange", (event) => {
+  console.log("Field changed:", event.data.field, event.data.value);
+});
+```
+
+## 🧪 **Testing Event System**
+
+```bash
+# Start both servers
+cd apps/navi-portal && pnpm dev      # localhost:3000
+cd examples/test-integration && pnpm dev  # localhost:3001
+
+# Test cross-origin communication
+# Visit: http://localhost:3001
+```
+
+## 🚨 **Common Issues**
+
+### **Event Name Mismatches**
+
+```typescript
+// ❌ WRONG
+instance.on("activity-ready", callback); // Internal format
+
+// ✅ CORRECT
+instance.on("navi.activity.ready", callback); // Customer format
+```
+
+### **Memory Leaks**
+
+```typescript
+// ❌ WRONG
+destroyInstance(instanceId: string) {
+  this.instances.delete(instanceId);
+  // Missing event handler cleanup
+}
+
+// ✅ CORRECT
+destroyInstance(instanceId: string) {
+  this.instances.delete(instanceId);
+  this.eventHandlers.delete(instanceId);  // ← Clean up
+}
+```
+
+## 📚 **Files to Modify**
+
+### **Adding New Event Type**
+
+1. **navi-core**: Add to `activity-event.ts`
+2. **navi-portal**: Add to `use-activity-events.tsx`
+3. **navi.js**: Add to `handleMessage()` switch
+
+### **Changing Event Data**
+
+1. **navi-core**: Update `ActivityEvent` interface
+2. **navi-portal**: Update event emission
+3. **navi.js**: Update customer data transformation
+
+## 🎯 **Agent Guidelines**
+
+- **Understand the flow** - Read all 3 layers
+- **Test cross-origin** - Always verify iframe communication
+- **Check naming** - Ensure consistency across layers
+- **Clean up properly** - Prevent memory leaks
+
+## 🏗️ Package Event Coordination
+
+### **navi-core (Event Types)**
+
+- **Types-first**: All event interfaces must be well-typed
+- **No side effects**: Pure event type definitions only
+- **Backward compatibility**: Other packages depend on these types
+
+### **navi-portal (Event Publisher)**
+
+- **SSE endpoint**: Must publish activity lifecycle events
+- **Performance**: Event publishing < 100ms latency
+- **Security**: Validate careflow access permissions before publishing
+
+### **navi.js (Event Consumer)**
+
+- **Global API**: Cannot break existing customer event listeners
+- **Cross-origin**: Must handle iframe messaging securely
+- **Bundle size**: Event handling code must stay under 15KB gzipped
+
+### **module-navi (Backend / Event Broker)**
+
+- **Real-time**: Activities publish to subscriptions when lifecycle events occur
+- **Filtering**: Efficient careflow_id indexing for subscription filtering
+- **Transport**: SSE for broader iframe compatibility
+
+## 🔧 Development Workflow for Events
+
+### **Before Changing Event Schemas**
+
+1. **Impact scope**: Which packages consume this event type?
+2. **API contracts**: Update `API-CONTRACTS.md` before changes
+3. **v0.x.x coordination**: ASK before breaking event interfaces
+4. **Cross-package testing**: Verify all consumers handle changes
+
+### **Event Implementation Order**
+
+1. **navi-core**: Define event types and interfaces
+2. **navi-portal**: Implement event publishing endpoints
+3. **navi.js**: Update event listeners and handlers
+4. **navi-js/navi-react**: Update wrapper libraries
+5. **module-navi**: Update subscription resolvers
+
+### **Testing Event Changes**
+
+- [ ] Event types compile in all packages
+- [ ] Cross-origin messaging works (localhost:3000 ↔ localhost:3001)
+- [ ] SSE subscriptions connect and receive events
+- [ ] Error boundaries handle event failures
+- [ ] Performance budgets met (< 500ms iframe load)
+
+## 🐛 Event Error Handling
+
+### **Required Error Boundaries**
+
+- **Network failures**: SSE connection drops, GraphQL errors
+- **Cross-origin errors**: Blocked iframes, CSP violations
+- **Event parsing**: Malformed event data, missing fields
+- **Subscription failures**: Authentication timeouts, permission denials
+
+### **Error Recovery Patterns**
+
+```typescript
+// ✅ Proper SSE error handling
+const eventSource = new EventSource("/graphql/stream");
+eventSource.onerror = (error) => {
+  // Implement exponential backoff
+  setTimeout(() => reconnect(), retryDelay);
+  retryDelay = Math.min(retryDelay * 2, maxDelay);
+};
+```
+
+## 🎯 Event Performance Requirements
+
+### **Real-Time Constraints**
+
+- **Event latency**: < 100ms from activity creation to subscriber notification
+- **Subscription filtering**: Use careflow_id indexing for efficient queries
+- **Batching**: Consider batching high-frequency activity updates
+- **Memory**: Limit concurrent subscriptions per careflow
+
+### **Cross-Origin Performance**
+
+- **Iframe messaging**: < 50ms postMessage round-trip
+- **Event serialization**: Minimize payload size for cross-origin events
+- **Connection pooling**: Reuse SSE connections where possible
+
+## 🔒 Event Security Patterns
+
+### **Subscription Access Control**
+
+- **Careflow validation**: Verify user access to careflow_id before subscribing
+- **Tenant isolation**: Events must not leak across tenants
+- **JWT validation**: Secure token validation for subscription auth
+
+### **Cross-Origin Security**
+
+```typescript
+// ✅ Proper origin validation for iframe events
+window.addEventListener("message", (event) => {
+  if (event.origin !== "https://embed.navi.com") {
+    return; // Reject unauthorized origins
+  }
+  // Process event safely
+});
+```
+
+## 🚀 Event Release Coordination
+
+### **Cross-Package Event Releases**
+
+- **Coordination required**: Event schema changes affect multiple packages
+- **Release order**: Follow dependency chain (core → portal → js → react)
+- **Version coordination**: Event schema versions must align across packages
+- **Testing**: Full integration testing before releasing event changes
+
+### **Breaking Event Changes (v0.x.x)**
+
+- **ASK FIRST**: Coordinate event schema breaking changes
+- **Documentation**: Update API contracts before implementation
+- **Migration path**: Provide clear upgrade instructions
+- **Rollback plan**: Ensure event changes can be safely reverted
