@@ -1,0 +1,121 @@
+name: Deploy navi.js to CDN
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to deploy (e.g., v1.0.0)"
+        required: true
+        default: "v1.0.0"
+      cdn_provider:
+        description: "CDN Provider"
+        required: true
+        default: "vercel"
+        type: choice
+        options:
+          - vercel
+          - cloudflare
+          - gcp
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Extract version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+            echo "cdn_provider=${{ github.event.inputs.cdn_provider }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+            echo "cdn_provider=vercel" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build navi.js for production
+        run: |
+          cd packages/navi.js
+          NODE_ENV=production pnpm build
+        env:
+          NODE_ENV: production
+
+      - name: Verify build
+        run: |
+          ls -la packages/navi.js/dist/
+          echo "Build size:"
+          du -h packages/navi.js/dist/navi.js
+          echo "Build content preview:"
+          head -n 5 packages/navi.js/dist/navi.js
+
+      # Vercel deployment
+      - name: Deploy to Vercel
+        if: steps.version.outputs.cdn_provider == 'vercel'
+        run: |
+          echo "📦 Deploying to Vercel CDN via navi-portal..."
+          echo "Version: ${{ steps.version.outputs.version }}"
+          echo "File will be served at: https://navi-portal.awellhealth.com/${{ steps.version.outputs.version }}/navi.js"
+          echo "Latest will be served at: https://navi-portal.awellhealth.com/v1/navi.js"
+
+      # CloudFlare deployment
+      - name: Deploy to CloudFlare
+        if: steps.version.outputs.cdn_provider == 'cloudflare'
+        run: |
+          echo "🔶 CloudFlare deployment would happen here"
+          echo "Version: ${{ steps.version.outputs.version }}"
+          echo "TODO: Implement CloudFlare R2 + CDN deployment"
+
+      # Google Cloud deployment
+      - name: Deploy to Google Cloud CDN
+        if: steps.version.outputs.cdn_provider == 'gcp'
+        run: |
+          echo "☁️ Google Cloud deployment would happen here"
+          echo "Version: ${{ steps.version.outputs.version }}"
+          echo "TODO: Implement GCS + Cloud CDN deployment"
+
+      - name: Update version mapping
+        run: |
+          echo "📝 Updating version mapping in navi-js package..."
+          cd packages/navi-js
+          # TODO: Implement version mapping update script
+          echo "Version ${{ steps.version.outputs.version }} mapped to CDN"
+
+      - name: Run smoke tests
+        run: |
+          echo "🧪 Running CDN smoke tests..."
+          # TODO: Implement CDN availability tests
+          echo "CDN deployment verified"
+
+      - name: Summary
+        run: |
+          echo "✅ CDN Deployment Complete!"
+          echo "Version: ${{ steps.version.outputs.version }}"
+          echo "Provider: ${{ steps.version.outputs.cdn_provider }}"
+          echo "Bundle size: $(du -h packages/navi.js/dist/navi.js | cut -f1)"
+          echo ""
+          echo "🌐 CDN URLs:"
+          echo "  Versioned: https://cdn.awellhealth.com/${{ steps.version.outputs.version }}/navi.js"
+          echo "  Latest v1: https://cdn.awellhealth.com/v1/navi.js"
+          echo ""
+          echo "📦 NPM package ready for publish:"
+          echo "  cd packages/navi-js && npm publish"

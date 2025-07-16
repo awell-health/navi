@@ -23,7 +23,14 @@ export async function GET(
   const trackId = request.nextUrl.searchParams.get("track_id");
   const activityId = request.nextUrl.searchParams.get("activity_id");
   const stakeholderId = request.nextUrl.searchParams.get("stakeholder_id");
-
+  console.log("GET /embed/[careflow_id]", {
+    searchParams: request.nextUrl.searchParams,
+    careflow_id,
+    token,
+    trackId,
+    activityId,
+    stakeholderId,
+  });
   if (!token) {
     return new NextResponse("No token provided", {
       status: 400,
@@ -330,7 +337,15 @@ export async function GET(
       connectSSE() {
         const careflowId = '${careflow_id}';
         const sessionId = '${sessionId}';
-        const sseUrl = \`/api/careflow-status?careflow_id=\${careflowId}&session_id=\${sessionId}\`;
+        
+        // Include instance_id in SSE URL if available
+        const currentUrlParams = new URLSearchParams(window.location.search);
+        const instanceId = currentUrlParams.get('instance_id');
+        
+        let sseUrl = \`/api/careflow-status?careflow_id=\${careflowId}&session_id=\${sessionId}\`;
+        if (instanceId) {
+          sseUrl += \`&instance_id=\${instanceId}\`;
+        }
         
         console.log('📡 Connecting to SSE:', sseUrl);
         
@@ -434,10 +449,8 @@ export async function GET(
           // Navigate to care flow activities with navigation parameters
           const careflowId = '${careflow_id}';
           const stakeholderId = '${stakeholderId || tokenData.patientId}';
-          
           // Build URL with navigation parameters
           let redirectUrl = \`/careflows/\${careflowId}/stakeholders/\${stakeholderId}\`;
-          
           // Add navigation parameters
           const urlParams = new URLSearchParams();
           
@@ -451,7 +464,7 @@ export async function GET(
           // Add navigation context
           ${trackId ? `urlParams.set('track_id', '${trackId}');` : ""}
           ${activityId ? `urlParams.set('activity_id', '${activityId}');` : ""}
-          
+          console.log('🔄 URL params:', urlParams);
           if (urlParams.toString()) {
             redirectUrl += \`?\${urlParams.toString()}\`;
           }
@@ -476,8 +489,18 @@ export async function GET(
         this.updateProgress(100, 'Complete! Redirecting to your care flow...');
         
         setTimeout(() => {
-          console.log('🔄 Redirecting to care flow:', redirectUrl);
-          window.location.href = redirectUrl;
+          // Preserve instance_id parameter when redirecting
+          const currentUrlParams = new URLSearchParams(window.location.search);
+          const instanceId = currentUrlParams.get('instance_id');
+          
+          let finalRedirectUrl = redirectUrl;
+          if (instanceId) {
+            const separator = redirectUrl.includes('?') ? '&' : '?';
+            finalRedirectUrl += \`\${separator}instance_id=\${instanceId}\`;
+          }
+          
+          console.log('🔄 Redirecting to care flow with instanceId preserved:', finalRedirectUrl);
+          window.location.href = finalRedirectUrl;
         }, 800);
       }
       

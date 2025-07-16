@@ -1,3 +1,5 @@
+import { sessionStore } from "@/lib/session-store";
+import { SessionData } from "@awell-health/navi-core";
 import { NextRequest } from "next/server";
 
 export const runtime = "edge";
@@ -5,10 +7,20 @@ export const runtime = "edge";
 export async function GET(request: NextRequest) {
   const careflowId = request.nextUrl.searchParams.get("careflow_id");
   const sessionId = request.nextUrl.searchParams.get("session_id");
+  const instanceId = request.nextUrl.searchParams.get("instance_id");
 
   if (!careflowId || !sessionId) {
     return new Response("Missing careflow_id or session_id", { status: 400 });
   }
+  const sessionData = await sessionStore.get(sessionId);
+  if (!sessionData) {
+    return new Response("Session not found", { status: 404 });
+  }
+  console.log("GET /api/careflow-status", {
+    careflowId,
+    sessionId,
+    sessionData,
+  });
 
   // Create SSE response
   const stream = new ReadableStream({
@@ -16,7 +28,7 @@ export async function GET(request: NextRequest) {
       const encoder = new TextEncoder();
 
       // Send initial connection confirmation
-      const send = (data: Record<string, string | number>) => {
+      const send = (data: Record<string, string | number | SessionData>) => {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
       };
 
@@ -24,6 +36,7 @@ export async function GET(request: NextRequest) {
         type: "connection",
         message: "Connected to care flow status stream",
         careflowId,
+        sessionData,
         timestamp: Date.now(),
       });
 
@@ -45,6 +58,7 @@ export async function GET(request: NextRequest) {
             progress: step.progress,
             message: step.message,
             careflowId,
+            sessionData,
             timestamp: Date.now(),
           });
           progress++;
@@ -54,11 +68,18 @@ export async function GET(request: NextRequest) {
           } else {
             // Send completion event
             setTimeout(() => {
+              // Build redirectUrl with instanceId if available
+              let redirectUrl = `/careflows/${careflowId}/stakeholders/${sessionData.stakeholderId}`;
+              if (instanceId) {
+                redirectUrl += `?instance_id=${instanceId}`;
+              }
+
               send({
                 type: "ready",
                 message: "Care flow ready for navigation",
                 careflowId,
-                redirectUrl: `/careflows/${careflowId}/stakeholders/${sessionId}`,
+                redirectUrl,
+                sessionData,
                 timestamp: Date.now(),
               });
             }, 300);

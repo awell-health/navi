@@ -203,7 +203,7 @@ const handleMessage = (event: MessageEvent) => {
   const allowedOrigins =
     process.env.NODE_ENV === "development"
       ? ["http://localhost:3000"]
-      : ["https://embed.navi.com"];
+      : ["https://navi-portal.awellhealth.com"];
 
   if (!allowedOrigins.includes(event.origin)) {
     return; // Ignore unauthorized messages
@@ -291,7 +291,7 @@ const getCDNUrl = () => {
   const version = CDN_VERSION_MAP[_VERSION] || "v1";
   return process.env.NODE_ENV === "development"
     ? `http://localhost:3000/navi-loader.js`
-    : `https://cdn.navi.com/${version}/navi-loader.js`;
+    : `https://cdn.awellhealth.com/${version}/navi-loader.js`;
 };
 ```
 

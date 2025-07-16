@@ -75,8 +75,8 @@ async function verifyToken(token: string) {
 ```typescript
 // ✅ Proper Content Security Policy
 const csp = {
-  "script-src": "'self' https://cdn.navi.com",
-  "frame-src": "https://embed.navi.com",
+  "script-src": "'self' https://cdn.awellhealth.com",
+  "frame-src": "https://navi-portal.awellhealth.com",
   "connect-src": "'self' https://api.navi.com",
   "frame-ancestors": "https://trusted-customer-domain.com",
 };
@@ -89,7 +89,7 @@ const csp = {
 window.addEventListener("message", (event) => {
   // Always validate origin
   const allowedOrigins = [
-    "https://embed.navi.com",
+    "https://navi-portal.awellhealth.com",
     "http://localhost:3000", // Dev only
     "http://localhost:3001", // Dev only
   ];
@@ -198,7 +198,7 @@ const securityConfig = {
     requireHTTPS: false,
   },
   production: {
-    allowedOrigins: ["https://embed.navi.com"],
+    allowedOrigins: ["https://navi-portal.awellhealth.com"],
     jwtExpiry: "1h",
     requireHTTPS: true,
   },
@@ -341,8 +341,8 @@ async function verifyToken(token: string) {
 ```typescript
 // ✅ Proper Content Security Policy
 const csp = {
-  "script-src": "'self' https://cdn.navi.com",
-  "frame-src": "https://embed.navi.com",
+  "script-src": "'self' https://cdn.awellhealth.com",
+  "frame-src": "https://navi-portal.awellhealth.com",
   "connect-src": "'self' https://api.navi.com",
   "frame-ancestors": "https://trusted-customer-domain.com",
 };
@@ -355,7 +355,7 @@ const csp = {
 window.addEventListener("message", (event) => {
   // Always validate origin
   const allowedOrigins = [
-    "https://embed.navi.com",
+    "https://navi-portal.awellhealth.com",
     "http://localhost:3000", // Dev only
     "http://localhost:3001", // Dev only
   ];
@@ -464,7 +464,7 @@ const securityConfig = {
     requireHTTPS: false,
   },
   production: {
-    allowedOrigins: ["https://embed.navi.com"],
+    allowedOrigins: ["https://navi-portal.awellhealth.com"],
     jwtExpiry: "1h",
     requireHTTPS: true,
   },

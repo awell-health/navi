@@ -17,12 +17,12 @@ Following the Stripe.js model for maximum security, performance, and compliance:
 ### **Production Architecture (Proposed)**
 
 ```
-🌐 https://cdn.navi.com      ← Google Cloud CDN
+🌐 https://cdn.awellhealth.com      ← Google Cloud CDN
 ├── /v1/navi-loader.js       ← Latest v1.x.x
 ├── /v1.0.0/navi-loader.js   ← Pinned versions
 └── /v1.1.0/navi-loader.js   ← Pinned versions
 
-🔒 https://embed.navi.com    ← Embed-only portal
+🔒 https://navi-portal.awellhealth.com    ← Embed-only portal
 └── /[pathway_id]            ← Iframe content
 
 📦 @awell-health/navi-js     ← NPM wrapper package
@@ -56,14 +56,14 @@ gcloud compute backend-buckets create cdn-navi-backend \
   --gcs-bucket-name=cdn-navi-com
 
 # 4. Configure DNS
-# Point cdn.navi.com → Cloud CDN IP
+# Point cdn.awellhealth.com → Cloud CDN IP
 ```
 
 ### **Option B: CloudFlare (Alternative)**
 
 ```yaml
 # CloudFlare Pro/Business plan
-domain: cdn.navi.com
+domain: cdn.awellhealth.com
 cache: aggressive
 compression: brotli
 security: high
@@ -133,7 +133,7 @@ const getSDKVersion = () => {
   return CDN_VERSION_MAP[packageVersion] || "v1";
 };
 
-const NAVI_JS_URL = `https://cdn.navi.com/${getSDKVersion()}/navi-loader.js`;
+const NAVI_JS_URL = `https://cdn.awellhealth.com/${getSDKVersion()}/navi-loader.js`;
 ```
 
 ## Phase 3: Domain & DNS Setup
@@ -142,10 +142,10 @@ const NAVI_JS_URL = `https://cdn.navi.com/${getSDKVersion()}/navi-loader.js`;
 
 ```
 # CDN Domain
-cdn.navi.com    CNAME   cdn-navi-com.googlecdn.com
+cdn.awellhealth.com    CNAME   cdn-navi-com.googlecdn.com
 
 # Embed Domain (separate app/deployment)
-embed.navi.com  CNAME   navi-embed-prod.vercel.app
+navi-portal.awellhealth.com  CNAME   navi-embed-prod.vercel.app
 ```
 
 ### **SSL/TLS Configuration**
@@ -154,11 +154,11 @@ embed.navi.com  CNAME   navi-embed-prod.vercel.app
 # Google Cloud Load Balancer SSL
 managed_ssl: true
 domains:
-  - cdn.navi.com
+  - cdn.awellhealth.com
 
 # Vercel SSL (automatic)
 domains:
-  - embed.navi.com
+  - navi-portal.awellhealth.com
 ```
 
 ## Phase 4: Portal Separation
@@ -186,7 +186,7 @@ export const EMBED_CONFIG = {
     allowedOrigins: ["http://localhost:3001"],
   },
   production: {
-    origin: "https://embed.navi.com",
+    origin: "https://navi-portal.awellhealth.com",
     allowedOrigins: ["*"], // Customer domains
   },
 };
@@ -240,7 +240,7 @@ console.warn('⚠️  DEPRECATED: Direct script loading will be removed in v2.0.
 console.warn('📦 Please install @awell-health/navi-js for the new SDK');
 
 // Redirect to CDN
-window.location.href = 'https://cdn.navi.com/v1/navi-loader.js';
+window.location.href = 'https://cdn.awellhealth.com/v1/navi-loader.js';
   `,
     {
       headers: { "Content-Type": "application/javascript" },
@@ -292,8 +292,8 @@ alerts:
 <!-- Customer websites should include -->
 <meta
   http-equiv="Content-Security-Policy"
-  content="script-src 'self' https://cdn.navi.com; 
-               frame-src https://embed.navi.com;"
+  content="script-src 'self' https://cdn.awellhealth.com; 
+               frame-src https://navi-portal.awellhealth.com;"
 />
 ```
 
@@ -337,7 +337,7 @@ Global CDN: Included
 ## Next Steps
 
 1. **Choose CDN provider** (Google Cloud vs CloudFlare)
-2. **Set up DNS** (`cdn.navi.com`, `embed.navi.com`)
+2. **Set up DNS** (`cdn.awellhealth.com`, `navi-portal.awellhealth.com`)
 3. **Create deployment pipeline** (GitHub Actions)
 4. **Test with pilot customers** before full migration
 5. **Documentation & migration guides**

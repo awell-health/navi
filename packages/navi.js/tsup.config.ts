@@ -15,18 +15,29 @@ export default defineConfig({
     };
   },
   banner: {
-    js: `// Navi SDK Loader v1.0.0-poc - Built with Turbo + tsup`,
+    js: `// Navi SDK v1.0.0 - Healthcare Activities Embed - https://navi.awell.com`,
   },
   esbuildOptions(options) {
     options.outbase = "./";
-    // Set the global name to be accessible as window.Navi
     options.globalName = "NaviLoader";
-    // Replace process.env.NODE_ENV for browser compatibility
+
+    // Production environment detection
+    const isProduction = process.env.NODE_ENV === "production";
+
     options.define = {
       "process.env.NODE_ENV": JSON.stringify(
         process.env.NODE_ENV || "development"
       ),
     };
+
+    // Production optimizations
+    if (isProduction) {
+      options.treeShaking = true;
+      options.minifyWhitespace = true;
+      options.minifyIdentifiers = true;
+      options.minifySyntax = true;
+      options.drop = ["console", "debugger"];
+    }
   },
-  onSuccess: 'echo "✅ Navi loader built successfully"',
+  onSuccess: 'echo "✅ Navi CDN bundle built successfully"',
 });

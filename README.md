@@ -51,10 +51,10 @@ This monorepo implements a **CDN + NPM package** distribution model similar to S
 ### **Production Deployment**
 
 ```
-🌐 CDN: https://cdn.navi.com
+🌐 CDN: https://cdn.awellhealth.com
 └── /v1/navi.js                 ← JavaScript SDK
 
-🔒 Embed: https://embed.navi.com
+🔒 Embed: https://navi-portal.awellhealth.com
 └── /[pathway_id]               ← Iframe content
 
 📦 NPM: @awell-health/navi-js
@@ -132,7 +132,7 @@ pnpm lint
 ## 🌍 Deployment Targets
 
 - **CDN**: Google Cloud CDN, Cloudflare, or Vercel Edge Network
-- **Portal**: Vercel (embed.navi.com)
+- **Portal**: Vercel (navi-portal.awellhealth.com)
 - **NPM**: Public registry for customer installation
 
 ## 📁 Workspace Structure

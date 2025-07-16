@@ -7,7 +7,7 @@ This document defines the coordinated release strategy for the Navi monorepo pac
 ## 🎯 Release Goals
 
 - **API Stability**: Never break existing customer integrations
-- **Version Coordination**: Ensure package compatibility across releases  
+- **Version Coordination**: Ensure package compatibility across releases
 - **CDN Synchronization**: Coordinate NPM versions with CDN deployments
 - **Zero Downtime**: Customers can upgrade at their own pace
 - **Rollback Safety**: Quick rollback capability for critical issues
@@ -37,6 +37,7 @@ Customer Communication
 ## 📋 Pre-Release Checklist
 
 ### **Planning Phase**
+
 - [ ] **API contracts reviewed** - Check `API-CONTRACTS.md` for breaking changes
 - [ ] **Dependency impact assessed** - What packages need updates?
 - [ ] **Performance budgets verified** - Bundle sizes within limits
@@ -46,6 +47,7 @@ Customer Communication
 - [ ] **Customer migration path** - Documentation for breaking changes
 
 ### **Implementation Phase**
+
 - [ ] **All tests passing** - `pnpm test` across all packages
 - [ ] **Build successful** - `pnpm build` without errors
 - [ ] **Bundle size check** - Within performance budgets
@@ -54,6 +56,7 @@ Customer Communication
 - [ ] **Documentation updated** - README, API docs, migration guides
 
 ### **Release Phase**
+
 - [ ] **Git tag created** - Semantic version (v1.2.0)
 - [ ] **GitHub Actions triggered** - Release workflow started
 - [ ] **CDN deployment verified** - New version accessible
@@ -64,11 +67,13 @@ Customer Communication
 ## 🔄 Release Types & Strategies
 
 ### **Patch Release (1.0.X)**
+
 **Example**: Bug fixes, internal improvements, security patches
 
 **Process**:
+
 1. Create changesets: `pnpm changeset` (patch level)
-2. Version packages: `pnpm changeset:version`  
+2. Version packages: `pnpm changeset:version`
 3. Create git tag: `git tag v1.0.1`
 4. Push tag: `git push origin v1.0.1`
 5. GitHub Actions handles rest
@@ -78,9 +83,11 @@ Customer Communication
 **Customer Impact**: Safe auto-update
 
 ### **Minor Release (1.X.0)**
+
 **Example**: New features, optional parameters, new components
 
 **Process**:
+
 1. **Plan coordination** - Which packages need updates?
 2. **Update API contracts** - Add new features to contracts
 3. **Generate changesets** - Minor bumps for affected packages
@@ -93,9 +100,11 @@ Customer Communication
 **Customer Impact**: Opt-in upgrade
 
 ### **Major Release (X.0.0)**
+
 **Example**: Breaking API changes, removed features, new architecture
 
 **Process**:
+
 1. **⚠️ STOP: Breaking change process** - Follow `API-CONTRACTS.md`
 2. **Customer communication** - 2+ weeks advance notice
 3. **Migration guide creation** - Step-by-step upgrade instructions
@@ -111,13 +120,15 @@ Customer Communication
 ## 🤖 GitHub Actions Workflow
 
 ### **Workflow Trigger**
+
 ```yaml
 on:
   push:
-    tags: ['v*']
+    tags: ["v*"]
 ```
 
 ### **Job Sequence**
+
 ```yaml
 jobs:
   # 1. Build all packages
@@ -126,7 +137,7 @@ jobs:
     - Build packages in dependency order
     - Run tests and linting
     - Check bundle sizes
-    
+
   # 2. Deploy CDN (if navi-loader changed)
   deploy-cdn:
     needs: build
@@ -135,14 +146,14 @@ jobs:
     - Deploy to CDN storage
     - Update version pointers
     - Invalidate CDN cache
-    
+
   # 3. Publish NPM packages
   publish-npm:
     needs: [build, deploy-cdn]
     - Update version mappings (navi-js)
     - Publish to NPM registry
     - Update git tags
-    
+
   # 4. Verification
   smoke-test:
     needs: publish-npm
@@ -154,8 +165,9 @@ jobs:
 ### **CDN Deployment Details**
 
 #### **Storage Structure**
+
 ```
-cdn.navi.com/
+cdn.awellhealth.com/
 ├── v1/navi-loader.js           ← Latest v1.x.x
 ├── v1.0.0/navi-loader.js       ← Specific version
 ├── v1.1.0/navi-loader.js       ← Specific version
@@ -164,6 +176,7 @@ cdn.navi.com/
 ```
 
 #### **Deployment Script**
+
 ```bash
 # Extract version from git tag
 VERSION=${GITHUB_REF#refs/tags/v}
@@ -188,12 +201,14 @@ gsutil setmeta -h "Cache-Control:public,max-age=31536000" \
 ### **Semantic Versioning (v0.x.x Development)**
 
 **Development Phase Approach:**
+
 - **0.1.x** - Foundational features and architecture
 - **0.2.x** - Core functionality complete
-- **0.x.x** - Feature additions and refinements  
+- **0.x.x** - Feature additions and refinements
 - **1.0.0** - Production-ready stable release
 
 **Breaking Changes in v0.x.x:**
+
 - Minor version bumps for breaking changes (0.1.0 → 0.2.0)
 - Major version stays at 0 until production ready
 - Coordinate across packages for compatibility
@@ -202,6 +217,7 @@ gsutil setmeta -h "Cache-Control:public,max-age=31536000" \
 ## 📦 Package Release Order
 
 ### **Dependency-Ordered Release**
+
 ```
 1. navi-core        (foundation)
     ↓
@@ -215,12 +231,13 @@ gsutil setmeta -h "Cache-Control:public,max-age=31536000" \
 ```
 
 ### **Changeset Coordination**
+
 ```bash
 # Example coordinated changeset for minor release
 .changeset/feature-new-events.md:
 ---
 "@awell-health/navi-core": minor
-"@awell-health/navi-loader": minor  
+"@awell-health/navi-loader": minor
 "@awell-health/navi-js": minor
 ---
 
@@ -233,17 +250,19 @@ Add new activity events for better customer insights
 ## 🔍 Version Mapping Management
 
 ### **CDN Version Map** (in navi-js)
+
 ```typescript
 // packages/navi-js/src/shared.ts
 const CDN_VERSION_MAP = {
-  '1.0.0': 'v1.0.0',
-  '1.1.0': 'v1.1.0',
-  '1.2.0': 'v1.2.0',  // ← Added during release
-  '2.0.0': 'v2.0.0'   // ← Future major version
+  "1.0.0": "v1.0.0",
+  "1.1.0": "v1.1.0",
+  "1.2.0": "v1.2.0", // ← Added during release
+  "2.0.0": "v2.0.0", // ← Future major version
 };
 ```
 
 ### **Automatic Version Update**
+
 ```bash
 # During GitHub Actions
 # packages/navi-js/scripts/update-version-map.js
@@ -263,6 +282,7 @@ fs.writeFileSync(sharedFile, updated);
 ## 🚨 Rollback Procedures
 
 ### **CDN Rollback**
+
 ```bash
 # Revert latest pointer to previous version
 gsutil cp gs://cdn-navi-com/v1.1.0/navi-loader.js \
@@ -274,6 +294,7 @@ gcloud compute url-maps invalidate-cdn-cache cdn-navi-map \
 ```
 
 ### **NPM Rollback**
+
 ```bash
 # Deprecate problematic version
 npm deprecate @awell-health/navi-js@1.2.0 "Critical bug - use 1.1.0"
@@ -283,20 +304,23 @@ npm install @awell-health/navi-js@1.1.0
 ```
 
 ### **Emergency Procedures**
+
 1. **Immediate**: Revert CDN latest pointer
-2. **Short-term**: Deprecate NPM packages  
+2. **Short-term**: Deprecate NPM packages
 3. **Medium-term**: Fix issues and patch release
 4. **Long-term**: Post-mortem and process improvement
 
 ## 📊 Release Monitoring
 
 ### **Metrics to Track**
+
 - **CDN Performance**: Request latency, cache hit rates
 - **NPM Downloads**: Adoption rate of new versions
 - **Error Rates**: Customer integration failures
 - **Customer Feedback**: Support tickets, GitHub issues
 
 ### **Success Criteria**
+
 - ✅ CDN availability > 99.9%
 - ✅ NPM publish success rate > 99%
 - ✅ Zero customer-reported integration breaks
@@ -304,6 +328,7 @@ npm install @awell-health/navi-js@1.1.0
 - ✅ Security vulnerabilities < 24h resolution
 
 ### **Automated Monitoring**
+
 ```yaml
 # GitHub Actions - Post-release monitoring
 monitoring:
@@ -317,16 +342,19 @@ monitoring:
 ## 🗓️ Release Schedule
 
 ### **Regular Release Cycle**
+
 - **Patch releases**: As needed (hotfixes, security)
 - **Minor releases**: Every 2-4 weeks (features)
 - **Major releases**: Every 6-12 months (breaking changes)
 
 ### **Emergency Releases**
+
 - **Security patches**: Within 24 hours
-- **Critical bugs**: Within 48 hours  
+- **Critical bugs**: Within 48 hours
 - **Customer-blocking issues**: Within 1 week
 
 ### **Pre-release Testing**
+
 - **Beta versions**: 1 week before minor/major releases
 - **Customer feedback**: Early access program
 - **Integration testing**: Partner customer validation
@@ -334,12 +362,14 @@ monitoring:
 ## 📞 Communication Strategy
 
 ### **Customer Notifications**
+
 - **Major releases**: 2+ weeks advance notice
 - **Minor releases**: Release notes in GitHub
 - **Patch releases**: Automated changelog
 - **Emergency fixes**: Direct customer communication
 
 ### **Documentation Updates**
+
 - **Migration guides**: For breaking changes
 - **API documentation**: Always current
 - **Version compatibility**: Matrix in docs
@@ -350,6 +380,7 @@ monitoring:
 ## 🔧 Implementation Checklist
 
 ### **Current State Assessment**
+
 - [ ] GitHub Actions workflow exists
 - [ ] CDN infrastructure set up
 - [ ] NPM publishing configured
@@ -357,21 +388,24 @@ monitoring:
 - [ ] Documentation pipeline established
 
 ### **Phase 1: Basic Pipeline (Week 1-2)**
+
 - [ ] Create GitHub Actions workflow
 - [ ] Set up CDN deployment scripts
 - [ ] Configure NPM publishing
 - [ ] Basic smoke tests
 
 ### **Phase 2: Advanced Features (Week 3-4)**
+
 - [ ] Version mapping automation
 - [ ] Rollback procedures
 - [ ] Monitoring and alerting
 - [ ] Customer communication automation
 
 ### **Phase 3: Optimization (Week 5-6)**
+
 - [ ] Performance optimization
 - [ ] Security hardening
 - [ ] Documentation completion
 - [ ] Team training
 
-This pipeline ensures reliable, coordinated releases while maintaining the complex dependencies in our Stripe-like architecture! 🚀 
+This pipeline ensures reliable, coordinated releases while maintaining the complex dependencies in our Stripe-like architecture! 🚀

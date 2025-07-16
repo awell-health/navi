@@ -112,7 +112,7 @@ class NaviLoader {
   ): Promise<{ redirectUrl: string; careflowId: string; patientId: string }> {
     const baseUrl =
       process.env.NODE_ENV === "production"
-        ? "https://embed.navi.com"
+        ? "https://navi-portal.awellhealth.com"
         : "http://localhost:3000";
 
     // Use Case 1: Start new care flow
@@ -201,7 +201,7 @@ class NaviLoader {
     } else {
       const baseUrl =
         process.env.NODE_ENV === "production"
-          ? "https://embed.navi.com"
+          ? "https://navi-portal.awellhealth.com"
           : "http://localhost:3000";
       embedUrl = new URL(sessionInfo.redirectUrl, baseUrl);
     }

@@ -205,8 +205,8 @@ pnpm changeset
 
 ```typescript
 // Customers should use:
-// script-src 'self' https://cdn.navi.com
-// frame-src https://embed.navi.com
+// script-src 'self' https://cdn.awellhealth.com
+// frame-src https://navi-portal.awellhealth.com
 ```
 
 ## 🐛 Error Handling
