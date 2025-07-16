@@ -73,7 +73,6 @@ export default function HomePage() {
       careflowId: testConfig.pathwayId, // Use Case 2: Resume existing care flow
       stakeholderId: testConfig.stakeholderId,
       ...(testConfig.branding && { branding: testConfig.branding }),
-      size: "standard",
       // Let the API determine the correct embed URL (/embed/[careflow_id])
     });
 
@@ -121,8 +120,8 @@ export default function HomePage() {
     // Use Case 1: Start new care flow
     try {
       const instance = await navi.render("#navi-container", {
-        careflowDefinitionId: "cf_def_patient_intake", // New care flow definition
-        awellPatientId: "patient_new_123", // Optional existing patient
+        careflowId: "GeDg7fJmddZi", // New care flow definition
+        awellPatientId: "Eh4UQbKZKBk6hKd0M7wKk", // Optional existing patient
         stakeholderId: testConfig.stakeholderId,
         ...(testConfig.branding && {
           branding: {
@@ -192,14 +191,6 @@ export default function HomePage() {
               <h1 className="text-2xl font-bold text-gray-900">
                 Navi SDK Test Suite
               </h1>
-            </div>
-            <div className="flex gap-2">
-              <a
-                href="/react-demo"
-                className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
-              >
-                React Demo →
-              </a>
             </div>
           </div>
 

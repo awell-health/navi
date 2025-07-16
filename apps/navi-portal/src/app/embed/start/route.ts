@@ -302,7 +302,15 @@ export async function GET(request: NextRequest) {
       connectSSE() {
         const careflowId = '${tokenData.careflowId}';
         const sessionId = '${sessionId}';
-        const sseUrl = \`/api/careflow-status?careflow_id=\${careflowId}&session_id=\${sessionId}\`;
+        
+        // Include instance_id in SSE URL if available
+        const currentUrlParams = new URLSearchParams(window.location.search);
+        const instanceId = currentUrlParams.get('instance_id');
+        
+        let sseUrl = \`/api/careflow-status?careflow_id=\${careflowId}&session_id=\${sessionId}\`;
+        if (instanceId) {
+          sseUrl += \`&instance_id=\${instanceId}\`;
+        }
         
         console.log('📡 Connecting to SSE for new care flow:', sseUrl);
         
@@ -381,8 +389,18 @@ export async function GET(request: NextRequest) {
         this.updateProgress(100, 'Complete! Redirecting to your care journey...');
         
         setTimeout(() => {
-          console.log('🔄 Redirecting to care flow:', redirectUrl);
-          window.location.href = redirectUrl;
+          // Preserve instance_id parameter when redirecting
+          const currentUrlParams = new URLSearchParams(window.location.search);
+          const instanceId = currentUrlParams.get('instance_id');
+          
+          let finalRedirectUrl = redirectUrl;
+          if (instanceId) {
+            const separator = redirectUrl.includes('?') ? '&' : '?';
+            finalRedirectUrl += \`\${separator}instance_id=\${instanceId}\`;
+          }
+          
+          console.log('🔄 Redirecting to care flow with instanceId preserved:', finalRedirectUrl);
+          window.location.href = finalRedirectUrl;
         }, 800);
       }
       
