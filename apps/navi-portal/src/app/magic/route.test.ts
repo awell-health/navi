@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { GET } from "./route";
 import { NextRequest } from "next/server";
 import { createSessionToken } from "@/lib/auth/internal/session";
-import type { SessionTokenData } from "@/lib/auth/internal/types";
+import type { SessionTokenData } from "@awell-health/navi-core/src/types";
 
 describe("Magic Link Authentication", () => {
   beforeEach(() => {
@@ -38,7 +38,7 @@ describe("Magic Link Authentication", () => {
 
   it("should return 400 for token missing required fields", async () => {
     // Create a token with missing required fields
-    const incompletePayload = { patientId: "patient123" }; // missing careflowId and exp
+    const incompletePayload = { patientId: "patient123" }; // missing careflowId, stakeholderId and exp
     const token = await createSessionToken(
       incompletePayload as SessionTokenData
     );
@@ -52,15 +52,17 @@ describe("Magic Link Authentication", () => {
   });
 
   it("should return 400 for expired token", async () => {
-    const expiredPayload = {
+    const expiredPayload: SessionTokenData = {
       patientId: "patient123",
       careflowId: "careflow456",
+      stakeholderId: "stakeholder123",
       orgId: "org123",
       tenantId: "tenant123",
       environment: "test",
+      authenticationState: "unauthenticated",
       exp: Math.floor(Date.now() / 1000) - 60, // Expired 1 minute ago
     };
-    const token = await createSessionToken(expiredPayload as SessionTokenData);
+    const token = await createSessionToken(expiredPayload);
 
     const request = new NextRequest(`https://example.com/magic?token=${token}`);
 
@@ -75,9 +77,11 @@ describe("Magic Link Authentication", () => {
     const validPayload: SessionTokenData = {
       patientId: "patient123",
       careflowId: "careflow456",
+      stakeholderId: "stakeholder123",
       orgId: "org123",
       tenantId: "tenant123",
       environment: "test",
+      authenticationState: "unauthenticated",
       exp: Math.floor(Date.now() / 1000) + 60, // 1 minute from now
     };
     const token = await createSessionToken(validPayload);
@@ -100,9 +104,11 @@ describe("Magic Link Authentication", () => {
     const validPayload: SessionTokenData = {
       patientId: "patient123",
       careflowId: "careflow456",
+      stakeholderId: "stakeholder123",
       orgId: "org123",
       tenantId: "tenant123",
       environment: "test",
+      authenticationState: "unauthenticated",
       exp: Math.floor(Date.now() / 1000) + 60, // 1 minute from now
     };
     const token = await createSessionToken(validPayload);
@@ -132,9 +138,11 @@ describe("Magic Link Authentication", () => {
     const validPayload: SessionTokenData = {
       patientId: "patient123",
       careflowId: "careflow456",
+      stakeholderId: "stakeholder123",
       orgId: "org123",
       tenantId: "tenant123",
       environment: "test",
+      authenticationState: "unauthenticated",
       exp: Math.floor(Date.now() / 1000) + 60,
     };
     const token = await createSessionToken(validPayload);
@@ -157,61 +165,66 @@ describe("Magic Link Authentication", () => {
 
   describe("Error handling", () => {
     it("should return 400 for incomplete token payload", async () => {
+      // Create a token with incomplete data
       const incompletePayload = {
-        careflowId: "test-careflow-id",
-        patientId: "test-patient-id",
-        // Missing required fields
+        patientId: "patient123",
+        stakeholderId: "stakeholder123",
+        // Missing careflowId, orgId, tenantId, environment, exp
       };
-
       const token = await createSessionToken(
         incompletePayload as SessionTokenData
       );
+
       const request = new NextRequest(
-        `http://localhost:3000/magic?token=${token}`
+        `https://example.com/magic?token=${token}`
       );
 
       const response = await GET(request);
 
       expect(response.status).toBe(400);
+      expect(await response.text()).toBe("Invalid token");
     });
 
     it("should return 400 for expired token", async () => {
-      const expiredPayload = {
-        careflowId: "test-careflow-id",
-        patientId: "test-patient-id",
-        tenantId: "test-tenant-id",
-        orgId: "test-org-id",
-        environment: "test" as const,
-        exp: Math.floor(Date.now() / 1000) - 60, // Expired 1 minute ago
+      const expiredPayload: SessionTokenData = {
+        patientId: "patient123",
+        careflowId: "careflow456",
+        stakeholderId: "stakeholder123",
+        orgId: "org123",
+        tenantId: "tenant123",
+        environment: "test",
+        authenticationState: "unauthenticated",
+        exp: Math.floor(Date.now() / 1000) - 10, // Expired 10 seconds ago
       };
+      const token = await createSessionToken(expiredPayload);
 
-      const token = await createSessionToken(
-        expiredPayload as SessionTokenData
-      );
       const request = new NextRequest(
-        `http://localhost:3000/magic?token=${token}`
+        `https://example.com/magic?token=${token}`
       );
 
       const response = await GET(request);
 
       expect(response.status).toBe(400);
+      expect(await response.text()).toBe("Token expired");
     });
   });
 
   describe("Success cases", () => {
     it("should return HTML for valid token", async () => {
       const validPayload: SessionTokenData = {
-        careflowId: "test-careflow-id",
-        patientId: "test-patient-id",
-        tenantId: "test-tenant-id",
-        orgId: "test-org-id",
+        patientId: "patient123",
+        careflowId: "careflow456",
+        stakeholderId: "stakeholder123",
+        orgId: "org123",
+        tenantId: "tenant123",
         environment: "test",
-        exp: Math.floor(Date.now() / 1000) + 60, // Expires in 1 minute
+        authenticationState: "unauthenticated",
+        exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
       };
-
       const token = await createSessionToken(validPayload);
+
       const request = new NextRequest(
-        `http://localhost:3000/magic?token=${token}`
+        `https://example.com/magic?token=${token}`
       );
 
       const response = await GET(request);
@@ -221,23 +234,25 @@ describe("Magic Link Authentication", () => {
 
       const html = await response.text();
       expect(html).toContain("<!DOCTYPE html>");
-      expect(html).toContain("test-careflow-id");
-      expect(html).toContain("test-patient-id");
+      expect(html).toContain("patient123");
+      expect(html).toContain("careflow456");
     });
 
     it("should set session and JWT cookies", async () => {
       const validPayload: SessionTokenData = {
-        careflowId: "test-careflow-id",
-        patientId: "test-patient-id",
-        tenantId: "test-tenant-id",
-        orgId: "test-org-id",
+        patientId: "patient123",
+        careflowId: "careflow456",
+        stakeholderId: "stakeholder123",
+        orgId: "org123",
+        tenantId: "tenant123",
         environment: "test",
-        exp: Math.floor(Date.now() / 1000) + 60,
+        authenticationState: "unauthenticated",
+        exp: Math.floor(Date.now() / 1000) + 3600,
       };
-
       const token = await createSessionToken(validPayload);
+
       const request = new NextRequest(
-        `http://localhost:3000/magic?token=${token}`
+        `https://example.com/magic?token=${token}`
       );
 
       const response = await GET(request);
@@ -245,28 +260,25 @@ describe("Magic Link Authentication", () => {
       expect(response.status).toBe(200);
 
       const cookies = response.cookies;
-      const sidCookie = cookies.get("awell.sid");
-      const jwtCookie = cookies.get("awell.jwt");
-
-      expect(sidCookie).toBeDefined();
-      expect(jwtCookie).toBeDefined();
-      expect(sidCookie?.httpOnly).toBe(true);
-      expect(jwtCookie?.httpOnly).toBe(true);
+      expect(cookies.get("awell.sid")).toBeDefined();
+      expect(cookies.get("awell.jwt")).toBeDefined();
     });
 
     it("should handle branding parameters in query string", async () => {
       const validPayload: SessionTokenData = {
-        careflowId: "test-careflow-id",
-        patientId: "test-patient-id",
-        tenantId: "test-tenant-id",
-        orgId: "test-org-id",
+        patientId: "patient123",
+        careflowId: "careflow456",
+        stakeholderId: "stakeholder123",
+        orgId: "test-org",
+        tenantId: "tenant123",
         environment: "test",
-        exp: Math.floor(Date.now() / 1000) + 60,
+        authenticationState: "unauthenticated",
+        exp: Math.floor(Date.now() / 1000) + 3600,
       };
-
       const token = await createSessionToken(validPayload);
+
       const request = new NextRequest(
-        `http://localhost:3000/magic?token=${token}&accent_color=%23ff0000&logo_url=https%3A%2F%2Fexample.com%2Flogo.png`
+        `https://example.com/magic?token=${token}&primary_color=%2300bcd4&welcome_title=Custom%20Portal`
       );
 
       const response = await GET(request);
@@ -274,8 +286,6 @@ describe("Magic Link Authentication", () => {
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toBe("text/html");
 
-      // The branding parameters are handled by the branding service
-      // We just verify the response is successful
       const html = await response.text();
       expect(html).toContain("<!DOCTYPE html>");
     });

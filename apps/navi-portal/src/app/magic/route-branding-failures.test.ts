@@ -7,7 +7,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "./route";
 import { NextRequest } from "next/server";
 import { createSessionToken } from "@/lib/auth/internal/session";
-import type { SessionTokenData } from "@/lib/auth/internal/types";
+import type { SessionTokenData } from "@awell-health/navi-core/src/types";
 
 // Mock the edge-config import to test failure scenarios
 vi.mock("@/lib/edge-config", () => ({
@@ -58,9 +58,11 @@ describe("Magic Link Route - Branding Failure Scenarios", () => {
     const payload: SessionTokenData = {
       patientId: "patient123",
       careflowId: "careflow456",
+      stakeholderId: "stakeholder123",
       orgId: "org123",
       tenantId: "tenant123",
       environment: "test",
+      authenticationState: "unauthenticated",
       exp: Math.floor(Date.now() / 1000) + 60, // 1 minute from now
     };
 
