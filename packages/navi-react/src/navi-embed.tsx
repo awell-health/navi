@@ -104,7 +104,7 @@ export function NaviEmbed({
         const script = document.createElement("script");
         script.src =
           process.env.NODE_ENV === "production"
-            ? "https://cdn.navi.com/navi.js"
+            ? "https://cdn.awellhealth.com/navi.js"
             : "http://localhost:3000/navi.js/route";
         script.async = true;
         script.onload = () => resolve();

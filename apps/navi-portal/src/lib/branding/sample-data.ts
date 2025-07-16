@@ -55,10 +55,10 @@ export const sunriseHealthBranding: OrgBranding["branding"] = {
   stackSpacing: "sm",
 
   // Welcome page customization
-  logoUrl: "https://cdn.awell.health/sunrise-health/logo.svg",
+  logoUrl: "https://cdn.awellhealth.com/sunrise-health/logo.svg",
   logoWidth: "200px",
   logoHeight: "100px",
-  faviconUrl: "https://cdn.awell.health/sunrise-health/favicon.ico",
+  faviconUrl: "https://cdn.awellhealth.com/sunrise-health/favicon.ico",
   welcomeTitle: "Welcome to Sunrise Health",
   welcomeSubtitle: "Your personalized care journey starts here",
 };
@@ -115,8 +115,8 @@ export const techCorpBranding: OrgBranding["branding"] = {
   stackSpacing: "xs",
 
   // Welcome page customization
-  logoUrl: "https://cdn.awell.health/techcorp/logo-white.svg",
-  faviconUrl: "https://cdn.awell.health/techcorp/favicon.ico",
+  logoUrl: "https://cdn.awellhealth.com/techcorp/logo-white.svg",
+  faviconUrl: "https://cdn.awellhealth.com/techcorp/favicon.ico",
   welcomeTitle: "Welcome to TechCorp Systems",
   welcomeSubtitle: "Advanced healthcare technology platform",
 };
@@ -172,8 +172,8 @@ export const bakerProBranding: OrgBranding["branding"] = {
   stackSpacing: "md",
 
   // Welcome page customization
-  logoUrl: "https://cdn.awell.health/baker-pro/logo.svg",
-  faviconUrl: "https://cdn.awell.health/baker-pro/favicon.ico",
+  logoUrl: "https://cdn.awellhealth.com/baker-pro/logo.svg",
+  faviconUrl: "https://cdn.awellhealth.com/baker-pro/favicon.ico",
   welcomeTitle: "Welcome to Baker Pro",
   welcomeSubtitle: "Your healthcare management platform",
 };

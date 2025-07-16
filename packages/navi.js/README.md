@@ -87,7 +87,7 @@ instance.on("navi.pathway.completed", (data) => {
     <button id="destroy-flow">Close Flow</button>
 
     <!-- Load Navi -->
-    <script src="https://cdn.navi.awell.com/v1/loader.js"></script>
+    <script src="https://cdn.awellhealth.com.com/v1/loader.js"></script>
 
     <script>
       let flowInstance = null;

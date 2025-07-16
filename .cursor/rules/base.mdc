@@ -6,17 +6,20 @@ alwaysApply: true
 # Navi Monorepo Base Rules
 
 ## 🚧 Development Phase: v0.x.x
+
 - **Breaking changes are ACCEPTABLE** - Focus on getting architecture right
 - **API can evolve** - Don't be paralyzed by backward compatibility
 - **Coordinate changes** - Update all dependent packages together
 - **Test thoroughly** - Cross-origin integration is critical
 
 ## 📦 Package Dependency Flow (CRITICAL)
+
 ```
 navi-core (foundation) → navi-portal (embed API) → navi.js (CDN SDK) → navi-js (NPM wrapper)
 ```
 
 ### Package Locations & Purposes:
+
 - `packages/navi-core/` - Foundation types, event definitions (source of truth)
 - `apps/navi-portal/` - Embed application, React components, JWT auth
 - `packages/navi.js/` - CDN JavaScript SDK (customer-facing, 15KB max)
@@ -24,12 +27,15 @@ navi-core (foundation) → navi-portal (embed API) → navi.js (CDN SDK) → nav
 - `packages/navi-react/` - React components (NOT IMPLEMENTED)
 
 ## 🚨 File Protection Rules (ABSOLUTE)
+
 - **NEVER modify .env files** - Only user can change these
 - **NEVER bypass file editing restrictions** - No shell command workarounds
 - **ALWAYS ask user** for environment file modifications
 
 ## 🧪 Testing Requirements (MANDATORY)
+
 ### Cross-Origin Testing:
+
 ```bash
 # ALWAYS test the full integration flow
 cd apps/navi-portal && pnpm dev      # localhost:3000
@@ -38,12 +44,14 @@ cd examples/test-integration && pnpm dev  # localhost:3001
 ```
 
 ### Testing Checklist:
+
 - [ ] Cross-origin messaging (3001 → 3000)
 - [ ] Event data structures correct
 - [ ] Memory cleanup on instance destruction
 - [ ] Error handling for invalid events
 
 ## ⚠️ Known Issues (CRITICAL)
+
 1. **Event naming inconsistency**: `data-change` vs `dataChange`
 2. **Environment hardcoded**: localhost URLs need production config
 3. **Auth not integrated**: JWT exists but not connected
@@ -52,6 +60,7 @@ cd examples/test-integration && pnpm dev  # localhost:3001
 ## 🔧 Common Development Patterns
 
 ### Memory Management:
+
 ```typescript
 // ALWAYS clean up properly
 destroyInstance(instanceId: string) {
@@ -61,14 +70,17 @@ destroyInstance(instanceId: string) {
 ```
 
 ### Environment Detection:
+
 ```typescript
 // Current pattern (needs production config)
-const embedUrl = process.env.NODE_ENV === 'production' 
-  ? new URL(`https://embed.navi.com/embed/${pathwayId}`)
-  : new URL(`http://localhost:3000/embed/${pathwayId}`);
+const embedUrl =
+  process.env.NODE_ENV === "production"
+    ? new URL(`https://navi-portal.awellhealth.com/embed/${pathwayId}`)
+    : new URL(`http://localhost:3000/embed/${pathwayId}`);
 ```
 
 ## 📋 Integration Status Summary
+
 - ✅ **Event system**: 8 event types working
 - ✅ **Cross-origin messaging**: localhost:3001 ↔ localhost:3000
 - ✅ **navi.js SDK**: Global API functional
@@ -77,6 +89,7 @@ const embedUrl = process.env.NODE_ENV === 'production'
 - 🔴 **NPM wrapper**: Not implemented
 
 ## 🎯 Success Criteria
+
 - [ ] Cross-origin messaging working
 - [ ] Security validation in place
 - [ ] Bundle sizes within limits (15KB for navi.js)
@@ -84,6 +97,7 @@ const embedUrl = process.env.NODE_ENV === 'production'
 - [ ] Documentation updated
 
 ## 📞 When to Ask User
+
 - Major architectural changes
 - Removing security features
 - Breaking bundle size budget significantly

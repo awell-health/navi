@@ -6,7 +6,7 @@ export type LoadNavi = (publishableKey: string) => Promise<Navi | null>;
 // containing the package.json version
 declare const _VERSION: string;
 
-// CDN configuration - environment aware
+// CDN configuration - GCP Cloud CDN
 const getCDNConfig = () => {
   if (
     typeof process !== "undefined" &&
@@ -18,20 +18,37 @@ const getCDNConfig = () => {
     };
   }
 
+  // Production: GCP Load Balancer (temporary)
   return {
-    origin: "https://cdn.navi.com",
-    embedOrigin: "https://embed.navi.com",
+    origin: "https://cdn.awellhealth.com",
+    embedOrigin: "https://navi-portal.awellhealth.com",
   };
 };
 
 const config = getCDNConfig();
-const NAVI_JS_URL = `${config.origin}/v1/navi.js`;
 
-const NAVI_JS_URL_REGEX = /^https:\/\/cdn\.navi\.com\/v\d+\/navi\.js(\?.*)?$/;
-const LOCALHOST_REGEX = /^http:\/\/localhost:3000\/navi\.js(\?.*)?$/;
+// Development: alpha version for testing
+// Production: will use versioned URLs later
+const getNaviJSUrl = () => {
+  if (process.env.NODE_ENV === "development") {
+    return `${config.origin}/v1/navi.js`;
+  }
+
+  // Alpha development on GCP CDN
+  return `${config.origin}/alpha/navi.js`;
+};
+
+const NAVI_JS_URL = getNaviJSUrl();
+
+// Updated regex patterns for GCP CDN
+const PRODUCTION_CDN_REGEX =
+  /^https:\/\/cdn\.awellhealth\.com\/(alpha|v\d+.*\/)?navi\.js(\?.*)?$/;
+const LOCALHOST_REGEX = /^http:\/\/localhost:3000\/(v1\/)?navi\.js(\?.*)?$/;
 
 const isNaviJSURL = (url: string): boolean =>
-  NAVI_JS_URL_REGEX.test(url) || LOCALHOST_REGEX.test(url);
+  PRODUCTION_CDN_REGEX.test(url) || LOCALHOST_REGEX.test(url);
+
+export { NAVI_JS_URL, isNaviJSURL, config as CDN_CONFIG, getNaviJSUrl };
 
 export const findScript = (): HTMLScriptElement | null => {
   const scripts = document.querySelectorAll<HTMLScriptElement>(

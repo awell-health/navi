@@ -279,7 +279,7 @@ eventSource.onerror = (error) => {
 ```typescript
 // ✅ Proper origin validation for iframe events
 window.addEventListener("message", (event) => {
-  if (event.origin !== "https://embed.navi.com") {
+  if (event.origin !== "https://navi-portal.awellhealth.com") {
     return; // Reject unauthorized origins
   }
   // Process event safely

@@ -218,14 +218,14 @@ navi-react (React components)
 ### **1. navi-loader (CDN Script)**
 
 ```javascript
-// https://cdn.navi.com/v1/navi-loader.js
+// https://cdn.awellhealth.com/v1/navi-loader.js
 window.Navi = function (publishableKey) {
   return {
     // Create activity iframes
     renderActivities: (selector, options) => {
       const iframe = document.createElement("iframe");
       iframe.src =
-        `https://embed.navi.com/embed/${options.pathwayId}?` +
+        `https://navi-portal.awellhealth.com/embed/${options.pathwayId}?` +
         `token=${options.token}&` +
         `styling=${encodeURIComponent(JSON.stringify(options.styling))}`;
       iframe.style.cssText = "border: none; width: 100%; height: 600px;";
@@ -273,7 +273,7 @@ async function getActivityData(iframe) {
         type: "GET_ACTIVITY_DATA",
         requestId: requestId,
       },
-      "https://embed.navi.com"
+      "https://navi-portal.awellhealth.com"
     );
   });
 }
@@ -341,7 +341,7 @@ export default async function EmbedPage({
 
 ```html
 <!-- Customer's website -->
-<script src="https://cdn.navi.com/v1/navi-loader.js"></script>
+<script src="https://cdn.awellhealth.com/v1/navi-loader.js"></script>
 
 <div id="navi-activities"></div>
 <button id="submit-activities">Submit Activities</button>
@@ -390,9 +390,9 @@ export default async function EmbedPage({
 ```
 Customer Domain:     https://customer.com
   ↓ (loads script)
-CDN Domain:         https://cdn.navi.com/v1/navi-loader.js
+CDN Domain:         https://cdn.awellhealth.com/v1/navi-loader.js
   ↓ (creates iframe)
-Embed Domain:       https://embed.navi.com/embed/pathway_123
+Embed Domain:       https://navi-portal.awellhealth.com/embed/pathway_123
   ↓ (API calls)
 Backend Domain:     https://api.navi.com
 ```
@@ -426,7 +426,7 @@ window.addEventListener("message", (event) => {
   }
 
   // In customer's navi-loader:
-  if (event.origin !== "https://embed.navi.com") {
+  if (event.origin !== "https://navi-portal.awellhealth.com") {
     console.warn("Blocked message from unauthorized origin:", event.origin);
     return;
   }

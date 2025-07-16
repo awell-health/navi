@@ -31,7 +31,7 @@ This document outlines the comprehensive strategy for managing the Navi monorepo
 └── /v2/navi-loader.js           ← Future major versions
 
 🔒 Vercel Deployment
-└── embed.navi.com/[pathway_id]  ← Iframe content only
+└── navi-portal.awellhealth.com/[pathway_id]  ← Iframe content only
 
 📦 NPM Registry
 ├── @awell-health/navi-js        ← CDN wrapper (2KB max)
@@ -93,7 +93,7 @@ Customer Applications ← Final integration
 #### **Infrastructure Setup**
 
 - [ ] **CDN provider selection** - Google Cloud CDN vs Cloudflare vs Vercel
-- [ ] **Domain configuration** - `cdn.navi.com`, `embed.navi.com`
+- [ ] **Domain configuration** - `cdn.awellhealth.com`, `navi-portal.awellhealth.com`
 - [ ] **GitHub Actions** - Basic build and deploy workflow
 - [ ] **NPM organization** - `@awell-health/` scope setup
 
@@ -301,7 +301,7 @@ Integration Success:
 ### **Immediate Actions**
 
 1. **Choose CDN provider** - Decision needed for infrastructure setup
-2. **Domain registration** - `cdn.navi.com`, `embed.navi.com`
+2. **Domain registration** - `cdn.awellhealth.com`, `navi-portal.awellhealth.com`
 3. **GitHub Actions setup** - Basic pipeline for automated builds
 4. **Package structure finalization** - Complete navi-js package setup
 
