@@ -1,194 +1,179 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import React from "react";
-import { useForm, Controller } from "react-hook-form";
-import { TelephoneQuestion } from "./telephone-question";
+import {
+  TelephoneQuestion,
+  createTelephoneValidationRules,
+} from "./telephone-question";
+import { FormFixture } from "./form-fixture";
 import type { Question } from "@/lib/awell-client/generated/graphql";
-import { Typography } from "@/components/ui/typography";
 
-const meta: Meta<typeof TelephoneQuestion> = {
-  title: "Components/Form Questions/TelephoneQuestion",
-  component: TelephoneQuestion,
+// Custom args interface for the story
+interface TelephoneStoryArgs {
+  title: string;
+  isRequired: boolean;
+  defaultCountry: string;
+  availableCountries: string[];
+  disabled: boolean;
+}
+
+const meta: Meta<TelephoneStoryArgs> = {
+  title: "Activities/Form/Questions/TelephoneQuestion",
   parameters: {
     layout: "centered",
-    docs: {
-      description: {
-        component:
-          "Phone number input with country configuration and validation using react-hook-form",
-      },
-    },
   },
   tags: ["autodocs"],
+  argTypes: {
+    title: {
+      control: "text",
+      description: "Question title",
+    },
+    isRequired: {
+      control: "boolean",
+      description: "Whether the question is required",
+    },
+    defaultCountry: {
+      control: "select",
+      options: [
+        "US",
+        "GB",
+        "CA",
+        "FR",
+        "DE",
+        "ES",
+        "IT",
+        "NL",
+        "BE",
+        "CH",
+        "PT",
+      ],
+      description: "Default country for the phone input",
+    },
+    availableCountries: {
+      control: "object",
+      description:
+        "Array of allowed country codes (empty array allows all countries)",
+    },
+    disabled: {
+      control: "boolean",
+      description: "Whether the input is disabled",
+    },
+  },
 };
 
 export default meta;
-type Story = StoryObj<typeof TelephoneQuestion>;
+type Story = StoryObj<typeof meta>;
 
-const baseQuestion: Question = {
-  id: "test-telephone",
-  key: "testTelephone",
-  title: "Question that collects a phone number",
-  definition_id: "phoneNumber",
-  question_type: "INPUT",
-  user_question_type: "TELEPHONE",
-  data_point_value_type: "TELEPHONE",
-  is_required: false,
-  options: [],
-  config: {
-    recode_enabled: false,
-    use_select: null,
-    mandatory: false,
-    slider: null,
-    phone: {
-      default_country: "GB",
-      available_countries: [],
-      __typename: "PhoneConfig"
-    },
-    number: null,
-    multiple_select: null,
-    date_validation: null,
-    file_storage: null,
-    input_validation: null,
-    __typename: "QuestionConfig"
+export const Configurable: Story = {
+  args: {
+    title: "Phone number",
+    isRequired: false,
+    defaultCountry: "US",
+    availableCountries: [],
+    disabled: false,
   },
-  rule: null,
-  __typename: "Question"
-};
+  render: (args) => {
+    // Create dynamic question based on args
+    const question: Question = {
+      id: "configurable-telephone",
+      key: "telephone_field",
+      title: args.title,
+      definition_id: "phoneNumber",
+      question_type: "INPUT",
+      user_question_type: "TELEPHONE",
+      data_point_value_type: "TELEPHONE",
+      is_required: args.isRequired,
+      options: [],
+      config: {
+        recode_enabled: false,
+        use_select: null,
+        mandatory: false,
+        slider: null,
+        phone: {
+          default_country: args.defaultCountry,
+          available_countries: args.availableCountries,
+          __typename: "PhoneConfig",
+        },
+        number: null,
+        multiple_select: null,
+        date_validation: null,
+        file_storage: null,
+        input_validation: null,
+        __typename: "QuestionConfig",
+      },
+      rule: null,
+      __typename: "Question",
+    };
 
-const usQuestion: Question = {
-  ...baseQuestion,
-  title: "US Phone number",
-  config: {
-    ...baseQuestion.config!,
-    phone: {
-      default_country: "US",
-      available_countries: ["US"],
-      __typename: "PhoneConfig"
-    }
-  }
-};
+    const validationRules = createTelephoneValidationRules(question);
 
-const europeanQuestion: Question = {
-  ...baseQuestion,
-  title: "European phone number",
-  config: {
-    ...baseQuestion.config!,
-    phone: {
-      default_country: "GB",
-      available_countries: ["BE", "FR", "DE", "PT", "ES", "GB", "CH"],
-      __typename: "PhoneConfig"
-    }
-  }
-};
-
-// Simple wrapper for form context
-function FormWrapper({ question }: { question: Question }) {
-  const { control } = useForm({
-    defaultValues: {
-      [question.key]: "",
-    },
-  });
-
-  return (
-    <div className="w-96">
-      <Controller
-        name={question.key}
-        control={control}
-        render={({ field, fieldState }) => (
+    return (
+      <FormFixture question={question} validationRules={validationRules}>
+        {({ field, fieldState }) => (
           <TelephoneQuestion
             question={question}
             field={field}
             fieldState={fieldState}
+            disabled={args.disabled}
           />
         )}
-      />
-    </div>
-  );
-}
-
-export const Default: Story = {
-  render: () => <FormWrapper question={baseQuestion} />,
-};
-
-export const USPhoneNumber: Story = {
-  render: () => <FormWrapper question={usQuestion} />,
-};
-
-export const EuropeanPhoneNumber: Story = {
-  render: () => <FormWrapper question={europeanQuestion} />,
-};
-
-export const Required: Story = {
-  render: () => (
-    <FormWrapper
-      question={{
-        ...usQuestion,
-        title: "Your phone number (required)",
-        is_required: true,
-      }}
-    />
-  ),
-};
-
-export const Disabled: Story = {
-  render: () => {
-    const { control } = useForm({
-      defaultValues: { testTelephone: "+1 (555) 123-4567" },
-    });
-
-    return (
-      <div className="w-96">
-        <Controller
-          name="testTelephone"
-          control={control}
-          render={({ field, fieldState }) => (
-            <TelephoneQuestion
-              question={usQuestion}
-              field={field}
-              fieldState={fieldState}
-              disabled
-            />
-          )}
-        />
-      </div>
+      </FormFixture>
     );
   },
 };
 
-export const WithValidation: Story = {
-  render: () => {
-    const { control } = useForm({
-      defaultValues: { testTelephone: "" },
-      mode: "onChange",
-    });
+// Preset configurations for common use cases
+Configurable.args = {
+  title: "Phone number",
+  isRequired: false,
+  defaultCountry: "US",
+  availableCountries: [],
+  disabled: false,
+};
 
-    return (
-      <div className="w-96">
-        <Controller
-          name="testTelephone"
-          control={control}
-          rules={{
-            required: "Phone number is required",
-            pattern: {
-              value: /^[\+]?[1-9][\d]{0,15}$/,
-              message: "Please enter a valid phone number"
-            }
-          }}
-          render={({ field, fieldState }) => (
-            <TelephoneQuestion
-              question={{
-                ...usQuestion,
-                title: "Your contact number (required)",
-                is_required: true,
-              }}
-              field={field}
-              fieldState={fieldState}
-            />
-          )}
-        />
-        <Typography.Small className="text-muted-foreground mt-4">
-          This field is required and validates the phone number format.
-        </Typography.Small>
-      </div>
-    );
+// Example presets (can be selected from the story controls)
+export const USOnly: Story = {
+  ...Configurable,
+  args: {
+    ...Configurable.args,
+    title: "US Phone number",
+    defaultCountry: "US",
+    availableCountries: ["US"],
+  },
+};
+
+export const EuropeanPhone: Story = {
+  ...Configurable,
+  args: {
+    ...Configurable.args,
+    title: "European phone number",
+    defaultCountry: "GB",
+    availableCountries: ["BE", "FR", "DE", "PT", "ES", "GB", "CH", "NL", "IT"],
+  },
+};
+
+export const NorthAmerican: Story = {
+  ...Configurable,
+  args: {
+    ...Configurable.args,
+    title: "North American phone number",
+    defaultCountry: "US",
+    availableCountries: ["US", "CA"],
+  },
+};
+
+export const Required: Story = {
+  ...Configurable,
+  args: {
+    ...Configurable.args,
+    title: "Phone number (required)",
+    isRequired: true,
+  },
+};
+
+export const Disabled: Story = {
+  ...Configurable,
+  args: {
+    ...Configurable.args,
+    title: "Phone number (disabled)",
+    disabled: true,
   },
 };

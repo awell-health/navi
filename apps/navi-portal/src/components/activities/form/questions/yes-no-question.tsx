@@ -2,6 +2,27 @@ import React from "react";
 import { ControlledQuestionProps } from "./types";
 import { RadioGroup, RadioGroupItem, Label, Typography } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import type { Question } from "@/lib/awell-client/generated/graphql";
+
+/**
+ * Validation utility for YesNoQuestion
+ * Co-located with component for maintainability
+ */
+export function createYesNoValidationRules(question: Question) {
+  const rules: any = {};
+
+  // For boolean fields, we ONLY use custom validation since false is a valid value
+  // Do NOT use rules.required as it treats false as falsy/empty
+  rules.validate = (value: boolean | undefined) => {
+    if (value === undefined && !question.is_required) return true;
+    if (value === undefined && question.is_required)
+      return "This field is required";
+    if (typeof value !== "boolean") return "Please select Yes or No";
+    return true;
+  };
+
+  return rules;
+}
 
 /**
  * YesNoQuestion component - boolean choice using radio buttons
@@ -22,7 +43,8 @@ export function YesNoQuestion({
     field.onChange(value === "true");
   };
 
-  const currentValue = field.value === true ? "true" : field.value === false ? "false" : "";
+  const currentValue =
+    field.value === true ? "true" : field.value === false ? "false" : "";
 
   return (
     <div className={cn("space-y-3", className)}>
@@ -34,7 +56,7 @@ export function YesNoQuestion({
           </span>
         )}
       </Label>
-      
+
       <RadioGroup
         value={currentValue}
         onValueChange={handleValueChange}
@@ -42,7 +64,7 @@ export function YesNoQuestion({
         disabled={disabled}
         className={cn(
           "space-y-2",
-          hasError && "border-destructive"
+          hasError && "[&_[role=radio]]:border-destructive"
         )}
         aria-describedby={hasError ? `${field.name}-error` : undefined}
         aria-invalid={!!hasError}
@@ -68,7 +90,7 @@ export function YesNoQuestion({
             Yes
           </Label>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <RadioGroupItem
             value="false"

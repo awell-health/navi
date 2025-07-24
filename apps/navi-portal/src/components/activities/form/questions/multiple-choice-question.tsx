@@ -2,6 +2,34 @@ import React from "react";
 import { ControlledQuestionProps } from "./types";
 import { RadioGroup, RadioGroupItem, Label, Typography } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import type { Question } from "@/lib/awell-client/generated/graphql";
+
+/**
+ * Validation utility for MultipleChoiceQuestion
+ * Co-located with component for maintainability
+ */
+export function createMultipleChoiceValidationRules(question: Question) {
+  const rules: any = {};
+
+  if (question.is_required) {
+    rules.required = "This field is required";
+  }
+
+  // Validate that the selected value is one of the available options
+  rules.validate = (value: string | undefined) => {
+    if (!value && !question.is_required) return true;
+    if (!value && question.is_required) return "This field is required";
+
+    const validOptions = question.options?.map((option) => option.value) || [];
+    if (validOptions.length > 0 && !validOptions.includes(value)) {
+      return "Please select a valid option";
+    }
+
+    return true;
+  };
+
+  return rules;
+}
 
 /**
  * MultipleChoiceQuestion component - radio button selection
@@ -27,7 +55,7 @@ export function MultipleChoiceQuestion({
           </span>
         )}
       </Label>
-      
+
       <RadioGroup
         value={field.value || ""}
         onValueChange={field.onChange}
@@ -35,7 +63,7 @@ export function MultipleChoiceQuestion({
         disabled={disabled}
         className={cn(
           "space-y-2",
-          hasError && "border-destructive"
+          hasError && "[&_[role=radio]]:border-destructive"
         )}
         aria-describedby={hasError ? `${field.name}-error` : undefined}
         aria-invalid={!!hasError}

@@ -1,12 +1,77 @@
+"use client";
+
 import React, { useState } from "react";
 import { format, isValid, parseISO } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 import { ControlledQuestionProps } from "./types";
-import { Button, Calendar, Label, Popover, PopoverContent, PopoverTrigger, Typography } from "@/components/ui";
+import type { Question } from "@/lib/awell-client/generated/graphql";
+import {
+  Button,
+  Calendar,
+  Label,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Typography,
+} from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 /**
- * DateQuestion component - date picker with validation
- * Designed to work with react-hook-form Controller
+ * Date validation utility function for DateQuestion
+ * Can be used by parent forms with react-hook-form validation rules
+ */
+export function createDateValidationRules(question: Question) {
+  const rules: any = {};
+
+  // Required validation
+  if (question.is_required) {
+    rules.required = "This field is required";
+  }
+
+  // Date constraint validation
+  rules.validate = (value: Date | undefined) => {
+    if (!value && !question.is_required) return true;
+    if (!value && question.is_required) return "This field is required";
+    if (!value) return true; // Additional safety check
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDate = new Date(value);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    const dateConfig = question.config?.date_validation;
+
+    if (dateConfig?.allowed_dates === "FUTURE") {
+      if (dateConfig.include_date_of_response) {
+        if (selectedDate < today) {
+          return "Date must be today or in the future";
+        }
+      } else {
+        if (selectedDate <= today) {
+          return "Date must be in the future";
+        }
+      }
+    } else if (dateConfig?.allowed_dates === "PAST") {
+      if (dateConfig.include_date_of_response) {
+        if (selectedDate > today) {
+          return "Date must be today or in the past";
+        }
+      } else {
+        if (selectedDate >= today) {
+          return "Date must be in the past";
+        }
+      }
+    }
+
+    return true;
+  };
+
+  return rules;
+}
+
+/**
+ * DateQuestion component - shadcn date picker with validation
+ * Follows the exact shadcn date picker pattern
  */
 export function DateQuestion({
   question,
@@ -15,29 +80,18 @@ export function DateQuestion({
   disabled = false,
   className = "",
 }: ControlledQuestionProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const hasError = fieldState.invalid && fieldState.error;
   const errorMessage = fieldState.error?.message;
   const dateConfig = question.config?.date_validation;
 
-  // Parse the current value
-  const currentDate = field.value ? 
-    (typeof field.value === 'string' ? parseISO(field.value) : field.value) : 
-    undefined;
-
-  const displayValue = currentDate && isValid(currentDate) ? 
-    format(currentDate, "PPP") : 
-    "Pick a date";
-
-  const handleDateSelect = (date: Date | undefined) => {
-    if (date) {
-      // Convert to ISO string for consistent handling
-      field.onChange(format(date, "yyyy-MM-dd"));
-    } else {
-      field.onChange("");
-    }
-    setIsOpen(false);
-  };
+  // Parse the current value - now expects Date objects directly
+  const currentDate =
+    field.value instanceof Date
+      ? field.value
+      : field.value && typeof field.value === "string" && field.value !== ""
+      ? parseISO(field.value)
+      : undefined;
 
   // Date constraints based on configuration
   const getDateConstraints = () => {
@@ -66,11 +120,6 @@ export function DateQuestion({
   };
 
   const dateConstraints = getDateConstraints();
-  const helperText = dateConfig?.allowed_dates === "FUTURE" ? 
-    "Select a future date" : 
-    dateConfig?.allowed_dates === "PAST" ? 
-    "Select a past date" : 
-    undefined;
 
   return (
     <div className={cn("space-y-2", className)}>
@@ -82,50 +131,45 @@ export function DateQuestion({
           </span>
         )}
       </Label>
-      
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
+
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             id={field.name}
             variant="outline"
             disabled={disabled}
+            data-empty={!currentDate}
             className={cn(
               "w-full justify-start text-left font-normal",
+              "data-[empty=true]:text-muted-foreground",
               "font-[var(--font-family-body,inherit)]",
               "text-[var(--font-size-base,1rem)]",
-              !currentDate && "text-muted-foreground",
               hasError && "border-destructive focus-visible:ring-destructive"
             )}
-            aria-describedby={cn(
-              helperText && !hasError && `${field.name}-helper`,
-              hasError && `${field.name}-error`
-            )}
+            aria-describedby={cn(hasError && `${field.name}-error`)}
             aria-invalid={!!hasError}
             onBlur={field.onBlur}
           >
-            {displayValue}
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {currentDate && isValid(currentDate) ? (
+              format(currentDate, "PPP")
+            ) : (
+              <span>Pick a date</span>
+            )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent className="w-auto p-0">
           <Calendar
             mode="single"
             selected={currentDate}
-            onSelect={handleDateSelect}
-            initialFocus
             {...dateConstraints}
+            onSelect={(date) => {
+              field.onChange(date);
+              setOpen(false);
+            }}
           />
         </PopoverContent>
       </Popover>
-
-      {/* Helper text */}
-      {helperText && !hasError && (
-        <Typography.Small
-          id={`${field.name}-helper`}
-          className="text-muted-foreground"
-        >
-          {helperText}
-        </Typography.Small>
-      )}
 
       {/* Error message */}
       {hasError && (

@@ -17,9 +17,24 @@ export interface ControlledQuestionProps {
   className?: string;
   // NO individual event handlers!
 }
+
+// ✅ Validation Utility (Co-located with component)
+export function createXValidationRules(question: Question) {
+  const rules: any = {};
+
+  // Required validation
+  if (question.is_required) {
+    rules.required = "This field is required";
+  }
+
+  // Component-specific validation logic here
+  // e.g., email pattern, date constraints, text patterns
+
+  return rules;
+}
 ```
 
-Example: [short-text-question.tsx](mdc:apps/navi-portal/src/components/activities/form/questions/short-text-question.tsx)
+Examples: [date-question.tsx](mdc:apps/navi-portal/src/components/activities/form/questions/date-question.tsx), [email-question.tsx](mdc:apps/navi-portal/src/components/activities/form/questions/email-question.tsx), [short-text-question.tsx](mdc:apps/navi-portal/src/components/activities/form/questions/short-text-question.tsx)
 
 ## 📊 **Activity Events (Form-Level Only)**
 
@@ -63,9 +78,7 @@ function FormActivity() {
           key={question.key}
           name={question.key}
           control={control}
-          rules={{
-            required: question.is_required ? "This field is required" : false,
-          }}
+          rules={createValidationRules(question)} // ✅ Use component's validation utility
           render={({ field, fieldState }) => (
             <QuestionComponent
               question={question}
@@ -131,6 +144,19 @@ function WrongQuestion() {
   const [value, setValue] = useState(""); // NO - use Controller
 }
 
+// ❌ WRONG - Validation logic in stories/parents
+function WrongStory() {
+  rules={{
+    required: "Required",
+    pattern: /email/ // NO - use createXValidationRules()
+  }}
+}
+
+// ❌ WRONG - Helper text in non-ShortText components
+function WrongComponent() {
+  return <p>{helperText}</p>; // NO - only ShortText gets helper text
+}
+
 // ❌ WRONG - Complex CSS mapping
 .slate-h1 { @apply navi-h1; } /* Avoid global CSS */
 
@@ -141,38 +167,88 @@ function WrongQuestion() {
 ## ✅ **Quick Checklist**
 
 - [ ] Uses `ControlledQuestionProps` interface
+- [ ] Exports `createXValidationRules(question)` utility function
 - [ ] Spreads `{...field}` props (no custom handlers)
 - [ ] Uses SlateViewer for JSON content
 - [ ] Uses CSS variables for branding: `font-[var(--font-family-body,inherit)]`
-- [ ] Emits activity events at form level (not component level)
-- [ ] Has Storybook stories (Default, WithHelperText, Disabled)
-- [ ] Added to Activity Events Demo for testing
+- [ ] Validation logic co-located with component (not in stories)
+- [ ] Helper text ONLY in ShortText component (never in others)
+- [ ] Has Storybook stories using FormFixture
+- [ ] Stories demonstrate activity events in console
 
-## 📋 **Question Types**
+## 📋 **Question Types & Helper Text Rule**
 
-**Text**: `SHORT_TEXT` → Input, `LONG_TEXT` → Textarea, `EMAIL` → Input type="email"  
+**Text**: `SHORT_TEXT` → Input + Helper Text Support, `LONG_TEXT` → Textarea, `EMAIL` → Input type="email"  
 **Selection**: `YES_NO` → RadioGroup, `MULTIPLE_CHOICE` → RadioGroup, `MULTIPLE_SELECT` → Checkbox group  
-**Special**: `NUMBER` → Input type="number", `DATE` → Input type="date", `SLIDER` → Slider, `FILE` → File upload  
+**Special**: `NUMBER` → Input type="number", `DATE` → Calendar Picker, `SLIDER` → Slider, `FILE` → File upload  
 **Display**: `DESCRIPTION` → JSON detection → SlateViewer (preferred) or HTML fallback
+
+**🚨 CRITICAL**: Helper text should ONLY exist in `ShortTextQuestion` and NEVER in any other component.
 
 ## 🧪 **Testing Pattern**
 
 ```typescript
-// Storybook: Basic component demo
+// ✅ Updated Storybook Pattern: Use FormFixture
+import { FormFixture } from "./form-fixture";
+import {
+  QuestionComponent,
+  createQuestionValidationRules,
+} from "./question-component";
+
 export const Default: Story = {
-  render: () => <FormWrapper question={baseQuestion} />,
+  render: () => (
+    <FormFixture question={baseQuestion}>
+      {({ field, fieldState }) => (
+        <QuestionComponent
+          question={baseQuestion}
+          field={field}
+          fieldState={fieldState}
+        />
+      )}
+    </FormFixture>
+  ),
 };
 
-// Storybook: Activity events demo (check console)
-function ActivityEventsDemo() {
-  useEffect(() => console.log("🎯", { type: "activity-ready" }), []);
-  useEffect(() => {
-    const sub = watch((data, { name }) =>
-      console.log("🎯", { type: "activity-data-change", field: name })
+export const WithValidation: Story = {
+  render: () => {
+    const question = { ...baseQuestion, is_required: true };
+    return (
+      <FormFixture
+        question={question}
+        validationRules={createQuestionValidationRules(question)}
+      >
+        {({ field, fieldState }) => (
+          <QuestionComponent
+            question={question}
+            field={field}
+            fieldState={fieldState}
+          />
+        )}
+      </FormFixture>
     );
-    return () => sub.unsubscribe();
-  }, [watch]);
-}
+  },
+};
+```
+
+**FormFixture automatically provides**:
+
+- Activity events logging (`activity-ready`, `activity-data-change`, `activity-progress`, `activity-focus`, `activity-blur`, `activity-complete`)
+- Form submission with "Submit Form" button
+- React-hook-form context with validation
+- Debug info (current value, activity ID)
+
+**Events to verify in console**: `activity-ready` → `activity-data-change` → `activity-progress` → `activity-complete`
+
+## 🔄 **Component Development Workflow**
+
+1. **Create component** with `ControlledQuestionProps`
+2. **Export validation utility** `createXValidationRules(question)`
+3. **Add Storybook stories** using `FormFixture`
+4. **Test activity events** in browser console
+5. **Verify accessibility** with proper aria attributes
+6. **Check branding** with CSS variables
+
 ```
 
 **Events to verify**: `activity-ready` → `activity-data-change` → `activity-progress` → `activity-complete`
+```

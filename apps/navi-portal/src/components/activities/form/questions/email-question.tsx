@@ -1,10 +1,32 @@
 import React from "react";
 import { ControlledQuestionProps } from "./types";
+import type { Question } from "@/lib/awell-client/generated/graphql";
 import { Input, Label, Typography } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 /**
- * EmailQuestion component - email input with very loose validation
+ * Email validation utility function for EmailQuestion
+ * Can be used by parent forms with react-hook-form validation rules
+ */
+export function createEmailValidationRules(question: Question) {
+  const rules: any = {};
+
+  // Required validation
+  if (question.is_required) {
+    rules.required = "This field is required";
+  }
+
+  // Email format validation
+  rules.pattern = {
+    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    message: "Please enter a valid email address",
+  };
+
+  return rules;
+}
+
+/**
+ * EmailQuestion component - email input with validation
  * Designed to work with react-hook-form Controller
  */
 export function EmailQuestion({
@@ -27,7 +49,7 @@ export function EmailQuestion({
           </span>
         )}
       </Label>
-      
+
       <Input
         {...field}
         id={field.name}
@@ -41,22 +63,9 @@ export function EmailQuestion({
           "leading-[var(--line-height-normal,1.5)]",
           hasError && "border-destructive focus-visible:ring-destructive"
         )}
-        aria-describedby={cn(
-          !hasError && `${field.name}-helper`,
-          hasError && `${field.name}-error`
-        )}
+        aria-describedby={cn(hasError && `${field.name}-error`)}
         aria-invalid={!!hasError}
       />
-
-      {/* Helper text */}
-      {!hasError && (
-        <Typography.Small
-          id={`${field.name}-helper`}
-          className="text-muted-foreground"
-        >
-          Enter a valid email address
-        </Typography.Small>
-      )}
 
       {/* Error message */}
       {hasError && (

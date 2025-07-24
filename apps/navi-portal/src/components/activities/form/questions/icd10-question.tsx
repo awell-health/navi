@@ -1,13 +1,58 @@
-import React from "react";
+import React, { useState } from "react";
 import { ControlledQuestionProps } from "./types";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Label, Typography } from "@/components/ui";
+import {
+  Button,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  Label,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+  Typography,
+} from "@/components/ui";
+import { Check, ChevronsUpDown, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useICDClassificationList } from "@/hooks/use-icd-classification-list";
+import type { Question } from "@/lib/awell-client/generated/graphql";
 
 /**
- * ICD10Question component - special select for ICD-10 classification codes
- * Designed to work with react-hook-form Controller
- * Note: This is a placeholder implementation. In a real application,
- * you would integrate with an ICD-10 API or database for code lookup.
+ * Validation utility for ICD10Question
+ */
+export function createICD10ValidationRules(question: Question) {
+  const rules: any = {};
+
+  // Required validation
+  if (question.is_required) {
+    rules.required = "This field is required";
+  }
+
+  // Validate that the selected value is in proper ICD-10 format
+  rules.validate = (value: string) => {
+    if (!value && !question.is_required) return true;
+    if (!value && question.is_required) return "Please select an ICD-10 code";
+
+    // Value should be in format "CODE|NAME"
+    if (!value.includes("|")) {
+      return "Please select a valid ICD-10 code from the search results";
+    }
+
+    return true;
+  };
+
+  return rules;
+}
+
+/**
+ * ICD10Question component - searchable select for ICD-10 classification codes
+ * Uses Clinical Tables NLM API for real-time code lookup
  */
 export function ICD10Question({
   question,
@@ -16,87 +61,172 @@ export function ICD10Question({
   disabled = false,
   className = "",
 }: ControlledQuestionProps) {
+  const [open, setOpen] = useState(false);
   const hasError = fieldState.invalid && fieldState.error;
   const errorMessage = fieldState.error?.message;
 
-  // Placeholder ICD-10 codes - in a real app, this would come from an API
-  const commonICD10Codes = [
-    { code: "Z00.00", description: "Encounter for general adult medical examination without abnormal findings" },
-    { code: "Z51.11", description: "Encounter for antineoplastic chemotherapy" },
-    { code: "I10", description: "Essential (primary) hypertension" },
-    { code: "E11.9", description: "Type 2 diabetes mellitus without complications" },
-    { code: "J45.9", description: "Asthma, unspecified" },
-    { code: "M79.3", description: "Panniculitis, unspecified" },
-    { code: "R06.02", description: "Shortness of breath" },
-    { code: "R50.9", description: "Fever, unspecified" },
-    { code: "K59.00", description: "Constipation, unspecified" },
-    { code: "R68.84", description: "Jaw pain" },
-  ];
+  const {
+    options,
+    loading,
+    error: searchError,
+    searchValue,
+    onIcdClassificationSearchChange,
+  } = useICDClassificationList(question.id);
+
+  const selectedOption = options.find((option) => option.value === field.value);
+
+  const handleSelect = (optionValue: string) => {
+    field.onChange(optionValue);
+    setOpen(false);
+  };
+
+  const handleClear = () => {
+    field.onChange("");
+    setOpen(false);
+  };
 
   return (
-    <div className={cn("space-y-2", className)}>
-      <Label className="block">
-        {question.title.replace(/<[^>]*>/g, "")}
-        {question.is_required && (
-          <span className="text-destructive ml-1" aria-label="required">
-            *
-          </span>
+    <TooltipProvider>
+      <div className={cn("space-y-2", className)}>
+        <Label className="block">
+          {question.title.replace(/<[^>]*>/g, "")}
+          {question.is_required && (
+            <span className="text-destructive ml-1" aria-label="required">
+              *
+            </span>
+          )}
+        </Label>
+
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className={cn(
+                "w-full justify-between",
+                "font-[var(--font-family-body,inherit)]",
+                "text-[var(--font-size-base,1rem)]",
+                hasError && "border-destructive focus:ring-destructive",
+                !selectedOption && "text-muted-foreground"
+              )}
+              disabled={disabled}
+              onBlur={field.onBlur}
+            >
+              {selectedOption ? (
+                <div className="flex items-center justify-between w-full">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="truncate">{selectedOption.label}</span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[400px]">
+                      <div className="space-y-1">
+                        <div className="font-medium">{selectedOption.code}</div>
+                        <div className="text-sm">{selectedOption.name}</div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                  {!disabled && (
+                    <X
+                      className="ml-2 h-4 w-4 shrink-0 opacity-50 hover:opacity-100"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClear();
+                      }}
+                    />
+                  )}
+                </div>
+              ) : (
+                <>
+                  <span>Search ICD-10 codes...</span>
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[400px] p-0" align="start">
+            <Command shouldFilter={false}>
+              <CommandInput
+                placeholder="Type to search ICD-10 codes..."
+                value={searchValue}
+                onValueChange={onIcdClassificationSearchChange}
+              />
+              <CommandList>
+                {loading && (
+                  <div className="flex items-center justify-center p-4">
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <span className="text-sm text-muted-foreground">
+                      Searching...
+                    </span>
+                  </div>
+                )}
+
+                {searchError && (
+                  <div className="p-4 text-sm text-destructive">
+                    {searchError}
+                  </div>
+                )}
+
+                {!loading && !searchError && searchValue.length <= 1 && (
+                  <CommandEmpty>
+                    Type at least 2 characters to search for ICD-10 codes
+                  </CommandEmpty>
+                )}
+
+                {!loading &&
+                  !searchError &&
+                  searchValue.length > 1 &&
+                  options.length === 0 && (
+                    <CommandEmpty>
+                      No ICD-10 codes found for "{searchValue}"
+                    </CommandEmpty>
+                  )}
+
+                {options.length > 0 && (
+                  <CommandGroup>
+                    {options.map((option) => (
+                      <CommandItem
+                        key={option.value}
+                        value={option.value}
+                        onSelect={handleSelect}
+                        className="flex items-start gap-2 p-3"
+                      >
+                        <Check
+                          className={cn(
+                            "mt-0.5 h-4 w-4 shrink-0",
+                            selectedOption?.value === option.value
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        <div className="flex flex-col gap-1 flex-1 min-w-0">
+                          <div className="font-medium text-sm">
+                            {option.code}
+                          </div>
+                          <div className="text-xs text-muted-foreground break-words">
+                            {option.name}
+                          </div>
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                )}
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+
+        {/* Error message */}
+        {hasError && (
+          <Typography.Small
+            id={`${field.name}-error`}
+            className="text-destructive"
+            role="alert"
+          >
+            {errorMessage}
+          </Typography.Small>
         )}
-      </Label>
-      
-      <Select
-        value={field.value || ""}
-        onValueChange={field.onChange}
-        disabled={disabled}
-      >
-        <SelectTrigger 
-          className={cn(
-            "w-full",
-            "font-[var(--font-family-body,inherit)]",
-            "text-[var(--font-size-base,1rem)]",
-            hasError && "border-destructive focus:ring-destructive"
-          )}
-          aria-describedby={cn(
-            !hasError && `${field.name}-helper`,
-            hasError && `${field.name}-error`
-          )}
-          aria-invalid={!!hasError}
-          onBlur={field.onBlur}
-        >
-          <SelectValue placeholder="Select an ICD-10 code..." />
-        </SelectTrigger>
-        <SelectContent>
-          {commonICD10Codes.map((item) => (
-            <SelectItem key={item.code} value={item.code}>
-              <div className="flex flex-col items-start">
-                <span className="font-medium">{item.code}</span>
-                <span className="text-sm text-muted-foreground">{item.description}</span>
-              </div>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {/* Helper text */}
-      {!hasError && (
-        <Typography.Small
-          id={`${field.name}-helper`}
-          className="text-muted-foreground"
-        >
-          Search and select the appropriate ICD-10 classification code
-        </Typography.Small>
-      )}
-
-      {/* Error message */}
-      {hasError && (
-        <Typography.Small
-          id={`${field.name}-error`}
-          className="text-destructive"
-          role="alert"
-        >
-          {errorMessage}
-        </Typography.Small>
-      )}
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }

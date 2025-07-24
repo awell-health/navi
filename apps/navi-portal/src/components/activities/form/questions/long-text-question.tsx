@@ -1,7 +1,27 @@
 import React from "react";
 import { ControlledQuestionProps } from "./types";
+import type { Question } from "@/lib/awell-client/generated/graphql";
 import { Textarea, Label, Typography } from "@/components/ui";
 import { cn } from "@/lib/utils";
+
+/**
+ * Long text validation utility function for LongTextQuestion
+ * Can be used by parent forms with react-hook-form validation rules
+ */
+export function createLongTextValidationRules(question: Question) {
+  const rules: any = {};
+
+  // Required validation
+  if (question.is_required) {
+    rules.required = "This field is required";
+  }
+
+  // Optional: Add common text length validations
+  // These could be configured via question.config in the future
+  // For now, we'll keep it simple with just required validation
+
+  return rules;
+}
 
 /**
  * LongTextQuestion component - multi-line text input (textarea)
@@ -27,7 +47,7 @@ export function LongTextQuestion({
           </span>
         )}
       </Label>
-      
+
       <Textarea
         {...field}
         id={field.name}

@@ -1,7 +1,42 @@
 import React from "react";
 import { ControlledQuestionProps } from "./types";
+import type { Question } from "@/lib/awell-client/generated/graphql";
 import { Input, Label, Typography } from "@/components/ui";
 import { cn } from "@/lib/utils";
+
+/**
+ * Number validation utility function for NumberQuestion
+ * Can be used by parent forms with react-hook-form validation rules
+ */
+export function createNumberValidationRules(question: Question) {
+  const rules: any = {};
+
+  // Required validation
+  if (question.is_required) {
+    rules.required = "This field is required";
+  }
+
+  // Range validation from number config
+  const numberConfig = question.config?.number;
+  const range = numberConfig?.range;
+
+  if (range?.enabled) {
+    if (range.min !== null && range.min !== undefined) {
+      rules.min = {
+        value: range.min,
+        message: `Must be at least ${range.min}`,
+      };
+    }
+    if (range.max !== null && range.max !== undefined) {
+      rules.max = {
+        value: range.max,
+        message: `Must be at most ${range.max}`,
+      };
+    }
+  }
+
+  return rules;
+}
 
 /**
  * NumberQuestion component - numeric input with range validation
@@ -29,13 +64,13 @@ export function NumberQuestion({
           </span>
         )}
       </Label>
-      
+
       <Input
         {...field}
         id={field.name}
         type="number"
-        min={range?.enabled ? (range.min ?? undefined) : undefined}
-        max={range?.enabled ? (range.max ?? undefined) : undefined}
+        min={range?.enabled ? range.min ?? undefined : undefined}
+        max={range?.enabled ? range.max ?? undefined : undefined}
         step="any"
         disabled={disabled}
         className={cn(
@@ -44,10 +79,7 @@ export function NumberQuestion({
           "leading-[var(--line-height-normal,1.5)]",
           hasError && "border-destructive focus-visible:ring-destructive"
         )}
-        aria-describedby={cn(
-          range?.enabled && `${field.name}-helper`,
-          hasError && `${field.name}-error`
-        )}
+        aria-describedby={cn(hasError && `${field.name}-error`)}
         aria-invalid={!!hasError}
         onChange={(e) => {
           const value = e.target.value;
@@ -57,16 +89,6 @@ export function NumberQuestion({
         }}
         value={field.value ?? ""}
       />
-
-      {/* Helper text for range */}
-      {range?.enabled && !hasError && (
-        <Typography.Small
-          id={`${field.name}-helper`}
-          className="text-muted-foreground"
-        >
-          Enter a number between {range.min} and {range.max}
-        </Typography.Small>
-      )}
 
       {/* Error message */}
       {hasError && (
