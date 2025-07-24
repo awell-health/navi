@@ -78,6 +78,8 @@ export function NaviEmbed({
   onReady,
   ...renderOptions
 }: NaviEmbedProps) {
+  console.log("🔍 NaviEmbed component mounting/re-rendering");
+
   const {
     publishableKey,
     branding,
@@ -89,40 +91,79 @@ export function NaviEmbed({
   const [embedError, setEmbedError] = useState<string | null>(null);
   const [isEmbedLoading, setIsEmbedLoading] = useState(false);
 
+  // Add ref to track if rendering is in progress to prevent race conditions
+  const isRenderingRef = useRef(false);
+
   useEffect(() => {
     if (isLoading || providerError || !publishableKey) {
       return;
     }
 
-    async function loadNaviScript() {
-      return new Promise<void>((resolve, reject) => {
-        if (typeof window.Navi === "function") {
-          resolve();
-          return;
-        }
-
-        const script = document.createElement("script");
-        script.src =
-          process.env.NODE_ENV === "production"
-            ? "https://cdn.awellhealth.com/navi.js"
-            : "http://localhost:3000/navi.js/route";
-        script.async = true;
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error("Failed to load Navi SDK"));
-        document.head.appendChild(script);
-      });
-    }
-
     async function renderEmbed() {
+      // Prevent race conditions from React StrictMode or rapid re-renders
+      if (isRenderingRef.current) {
+        console.log(
+          "🔍 Iframe creation already in progress, skipping duplicate"
+        );
+        return;
+      }
+
       try {
+        isRenderingRef.current = true;
         setIsEmbedLoading(true);
         setEmbedError(null);
 
-        // Load the navi.js SDK
-        await loadNaviScript();
+        // Check if Navi is already loaded (should be loaded via loadNavi at app level)
+        if (typeof window.Navi !== "function") {
+          throw new Error(
+            "Navi SDK not loaded. Please call loadNavi() at your app root before using NaviEmbed components."
+          );
+        }
 
         if (!containerRef.current) {
           throw new Error("Container ref not available");
+        }
+
+        // If we already have an instance, don't create another
+        if (instance) {
+          console.log("🔍 Instance already exists, skipping creation");
+          return;
+        }
+
+        // Check if an iframe already exists in this container
+        const existingIframe = containerRef.current.querySelector(
+          "iframe[data-navi-instance]"
+        ) as HTMLIFrameElement;
+        if (existingIframe) {
+          console.log("🔍 Iframe already exists, getting instance");
+
+          // Extract instance ID from iframe
+          const existingInstanceId =
+            existingIframe.getAttribute("data-navi-instance");
+          if (existingInstanceId) {
+            // Create a minimal instance object for state management
+            const existingInstance: NaviEmbedInstance = {
+              instanceId: existingInstanceId,
+              iframe: existingIframe,
+              destroy: () => {
+                console.log(
+                  "🧹 Destroying existing instance:",
+                  existingInstanceId
+                );
+                existingIframe.remove();
+              },
+              on: (event: string, callback: (data: any) => void) => {
+                // Event handling would need to be re-established
+                console.warn(
+                  "Event listeners may need to be re-established for existing iframe"
+                );
+              },
+            };
+
+            setInstance(existingInstance);
+            console.log("✅ Retrieved existing instance:", existingInstanceId);
+          }
+          return;
         }
 
         // Create unique container ID
@@ -140,6 +181,15 @@ export function NaviEmbed({
           ...branding,
           ...renderOptions.branding,
         };
+
+        console.log("🎨 Applying branding:", {
+          hasProviderBranding: Object.keys(branding).length > 0,
+          hasComponentBranding: renderOptions.branding
+            ? Object.keys(renderOptions.branding).length > 0
+            : false,
+          brandingKeys: Object.keys(mergedBranding),
+          primaryColor: mergedBranding.primary,
+        });
 
         // Create Navi instance and render
         const navi = window.Navi(publishableKey);
@@ -166,17 +216,20 @@ export function NaviEmbed({
         }
 
         if (onError) {
-          embedInstance.on("navi.activity.error", onError);
+          embedInstance.on("navi.error", onError);
         }
 
         setInstance(embedInstance);
+        console.log("✅ NaviEmbed instance created:", embedInstance.instanceId);
       } catch (err) {
+        console.error("❌ Failed to render embed:", err);
         const errorMessage =
           err instanceof Error ? err.message : "Failed to render embed";
         setEmbedError(errorMessage);
         onError?.({ message: errorMessage });
       } finally {
         setIsEmbedLoading(false);
+        isRenderingRef.current = false;
       }
     }
 
@@ -185,10 +238,23 @@ export function NaviEmbed({
     // Cleanup function
     return () => {
       if (instance) {
+        console.log("🧹 Cleaning up NaviEmbed instance:", instance.instanceId);
         instance.destroy();
+        setInstance(null);
       }
+      isRenderingRef.current = false;
     };
-  }, [publishableKey, isLoading, providerError, JSON.stringify(renderOptions)]);
+  }, [
+    publishableKey,
+    isLoading,
+    providerError,
+    // Simplified dependencies - only track essential changes
+    renderOptions.careflowDefinitionId,
+    renderOptions.careflowId,
+    renderOptions.pathwayId,
+    renderOptions.stakeholderId,
+    // Don't stringify branding - causes unnecessary re-renders
+  ]);
 
   // Show loading state
   if (isLoading || isEmbedLoading) {

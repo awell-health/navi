@@ -29,7 +29,7 @@ export default function HomePage() {
   // Sunrise Health test configuration from generate-tokens
   const testConfig: Record<string, string> = {
     publishableKey: "pk_test_demo123",
-    pathwayId: "GeDg7fJmddZi", // From Sunrise Health token
+    pathwayId: "Tjsko1X8exEh", // From Sunrise Health token
     stakeholderId: "Eh4UQbKZKBk6hKd0M7wKk", // From Sunrise Health token
     organizationId: "sunrise-health",
     userId: "user_patient_123",

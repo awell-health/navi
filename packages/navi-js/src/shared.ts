@@ -1,44 +1,70 @@
-import { Navi, NaviConstructor } from "./types";
+import { Navi, NaviConstructor, NaviLoadOptions } from "./types";
 
-export type LoadNavi = (publishableKey: string) => Promise<Navi | null>;
+export type LoadNavi = (
+  publishableKey: string,
+  options?: NaviLoadOptions
+) => Promise<Navi | null>;
 
 // `_VERSION` will be rewritten by `@rollup/plugin-replace` as a string literal
 // containing the package.json version
 declare const _VERSION: string;
 
 // CDN configuration - GCP Cloud CDN
-const getCDNConfig = () => {
-  if (
+const getCDNConfig = (options?: NaviLoadOptions) => {
+  let origin = "https://cdn.awellhealth.com";
+  let embedOrigin = "https://navi-portal.awellhealth.com";
+
+  // Check for local option first
+  if (options?.local) {
+    origin = "http://localhost:3000";
+    embedOrigin = "http://localhost:3000";
+  } else if (
     typeof process !== "undefined" &&
-    process.env.NODE_ENV === "development"
+    process.env.NODE_ENV === "local"
   ) {
-    return {
-      origin: "http://localhost:3000",
-      embedOrigin: "http://localhost:3000",
-    };
+    origin = "http://localhost:3000";
+    embedOrigin = "http://localhost:3000";
   }
 
-  // Production: GCP Load Balancer (temporary)
+  // Apply environment variables
+  if (
+    typeof process !== "undefined" &&
+    process.env.EMBED_ORIGIN !== undefined
+  ) {
+    embedOrigin = process.env.EMBED_ORIGIN;
+  }
+
+  if (typeof process !== "undefined" && process.env.ORIGIN !== undefined) {
+    origin = process.env.ORIGIN;
+  }
+
+  // Apply explicit options (highest priority)
+  if (options?.origin) {
+    origin = options.origin;
+  }
+
+  if (options?.embedOrigin) {
+    embedOrigin = options.embedOrigin;
+  }
+
   return {
-    origin: "https://cdn.awellhealth.com",
-    embedOrigin: "https://navi-portal.awellhealth.com",
+    origin,
+    embedOrigin,
   };
 };
 
-const config = getCDNConfig();
-
 // Development: alpha version for testing
 // Production: will use versioned URLs later
-const getNaviJSUrl = () => {
-  if (process.env.NODE_ENV === "development") {
-    return `${config.origin}/v1/navi.js`;
+const getNaviJSUrl = (options?: NaviLoadOptions) => {
+  const config = getCDNConfig(options);
+
+  if (options?.local || process.env.NODE_ENV === "development") {
+    return `${config.origin}/alpha/navi.js`;
   }
 
   // Alpha development on GCP CDN
   return `${config.origin}/alpha/navi.js`;
 };
-
-const NAVI_JS_URL = getNaviJSUrl();
 
 // Updated regex patterns for GCP CDN
 const PRODUCTION_CDN_REGEX =
@@ -48,7 +74,7 @@ const LOCALHOST_REGEX = /^http:\/\/localhost:3000\/(v1\/)?navi\.js(\?.*)?$/;
 const isNaviJSURL = (url: string): boolean =>
   PRODUCTION_CDN_REGEX.test(url) || LOCALHOST_REGEX.test(url);
 
-export { NAVI_JS_URL, isNaviJSURL, config as CDN_CONFIG, getNaviJSUrl };
+export { isNaviJSURL, getNaviJSUrl, getCDNConfig };
 
 export const findScript = (): HTMLScriptElement | null => {
   const scripts = document.querySelectorAll<HTMLScriptElement>(
@@ -68,9 +94,9 @@ export const findScript = (): HTMLScriptElement | null => {
   return null;
 };
 
-const injectScript = (): HTMLScriptElement => {
+const injectScript = (options?: NaviLoadOptions): HTMLScriptElement => {
   const script = document.createElement("script");
-  script.src = NAVI_JS_URL;
+  script.src = getNaviJSUrl(options);
 
   const headOrBody = document.head || document.body;
 
@@ -98,12 +124,17 @@ const registerWrapper = (navi: any, startTime: number): void => {
 };
 
 let naviPromise: Promise<NaviConstructor | null> | null = null;
-let onErrorListener: ((cause?: unknown) => void) | null = null;
+let onErrorListener: ((event?: Event) => void) | null = null;
 let onLoadListener: (() => void) | null = null;
 
-const onError = (reject: (reason?: any) => void) => (cause?: unknown) => {
-  reject(new Error(`Failed to load Navi.js: ${JSON.stringify(cause)}`));
-};
+const onError =
+  (reject: (reason?: any) => void, scriptUrl: string) => (event?: Event) => {
+    const errorDetails = event
+      ? `Script load error for ${scriptUrl}. Check network connection and URL.`
+      : `Unknown error loading ${scriptUrl}`;
+
+    reject(new Error(`Failed to load Navi.js: ${errorDetails}`));
+  };
 
 const onLoad =
   (
@@ -120,7 +151,9 @@ const onLoad =
     }
   };
 
-export const loadScript = (): Promise<NaviConstructor | null> => {
+export const loadScript = (
+  options?: NaviLoadOptions
+): Promise<NaviConstructor | null> => {
   // Ensure that we only attempt to load Navi.js at most once
   if (naviPromise !== null) {
     return naviPromise;
@@ -143,7 +176,7 @@ export const loadScript = (): Promise<NaviConstructor | null> => {
       let script = findScript();
 
       if (!script) {
-        script = injectScript();
+        script = injectScript(options);
       } else if (
         script &&
         onLoadListener !== null &&
@@ -156,11 +189,11 @@ export const loadScript = (): Promise<NaviConstructor | null> => {
         // if script exists, but we are reloading due to an error,
         // reload script to trigger 'load' event
         script.parentNode?.removeChild(script);
-        script = injectScript();
+        script = injectScript(options);
       }
 
       onLoadListener = onLoad(resolve, reject);
-      onErrorListener = onError(reject);
+      onErrorListener = onError(reject, script.src);
       script.addEventListener("load", onLoadListener);
       script.addEventListener("error", onErrorListener);
     } catch (error) {
@@ -179,7 +212,8 @@ export const loadScript = (): Promise<NaviConstructor | null> => {
 export const initNavi = (
   maybeNavi: NaviConstructor | null,
   args: [string], // publishableKey
-  startTime: number
+  startTime: number,
+  options?: NaviLoadOptions
 ): Navi | null => {
   if (maybeNavi === null) {
     return null;
@@ -192,7 +226,14 @@ export const initNavi = (
     console.log("🚀 Navi.js loaded in development mode");
   }
 
-  const navi = maybeNavi(publishableKey);
+  // Convert navi-js options to navi.js options format
+  const naviJsOptions = options
+    ? {
+        embedOrigin: getCDNConfig(options).embedOrigin,
+      }
+    : undefined;
+
+  const navi = maybeNavi(publishableKey, naviJsOptions);
   registerWrapper(navi, startTime);
   return navi;
 };

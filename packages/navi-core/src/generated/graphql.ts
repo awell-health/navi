@@ -73,8 +73,9 @@ export type ActivityAction =
   | 'SUBMITTED';
 
 export type ActivityForm = {
-  id: Scalars['ID']['output'];
+  id: Scalars['String']['output'];
   key: Scalars['String']['output'];
+  metadata?: Maybe<Scalars['String']['output']>;
   questions: Array<Question>;
   title: Scalars['String']['output'];
   trademark?: Maybe<Scalars['String']['output']>;
@@ -171,6 +172,15 @@ export type ActivityStatus =
   | 'SCHEDULED'
   | 'STOPPED';
 
+export type AllowedDatesOptions =
+  | 'ALL'
+  | 'FUTURE'
+  | 'PAST';
+
+export type BooleanOperator =
+  | 'AND'
+  | 'OR';
+
 export type CalculationActivityInput = ActivityInput & {
   fields?: Maybe<Array<CalculationField>>;
   type: ActivityInputType;
@@ -186,7 +196,6 @@ export type CalculationField = {
   key: Scalars['String']['output'];
   label: Scalars['String']['output'];
   value: Scalars['JSON']['output'];
-  value_type?: Maybe<Scalars['String']['output']>;
 };
 
 export type Checklist = {
@@ -197,6 +206,12 @@ export type Checklist = {
 export type ChecklistActivityInput = ActivityInput & {
   checklist?: Maybe<Checklist>;
   type: ActivityInputType;
+};
+
+export type ChoiceRangeConfig = {
+  enabled?: Maybe<Scalars['Boolean']['output']>;
+  max?: Maybe<Scalars['Float']['output']>;
+  min?: Maybe<Scalars['Float']['output']>;
 };
 
 export type ClinicalNote = {
@@ -248,6 +263,50 @@ export type CompletionContextUserType =
   | 'SYSTEM'
   | 'UNAUTHENTICATED_USER';
 
+export type Condition = {
+  id: Scalars['ID']['output'];
+  operand: ConditionOperand;
+  operator: ConditionOperator;
+  reference: Scalars['String']['output'];
+  reference_key: Scalars['String']['output'];
+};
+
+export type ConditionOperand = {
+  type: ConditionOperandType;
+  value: Scalars['String']['output'];
+};
+
+export type ConditionOperandType =
+  | 'BOOLEAN'
+  | 'DATA_POINT'
+  | 'DATA_SOURCE'
+  | 'NUMBER'
+  | 'NUMBERS_ARRAY'
+  | 'STRING'
+  | 'STRINGS_ARRAY';
+
+export type ConditionOperator =
+  | 'CONTAINS'
+  | 'DOES_NOT_CONTAIN'
+  | 'HAS_FILE_UPLOADED'
+  | 'HAS_NO_FILE_UPLOADED'
+  | 'IS_ANY_OF'
+  | 'IS_EMPTY'
+  | 'IS_EQUAL_TO'
+  | 'IS_GREATER_THAN'
+  | 'IS_GREATER_THAN_OR_EQUAL_TO'
+  | 'IS_IN_RANGE'
+  | 'IS_LESS_THAN'
+  | 'IS_LESS_THAN_OR_EQUAL_TO'
+  | 'IS_LESS_THAN_X_DAYS_AGO'
+  | 'IS_MORE_THAN_X_DAYS_AGO'
+  | 'IS_NONE_OF'
+  | 'IS_NOT_EMPTY'
+  | 'IS_NOT_EQUAL_TO'
+  | 'IS_NOT_TRUE'
+  | 'IS_TODAY'
+  | 'IS_TRUE';
+
 export type CreateActivityInput = {
   careflow_id: Scalars['String']['input'];
   input_data?: InputMaybe<Scalars['String']['input']>;
@@ -258,6 +317,23 @@ export type CreateActivityInput = {
   tenant_id: Scalars['String']['input'];
 };
 
+export type DataPointValueType =
+  | 'ATTACHMENT'
+  | 'ATTACHMENTS_ARRAY'
+  | 'BOOLEAN'
+  | 'DATE'
+  | 'JSON'
+  | 'NUMBER'
+  | 'NUMBERS_ARRAY'
+  | 'STRING'
+  | 'STRINGS_ARRAY'
+  | 'TELEPHONE';
+
+export type DateConfig = {
+  allowed_dates?: Maybe<AllowedDatesOptions>;
+  include_date_of_response?: Maybe<Scalars['Boolean']['output']>;
+};
+
 export type DynamicForm = {
   key: Scalars['String']['output'];
   questions: Array<DynamicQuestion>;
@@ -266,7 +342,7 @@ export type DynamicForm = {
 };
 
 export type DynamicFormActivityInput = ActivityInput & {
-  dynamicForm?: Maybe<DynamicForm>;
+  dynamic_form?: Maybe<DynamicForm>;
   type: ActivityInputType;
 };
 
@@ -276,12 +352,20 @@ export type DynamicFormActivityOutput = ActivityOutput & {
 };
 
 export type DynamicQuestion = {
+  config?: Maybe<QuestionConfig>;
+  data_point_value_type?: Maybe<DataPointValueType>;
   id: Scalars['ID']['output'];
+  is_required: Scalars['Boolean']['output'];
   key: Scalars['String']['output'];
   options?: Maybe<Array<QuestionOption>>;
-  questionType: QuestionType;
-  required?: Maybe<Scalars['Boolean']['output']>;
+  question_type: QuestionType;
   title: Scalars['String']['output'];
+  user_question_type?: Maybe<UserQuestionType>;
+};
+
+export type ExclusiveOptionConfig = {
+  enabled?: Maybe<Scalars['Boolean']['output']>;
+  option_id?: Maybe<Scalars['String']['output']>;
 };
 
 export type ExtensionActivityInput = ActivityInput & {
@@ -292,6 +376,11 @@ export type ExtensionActivityInput = ActivityInput & {
 export type ExtensionActivityOutput = ActivityOutput & {
   results?: Maybe<Scalars['JSON']['output']>;
   type: ActivityOutputType;
+};
+
+export type FileStorageQuestionConfig = {
+  accepted_file_types?: Maybe<Array<Scalars['String']['output']>>;
+  file_storage_config_slug?: Maybe<Scalars['String']['output']>;
 };
 
 export type FormActivityInput = ActivityInput & {
@@ -316,6 +405,25 @@ export type GeneratedClinicalNoteNarrative = {
   title: Scalars['String']['output'];
 };
 
+export type InputValidationAllowed = {
+  letters?: Maybe<Scalars['Boolean']['output']>;
+  numbers?: Maybe<Scalars['Boolean']['output']>;
+  special?: Maybe<Scalars['Boolean']['output']>;
+  whitespace?: Maybe<Scalars['Boolean']['output']>;
+};
+
+export type InputValidationConfig = {
+  helper_text?: Maybe<Scalars['String']['output']>;
+  mode?: Maybe<Scalars['String']['output']>;
+  pattern?: Maybe<Scalars['String']['output']>;
+  simpleConfig?: Maybe<InputValidationSimpleConfig>;
+};
+
+export type InputValidationSimpleConfig = {
+  allowed?: Maybe<InputValidationAllowed>;
+  exactLength?: Maybe<Scalars['Float']['output']>;
+};
+
 export type MessageActivityInput = ActivityInput & {
   message?: Maybe<ActivityMessage>;
   type: ActivityInputType;
@@ -332,6 +440,11 @@ export type MessageFormat =
   | 'HTML'
   | 'MARKDOWN'
   | 'SLATE';
+
+export type MultipleSelectConfig = {
+  exclusive_option?: Maybe<ExclusiveOptionConfig>;
+  range?: Maybe<ChoiceRangeConfig>;
+};
 
 export type Mutation = {
   completeActivity: CompleteActivityPayload;
@@ -354,9 +467,18 @@ export type MutationUpdateActivityArgs = {
   input: UpdateActivityInput;
 };
 
+export type NumberConfig = {
+  range?: Maybe<RangeConfig>;
+};
+
 export type PaginationInput = {
   count?: Scalars['Float']['input'];
   offset?: Scalars['Float']['input'];
+};
+
+export type PhoneConfig = {
+  available_countries?: Maybe<Array<Scalars['String']['output']>>;
+  default_country?: Maybe<Scalars['String']['output']>;
 };
 
 export type Query = {
@@ -387,27 +509,67 @@ export type QueryPathwayActivitiesArgs = {
 };
 
 export type Question = {
-  definition_id?: Maybe<Scalars['String']['output']>;
+  config?: Maybe<QuestionConfig>;
+  data_point_value_type?: Maybe<DataPointValueType>;
+  definition_id: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  is_required: Scalars['Boolean']['output'];
   key: Scalars['String']['output'];
+  metadata?: Maybe<Scalars['String']['output']>;
   options?: Maybe<Array<QuestionOption>>;
-  placeholder?: Maybe<Scalars['String']['output']>;
-  questionType: QuestionType;
-  required?: Maybe<Scalars['Boolean']['output']>;
+  question_type?: Maybe<QuestionType>;
+  rule?: Maybe<Rule>;
   title: Scalars['String']['output'];
-  userQuestionType: UserQuestionType;
+  user_question_type?: Maybe<UserQuestionType>;
+};
+
+export type QuestionConfig = {
+  date_validation?: Maybe<DateConfig>;
+  file_storage?: Maybe<FileStorageQuestionConfig>;
+  input_validation?: Maybe<InputValidationConfig>;
+  mandatory: Scalars['Boolean']['output'];
+  multiple_select?: Maybe<MultipleSelectConfig>;
+  number?: Maybe<NumberConfig>;
+  phone?: Maybe<PhoneConfig>;
+  recode_enabled?: Maybe<Scalars['Boolean']['output']>;
+  slider?: Maybe<SliderConfig>;
+  use_select?: Maybe<Scalars['Boolean']['output']>;
 };
 
 export type QuestionOption = {
   id: Scalars['String']['output'];
   label: Scalars['String']['output'];
-  value: Scalars['String']['output'];
+  value?: Maybe<Scalars['String']['output']>;
+  value_string?: Maybe<Scalars['String']['output']>;
 };
 
 export type QuestionType =
   | 'INPUT'
   | 'MULTIPLE_CHOICE'
   | 'NO_INPUT';
+
+export type RangeConfig = {
+  enabled?: Maybe<Scalars['Boolean']['output']>;
+  max?: Maybe<Scalars['Float']['output']>;
+  min?: Maybe<Scalars['Float']['output']>;
+};
+
+export type Rule = {
+  boolean_operator: BooleanOperator;
+  conditions: Array<Condition>;
+  id: Scalars['ID']['output'];
+};
+
+export type SliderConfig = {
+  display_marks: Scalars['Boolean']['output'];
+  is_value_tooltip_on: Scalars['Boolean']['output'];
+  max: Scalars['Float']['output'];
+  max_label: Scalars['String']['output'];
+  min: Scalars['Float']['output'];
+  min_label: Scalars['String']['output'];
+  show_min_max_values: Scalars['Boolean']['output'];
+  step_value: Scalars['Float']['output'];
+};
 
 export type SortingInput = {
   direction?: Scalars['String']['input'];

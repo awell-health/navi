@@ -1,32 +1,4 @@
 /**
- * Form Activity Data Structure
- */
-export interface FormActivityData {
-  id: string;
-  title: string;
-  questions: QuestionField[];
-}
-
-/**
- * Question Field Configuration
- */
-export interface QuestionField {
-  id: string;
-  key: string;
-  title: string;
-  questionType: string;
-  userQuestionType: string;
-  required?: boolean;
-  placeholder?: string;
-  options?: Array<{
-    id: string;
-    label: string;
-    value: string;
-  }>;
-  // Additional question config will be added as we implement question types
-}
-
-/**
  * Internal Field Events (used within navi-activities only)
  * These aggregate up to activity events
  */

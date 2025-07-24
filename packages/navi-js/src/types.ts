@@ -1,5 +1,14 @@
 import type { BrandingConfig } from "@awell-health/navi-core";
 
+export interface NaviLoadOptions {
+  /** Force local development mode (localhost:3000) instead of CDN */
+  local?: boolean;
+  /** Override the CDN origin for loading navi.js script */
+  origin?: string;
+  /** Override the embed origin for iframe destinations */
+  embedOrigin?: string;
+}
+
 export interface NaviInstance {
   renderActivities: (
     containerId: string,
@@ -32,7 +41,7 @@ export interface NaviEmbedInstance {
 }
 
 export interface NaviConstructor {
-  (publishableKey: string): NaviInstance;
+  (publishableKey: string, options?: { embedOrigin?: string }): NaviInstance;
   version?: string;
   _registerWrapper?: (details: {
     name: string;
