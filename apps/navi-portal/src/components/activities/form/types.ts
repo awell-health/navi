@@ -1,14 +1,15 @@
 import type { Question, UserQuestionType } from "@/lib/awell-client/generated/graphql";
+import type { ControllerRenderProps, FieldError } from "react-hook-form";
 
 export interface BaseQuestionProps {
   question: Question;
-  value?: unknown;
-  onChange?: (value: unknown) => void;
-  onFocus?: () => void;
-  onBlur?: () => void;
   disabled?: boolean;
-  error?: string;
+  error?: FieldError;
   className?: string;
+}
+
+export interface ControlledQuestionProps extends BaseQuestionProps {
+  field: ControllerRenderProps<any, string>;
 }
 
 export interface QuestionFieldEvent {

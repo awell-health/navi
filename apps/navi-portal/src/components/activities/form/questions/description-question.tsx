@@ -2,31 +2,18 @@ import React from "react";
 import { BaseQuestionProps } from "../types";
 import { cn } from "@/lib/utils";
 
-export interface DescriptionQuestionProps extends Omit<BaseQuestionProps, "value" | "onChange"> {}
+export interface DescriptionQuestionProps extends BaseQuestionProps {}
 
 /**
  * DescriptionQuestion component - displays read-only HTML content
  * Used for showing information or instructions without collecting data
+ * This component doesn't participate in form validation as it's read-only
  */
 export function DescriptionQuestion({
   question,
-  onFocus,
-  onBlur,
   disabled = false,
   className = "",
 }: DescriptionQuestionProps) {
-  const handleFocus = () => {
-    if (!disabled && onFocus) {
-      onFocus();
-    }
-  };
-
-  const handleBlur = () => {
-    if (!disabled && onBlur) {
-      onBlur();
-    }
-  };
-
   return (
     <div 
       className={cn(
@@ -35,8 +22,6 @@ export function DescriptionQuestion({
         disabled && "opacity-50",
         className
       )}
-      onFocus={handleFocus}
-      onBlur={handleBlur}
       tabIndex={disabled ? -1 : 0}
       role="region"
       aria-label={`Description: ${question.title}`}

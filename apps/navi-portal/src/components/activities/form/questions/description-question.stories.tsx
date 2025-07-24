@@ -53,8 +53,6 @@ const baseQuestion: Question = {
 export const Default: Story = {
   args: {
     question: baseQuestion,
-    onFocus: () => console.log("Description focused"),
-    onBlur: () => console.log("Description blurred"),
   },
 };
 
