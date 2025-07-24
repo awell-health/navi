@@ -7,7 +7,7 @@ import { generateThemeCSS } from "../src/lib/branding/theme/generator";
 if (typeof document !== "undefined") {
   const fontLink = document.createElement("link");
   fontLink.href =
-    "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Source+Sans+Pro:wght@400;600;700&family=Merriweather:wght@400;700&display=swap";
+    "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Source+Sans+Pro:wght@400;600;700&family=Merriweather:wght@400;700&display=swap&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap";
   fontLink.rel = "stylesheet";
   fontLink.id = "storybook-fonts";
 
@@ -37,6 +37,14 @@ const healthcareThemes = {
     onSuccess: "#FFFFFF",
     fontFamilyBody: '"Inter", system-ui, sans-serif',
     fontFamilyHeading: '"Poppins", system-ui, sans-serif',
+    fontSizeXs: "10px",
+    fontSizeSm: "12px",
+    fontSizeBase: "14px",
+    fontSizeLg: "16px",
+    fontSizeXl: "18px",
+    fontSize2xl: "20px",
+    fontSize3xl: "24px",
+    fontSize4xl: "32px",
     radiusSm: "0px",
     radiusMd: "6px",
     radiusLg: "12px",
@@ -53,7 +61,8 @@ const healthcareThemes = {
     onError: "#FFFFFF",
     success: "#10B981",
     onSuccess: "#FFFFFF",
-    fontFamilyBody: '"JetBrains Mono", "SF Mono", "Monaco", monospace',
+    fontFamilyMono: '"JetBrains Mono", "SF Mono", "Monaco", monospace',
+    fontFamilyBody: '"IBM Plex Sans", system-ui, sans-serif',
     fontFamilyHeading: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
     radiusSm: "0px",
     radiusMd: "0px",

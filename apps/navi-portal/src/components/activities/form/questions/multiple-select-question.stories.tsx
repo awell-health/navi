@@ -15,7 +15,7 @@ const meta: Meta<typeof MultipleSelectQuestion> = {
     docs: {
       description: {
         component:
-          "Checkbox selection for multiple choice questions using react-hook-form",
+          "Multiple select question component that renders as checkboxes by default, or as a responsive Select/Drawer when `question.config.use_select` is true. Uses react-hook-form Controller pattern and includes validation utilities.",
       },
     },
   },
@@ -28,46 +28,65 @@ type Story = StoryObj<typeof MultipleSelectQuestion>;
 const baseQuestion: Question = {
   id: "test-multiple-select",
   key: "testMultipleSelect",
-  title: "Multiple select (string)",
-  definition_id: "multipleSelectString",
-  question_type: "MULTIPLE_CHOICE",
-  user_question_type: "MULTIPLE_SELECT",
+  title: "Which communication methods do you prefer?",
+  definition_id: "communicationMethods",
+  question_type: "INPUT",
+  user_question_type: "MULTIPLE_CHOICE",
   data_point_value_type: "STRINGS_ARRAY",
   is_required: false,
   options: [
     {
-      id: "v3XJP3ZgMyc9",
-      label: "Option 1",
-      value: "some option",
+      id: "option-1",
+      label: "Email",
+      value: "email",
       __typename: "QuestionOption",
     },
     {
-      id: "JYHA_c6UFLJX",
-      label: "Option 2",
-      value: "3232",
+      id: "option-2",
+      label: "Phone",
+      value: "phone",
       __typename: "QuestionOption",
     },
     {
-      id: "xmXV065kgDEk",
-      label: "Option 3",
-      value: "another option",
+      id: "option-3",
+      label: "SMS/Text",
+      value: "sms",
       __typename: "QuestionOption",
     },
     {
-      id: "eCrmxno3fpcy",
-      label: "Option 4",
-      value: "option 4",
+      id: "option-4",
+      label: "Video Call",
+      value: "video",
+      __typename: "QuestionOption",
+    },
+    {
+      id: "option-5",
+      label: "In-Person",
+      value: "in_person",
       __typename: "QuestionOption",
     },
   ],
   config: {
     recode_enabled: false,
-    use_select: false,
+    use_select: null,
     mandatory: false,
     slider: null,
     phone: null,
     number: null,
-    multiple_select: null,
+    multiple_select: {
+      range: {
+        enabled: false,
+        min: null,
+        max: null,
+        __typename: "Range",
+      },
+      exclusive_option: {
+        enabled: false,
+        option_id: null,
+        __typename: "ExclusiveOption",
+      },
+      __typename: "MultipleSelectConfig",
+    },
     date_validation: null,
     file_storage: null,
     input_validation: null,
@@ -75,32 +94,6 @@ const baseQuestion: Question = {
   },
   rule: null,
   __typename: "Question",
-};
-
-const requiredQuestion: Question = {
-  ...baseQuestion,
-  title: "Multiple select (required)",
-  is_required: true,
-};
-
-const rangeQuestion: Question = {
-  ...baseQuestion,
-  title: "Multiple select (min 2, max 3 options)",
-  is_required: true,
-  config: {
-    ...baseQuestion.config,
-    mandatory: false,
-    multiple_select: {
-      range: {
-        enabled: true,
-        min: 2,
-        max: 3,
-        __typename: "ChoiceRangeConfig",
-      },
-      exclusive_option: null,
-      __typename: "MultipleSelectConfig",
-    },
-  },
 };
 
 export const Default: Story = {
@@ -117,91 +110,23 @@ export const Default: Story = {
   ),
 };
 
-export const Required: Story = {
-  render: () => (
-    <FormFixture
-      question={requiredQuestion}
-      validationRules={createMultipleSelectValidationRules(requiredQuestion)}
-    >
-      {({ field, fieldState }) => (
-        <MultipleSelectQuestion
-          question={requiredQuestion}
-          field={field}
-          fieldState={fieldState}
-        />
-      )}
-    </FormFixture>
-  ),
-};
-
-export const WithRangeValidation: Story = {
-  render: () => (
-    <FormFixture
-      question={rangeQuestion}
-      validationRules={createMultipleSelectValidationRules(rangeQuestion)}
-    >
-      {({ field, fieldState }) => (
-        <MultipleSelectQuestion
-          question={rangeQuestion}
-          field={field}
-          fieldState={fieldState}
-        />
-      )}
-    </FormFixture>
-  ),
-};
-
-export const WithExclusiveOption: Story = {
+export const AsResponsiveSelect: Story = {
   render: () => {
-    const exclusiveQuestion: Question = {
+    const question = {
       ...baseQuestion,
-      title: 'Select your preferences ("None of the above" is exclusive)',
-      options: [
-        {
-          id: "option-1",
-          label: "Option 1",
-          value: "option_1",
-          __typename: "QuestionOption",
-        },
-        {
-          id: "option-2",
-          label: "Option 2",
-          value: "option_2",
-          __typename: "QuestionOption",
-        },
-        {
-          id: "option-3",
-          label: "Option 3",
-          value: "option_3",
-          __typename: "QuestionOption",
-        },
-        {
-          id: "none-option",
-          label: "None of the above",
-          value: "none",
-          __typename: "QuestionOption",
-        },
-      ],
+      title: "Select your preferred communication methods",
       config: {
         ...baseQuestion.config,
+        use_select: true, // This triggers responsive Select/Drawer instead of checkboxes
         mandatory: false,
-        multiple_select: {
-          range: null,
-          exclusive_option: {
-            enabled: true,
-            option_id: "none-option",
-            __typename: "ExclusiveOptionConfig",
-          },
-          __typename: "MultipleSelectConfig",
-        },
       },
     };
 
     return (
-      <FormFixture question={exclusiveQuestion}>
+      <FormFixture question={question}>
         {({ field, fieldState }) => (
           <MultipleSelectQuestion
-            question={exclusiveQuestion}
+            question={question}
             field={field}
             fieldState={fieldState}
           />
@@ -211,45 +136,218 @@ export const WithExclusiveOption: Story = {
   },
 };
 
-export const NumberValues: Story = {
+export const Required: Story = {
   render: () => {
-    const numberQuestion: Question = {
+    const question = {
       ...baseQuestion,
-      title: "Multiple select (number)",
-      data_point_value_type: "NUMBERS_ARRAY",
-      options: [
-        {
-          id: "NRhfKVrRJ1qQ",
-          label: "Option 1",
-          value: "0",
-          __typename: "QuestionOption",
-        },
-        {
-          id: "kbdbxrZP9-cY",
-          label: "Option 2",
-          value: "1",
-          __typename: "QuestionOption",
-        },
-        {
-          id: "7EFDVDtvyZ6h",
-          label: "Option 3",
-          value: "2",
-          __typename: "QuestionOption",
-        },
-        {
-          id: "CKqrKwhPbObE",
-          label: "Option 4",
-          value: "3",
-          __typename: "QuestionOption",
-        },
-      ],
+      title: "Which communication methods do you prefer? (required)",
+      is_required: true,
     };
 
     return (
-      <FormFixture question={numberQuestion}>
+      <FormFixture
+        question={question}
+        validationRules={createMultipleSelectValidationRules(question)}
+      >
         {({ field, fieldState }) => (
           <MultipleSelectQuestion
-            question={numberQuestion}
+            question={question}
+            field={field}
+            fieldState={fieldState}
+          />
+        )}
+      </FormFixture>
+    );
+  },
+};
+
+export const RequiredAsResponsiveSelect: Story = {
+  render: () => {
+    const question = {
+      ...baseQuestion,
+      title: "Select your preferred communication methods (required)",
+      is_required: true,
+      config: {
+        ...baseQuestion.config,
+        use_select: true,
+        mandatory: false,
+      },
+    };
+
+    return (
+      <FormFixture
+        question={question}
+        validationRules={createMultipleSelectValidationRules(question)}
+      >
+        {({ field, fieldState }) => (
+          <MultipleSelectQuestion
+            question={question}
+            field={field}
+            fieldState={fieldState}
+          />
+        )}
+      </FormFixture>
+    );
+  },
+};
+
+export const WithRangeValidation: Story = {
+  render: () => {
+    const question = {
+      ...baseQuestion,
+      title: "Choose 2-3 communication methods",
+      is_required: true,
+      config: {
+        ...baseQuestion.config,
+        multiple_select: {
+          ...baseQuestion.config?.multiple_select,
+          range: {
+            enabled: true,
+            min: 2,
+            max: 3,
+            __typename: "Range" as const,
+          },
+        },
+      },
+    };
+
+    return (
+      <FormFixture
+        question={question}
+        validationRules={createMultipleSelectValidationRules(question)}
+      >
+        {({ field, fieldState }) => (
+          <MultipleSelectQuestion
+            question={question}
+            field={field}
+            fieldState={fieldState}
+          />
+        )}
+      </FormFixture>
+    );
+  },
+};
+
+export const WithRangeValidationAsSelect: Story = {
+  render: () => {
+    const question = {
+      ...baseQuestion,
+      title: "Select 2-3 communication methods",
+      is_required: true,
+      config: {
+        ...baseQuestion.config,
+        use_select: true,
+        mandatory: false,
+        multiple_select: {
+          ...baseQuestion.config?.multiple_select,
+          range: {
+            enabled: true,
+            min: 2,
+            max: 3,
+            __typename: "Range" as const,
+          },
+        },
+      },
+    };
+
+    return (
+      <FormFixture
+        question={question}
+        validationRules={createMultipleSelectValidationRules(question)}
+      >
+        {({ field, fieldState }) => (
+          <MultipleSelectQuestion
+            question={question}
+            field={field}
+            fieldState={fieldState}
+          />
+        )}
+      </FormFixture>
+    );
+  },
+};
+
+export const WithExclusiveOption: Story = {
+  render: () => {
+    const question = {
+      ...baseQuestion,
+      title: "How would you like to be contacted?",
+      options: [
+        ...baseQuestion.options!,
+        {
+          id: "option-none",
+          label: "None of the above",
+          value: "none",
+          __typename: "QuestionOption" as const,
+        },
+      ],
+      config: {
+        ...baseQuestion.config,
+        multiple_select: {
+          ...baseQuestion.config?.multiple_select,
+          exclusive_option: {
+            enabled: true,
+            option_id: "option-none",
+            __typename: "ExclusiveOption" as const,
+          },
+        },
+      },
+    };
+
+    return (
+      <FormFixture
+        question={question}
+        validationRules={createMultipleSelectValidationRules(question)}
+      >
+        {({ field, fieldState }) => (
+          <MultipleSelectQuestion
+            question={question}
+            field={field}
+            fieldState={fieldState}
+          />
+        )}
+      </FormFixture>
+    );
+  },
+};
+
+export const WithExclusiveOptionAsSelect: Story = {
+  render: () => {
+    const question = {
+      ...baseQuestion,
+      title: "Select how you would like to be contacted",
+      options: [
+        ...baseQuestion.options!,
+        {
+          id: "option-none",
+          label: "None of the above",
+          value: "none",
+          __typename: "QuestionOption" as const,
+        },
+      ],
+      config: {
+        ...baseQuestion.config,
+        use_select: true,
+        mandatory: false,
+        multiple_select: {
+          ...baseQuestion.config?.multiple_select,
+          exclusive_option: {
+            enabled: true,
+            option_id: "option-none",
+            __typename: "ExclusiveOption" as const,
+          },
+        },
+      },
+    };
+
+    return (
+      <FormFixture
+        question={question}
+        validationRules={createMultipleSelectValidationRules(question)}
+      >
+        {({ field, fieldState }) => (
+          <MultipleSelectQuestion
+            question={question}
             field={field}
             fieldState={fieldState}
           />
@@ -260,16 +358,62 @@ export const NumberValues: Story = {
 };
 
 export const Disabled: Story = {
-  render: () => (
-    <FormFixture question={baseQuestion}>
-      {({ field, fieldState }) => (
-        <MultipleSelectQuestion
-          question={baseQuestion}
-          field={field}
-          fieldState={fieldState}
-          disabled
-        />
-      )}
-    </FormFixture>
-  ),
+  render: () => {
+    const question = {
+      ...baseQuestion,
+      title: "Communication methods (readonly)",
+    };
+
+    return (
+      <FormFixture question={question}>
+        {({ field, fieldState }) => {
+          // Set some default values for disabled state
+          if (!field.value || field.value.length === 0) {
+            field.onChange(["email", "phone"]);
+          }
+          return (
+            <MultipleSelectQuestion
+              question={question}
+              field={field}
+              fieldState={fieldState}
+              disabled
+            />
+          );
+        }}
+      </FormFixture>
+    );
+  },
+};
+
+export const DisabledAsSelect: Story = {
+  render: () => {
+    const question = {
+      ...baseQuestion,
+      title: "Communication methods (readonly)",
+      config: {
+        ...baseQuestion.config,
+        use_select: true,
+        mandatory: false,
+      },
+    };
+
+    return (
+      <FormFixture question={question}>
+        {({ field, fieldState }) => {
+          // Set some default values for disabled state
+          if (!field.value || field.value.length === 0) {
+            field.onChange(["email", "phone"]);
+          }
+          return (
+            <MultipleSelectQuestion
+              question={question}
+              field={field}
+              fieldState={fieldState}
+              disabled
+            />
+          );
+        }}
+      </FormFixture>
+    );
+  },
 };

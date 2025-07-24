@@ -15,7 +15,7 @@ const meta: Meta<typeof MultipleChoiceQuestion> = {
     docs: {
       description: {
         component:
-          "Radio button selection for single choice questions using react-hook-form",
+          "Multiple choice question component that renders as radio buttons by default, or as a Select dropdown when `question.config.use_select` is true. Uses react-hook-form Controller pattern and includes validation utilities.",
       },
     },
   },
@@ -28,35 +28,41 @@ type Story = StoryObj<typeof MultipleChoiceQuestion>;
 const baseQuestion: Question = {
   id: "test-multiple-choice",
   key: "testMultipleChoice",
-  title: "Single select (string)",
-  definition_id: "singleSelectString",
-  question_type: "MULTIPLE_CHOICE",
+  title: "What is your preferred contact method?",
+  definition_id: "contactMethod",
+  question_type: "INPUT",
   user_question_type: "MULTIPLE_CHOICE",
   data_point_value_type: "STRING",
   is_required: false,
   options: [
     {
-      id: "u9qpd6kPr83f",
-      label: "Option 1",
-      value: "option_1",
+      id: "option-1",
+      label: "Email",
+      value: "email",
       __typename: "QuestionOption",
     },
     {
-      id: "yRy_LwI1refh",
-      label: "Option 2",
-      value: "option_2",
+      id: "option-2",
+      label: "Phone",
+      value: "phone",
       __typename: "QuestionOption",
     },
     {
-      id: "OOCTmiXXvjpN",
-      label: "Option 3",
-      value: "option_3",
+      id: "option-3",
+      label: "SMS/Text",
+      value: "sms",
+      __typename: "QuestionOption",
+    },
+    {
+      id: "option-4",
+      label: "Mail",
+      value: "mail",
       __typename: "QuestionOption",
     },
   ],
   config: {
     recode_enabled: false,
-    use_select: false,
+    use_select: null,
     mandatory: false,
     slider: null,
     phone: null,
@@ -69,12 +75,6 @@ const baseQuestion: Question = {
   },
   rule: null,
   __typename: "Question",
-};
-
-const requiredQuestion: Question = {
-  ...baseQuestion,
-  title: "Single select (required)",
-  is_required: true,
 };
 
 export const Default: Story = {
@@ -91,56 +91,214 @@ export const Default: Story = {
   ),
 };
 
+export const AsSelectDropdown: Story = {
+  render: () => {
+    const question = {
+      ...baseQuestion,
+      title: "Select your preferred contact method",
+      config: {
+        ...baseQuestion.config,
+        use_select: true, // This triggers Select dropdown instead of radio buttons
+        mandatory: false,
+      },
+    };
+
+    return (
+      <FormFixture question={question}>
+        {({ field, fieldState }) => (
+          <MultipleChoiceQuestion
+            question={question}
+            field={field}
+            fieldState={fieldState}
+          />
+        )}
+      </FormFixture>
+    );
+  },
+};
+
 export const Required: Story = {
-  render: () => (
-    <FormFixture
-      question={requiredQuestion}
-      validationRules={createMultipleChoiceValidationRules(requiredQuestion)}
-    >
-      {({ field, fieldState }) => (
-        <MultipleChoiceQuestion
-          question={requiredQuestion}
-          field={field}
-          fieldState={fieldState}
-        />
-      )}
-    </FormFixture>
-  ),
+  render: () => {
+    const question = {
+      ...baseQuestion,
+      title: "What is your preferred contact method? (required)",
+      is_required: true,
+    };
+
+    return (
+      <FormFixture
+        question={question}
+        validationRules={createMultipleChoiceValidationRules(question)}
+      >
+        {({ field, fieldState }) => (
+          <MultipleChoiceQuestion
+            question={question}
+            field={field}
+            fieldState={fieldState}
+          />
+        )}
+      </FormFixture>
+    );
+  },
+};
+
+export const RequiredAsSelect: Story = {
+  render: () => {
+    const question = {
+      ...baseQuestion,
+      title: "Select your preferred contact method (required)",
+      is_required: true,
+      config: {
+        ...baseQuestion.config,
+        use_select: true,
+        mandatory: false,
+      },
+    };
+
+    return (
+      <FormFixture
+        question={question}
+        validationRules={createMultipleChoiceValidationRules(question)}
+      >
+        {({ field, fieldState }) => (
+          <MultipleChoiceQuestion
+            question={question}
+            field={field}
+            fieldState={fieldState}
+          />
+        )}
+      </FormFixture>
+    );
+  },
+};
+
+export const WithValidation: Story = {
+  render: () => {
+    const question = {
+      ...baseQuestion,
+      title: "Choose your communication preference (required)",
+      is_required: true,
+    };
+
+    return (
+      <FormFixture
+        question={question}
+        validationRules={createMultipleChoiceValidationRules(question)}
+      >
+        {({ field, fieldState }) => (
+          <MultipleChoiceQuestion
+            question={question}
+            field={field}
+            fieldState={fieldState}
+          />
+        )}
+      </FormFixture>
+    );
+  },
 };
 
 export const NumberValues: Story = {
   render: () => {
-    const numberQuestion: Question = {
+    const question = {
       ...baseQuestion,
-      title: "Single select (number)",
-      data_point_value_type: "NUMBER",
+      title: "Rate your experience (1-5)",
       options: [
         {
-          id: "zOTvuy0usHkb",
-          label: "Option 1",
-          value: "0",
-          __typename: "QuestionOption",
-        },
-        {
-          id: "q6jRNHKATieI",
-          label: "Option 2",
+          id: "1",
+          label: "1 - Very Poor",
           value: "1",
-          __typename: "QuestionOption",
+          __typename: "QuestionOption" as const,
         },
         {
-          id: "vvMBtwpHl0o5",
-          label: "Option 3",
+          id: "2",
+          label: "2 - Poor",
           value: "2",
-          __typename: "QuestionOption",
+          __typename: "QuestionOption" as const,
+        },
+        {
+          id: "3",
+          label: "3 - Average",
+          value: "3",
+          __typename: "QuestionOption" as const,
+        },
+        {
+          id: "4",
+          label: "4 - Good",
+          value: "4",
+          __typename: "QuestionOption" as const,
+        },
+        {
+          id: "5",
+          label: "5 - Excellent",
+          value: "5",
+          __typename: "QuestionOption" as const,
         },
       ],
     };
 
     return (
-      <FormFixture question={numberQuestion}>
+      <FormFixture question={question}>
         {({ field, fieldState }) => (
           <MultipleChoiceQuestion
-            question={numberQuestion}
+            question={question}
+            field={field}
+            fieldState={fieldState}
+          />
+        )}
+      </FormFixture>
+    );
+  },
+};
+
+export const NumberValuesAsSelect: Story = {
+  render: () => {
+    const question = {
+      ...baseQuestion,
+      title: "Rate your experience (1-5)",
+      options: [
+        {
+          id: "1",
+          label: "1 - Very Poor",
+          value: "1",
+          __typename: "QuestionOption" as const,
+        },
+        {
+          id: "2",
+          label: "2 - Poor",
+          value: "2",
+          __typename: "QuestionOption" as const,
+        },
+        {
+          id: "3",
+          label: "3 - Average",
+          value: "3",
+          __typename: "QuestionOption" as const,
+        },
+        {
+          id: "4",
+          label: "4 - Good",
+          value: "4",
+          __typename: "QuestionOption" as const,
+        },
+        {
+          id: "5",
+          label: "5 - Excellent",
+          value: "5",
+          __typename: "QuestionOption" as const,
+        },
+      ],
+      config: {
+        ...baseQuestion.config,
+        use_select: true,
+        mandatory: false,
+      },
+    };
+
+    return (
+      <FormFixture question={question}>
+        {({ field, fieldState }) => (
+          <MultipleChoiceQuestion
+            question={question}
             field={field}
             fieldState={fieldState}
           />
@@ -151,16 +309,62 @@ export const NumberValues: Story = {
 };
 
 export const Disabled: Story = {
-  render: () => (
-    <FormFixture question={baseQuestion}>
-      {({ field, fieldState }) => (
-        <MultipleChoiceQuestion
-          question={baseQuestion}
-          field={field}
-          fieldState={fieldState}
-          disabled
-        />
-      )}
-    </FormFixture>
-  ),
+  render: () => {
+    const question = {
+      ...baseQuestion,
+      title: "Contact method (readonly)",
+    };
+
+    return (
+      <FormFixture question={question}>
+        {({ field, fieldState }) => {
+          // Set a default value for disabled state
+          if (!field.value) {
+            field.onChange("email");
+          }
+          return (
+            <MultipleChoiceQuestion
+              question={question}
+              field={field}
+              fieldState={fieldState}
+              disabled
+            />
+          );
+        }}
+      </FormFixture>
+    );
+  },
+};
+
+export const DisabledAsSelect: Story = {
+  render: () => {
+    const question = {
+      ...baseQuestion,
+      title: "Contact method (readonly)",
+      config: {
+        ...baseQuestion.config,
+        use_select: true,
+        mandatory: false,
+      },
+    };
+
+    return (
+      <FormFixture question={question}>
+        {({ field, fieldState }) => {
+          // Set a default value for disabled state
+          if (!field.value) {
+            field.onChange("email");
+          }
+          return (
+            <MultipleChoiceQuestion
+              question={question}
+              field={field}
+              fieldState={fieldState}
+              disabled
+            />
+          );
+        }}
+      </FormFixture>
+    );
+  },
 };
