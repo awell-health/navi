@@ -7,3 +7,7 @@ export { Button } from "./button";
 export { Progress } from "./progress";
 export { Typography } from "./typography";
 export { Stack, HStack } from "./stack";
+export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
+export { Slider } from "./slider";
+export { Popover, PopoverContent, PopoverTrigger } from "./popover";
+export { Calendar } from "./calendar";
