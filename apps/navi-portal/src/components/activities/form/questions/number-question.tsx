@@ -34,8 +34,8 @@ export function NumberQuestion({
         {...field}
         id={field.name}
         type="number"
-        min={range?.enabled ? range.min : undefined}
-        max={range?.enabled ? range.max : undefined}
+        min={range?.enabled ? (range.min ?? undefined) : undefined}
+        max={range?.enabled ? (range.max ?? undefined) : undefined}
         step="any"
         disabled={disabled}
         className={cn(

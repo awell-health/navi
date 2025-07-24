@@ -53,7 +53,7 @@ export function MultipleSelectQuestion({
         aria-invalid={!!hasError}
       >
         {question.options?.map((option) => {
-          const isChecked = currentValues.includes(option.value);
+          const isChecked = currentValues.includes(option.value || "");
           
           return (
             <div key={option.id} className="flex items-center space-x-2">
@@ -61,7 +61,7 @@ export function MultipleSelectQuestion({
                 id={`${field.name}-${option.id}`}
                 checked={isChecked}
                 onCheckedChange={(checked) => 
-                  handleValueChange(option.value, !!checked)
+                  handleValueChange(option.value || "", !!checked)
                 }
                 disabled={disabled}
                 className={cn(

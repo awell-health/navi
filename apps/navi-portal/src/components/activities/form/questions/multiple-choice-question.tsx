@@ -43,7 +43,7 @@ export function MultipleChoiceQuestion({
         {question.options?.map((option) => (
           <div key={option.id} className="flex items-center space-x-2">
             <RadioGroupItem
-              value={option.value}
+              value={option.value || ""}
               id={`${field.name}-${option.id}`}
               className={cn(
                 "font-[var(--font-family-body,inherit)]",
