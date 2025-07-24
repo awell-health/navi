@@ -52,6 +52,7 @@ export function NumberQuestion({
         onChange={(e) => {
           const value = e.target.value;
           // Convert to number if not empty, otherwise pass empty string
+          // This supports negative numbers, decimals, etc.
           field.onChange(value === "" ? "" : Number(value));
         }}
         value={field.value ?? ""}

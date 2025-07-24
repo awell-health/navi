@@ -100,6 +100,29 @@ export const WithRange: Story = {
   render: () => <FormWrapper question={rangeQuestion} />,
 };
 
+export const WithNegativeRange: Story = {
+  render: () => (
+    <FormWrapper
+      question={{
+        ...baseQuestion,
+        title: "Temperature change (-20 to 50°C)",
+        config: {
+          ...baseQuestion.config!,
+          number: {
+            range: {
+              enabled: true,
+              min: -20,
+              max: 50,
+              __typename: "RangeConfig"
+            },
+            __typename: "NumberConfig"
+          }
+        }
+      }}
+    />
+  ),
+};
+
 export const Required: Story = {
   render: () => (
     <FormWrapper
