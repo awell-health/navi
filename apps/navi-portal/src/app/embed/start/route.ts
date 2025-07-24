@@ -71,6 +71,10 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.warn("⚠️ Branding fetch failed, using defaults:", error);
   }
+  const suppliedBranding = request.nextUrl.searchParams.get("branding");
+  if (suppliedBranding) {
+    branding = { ...branding, ...JSON.parse(suppliedBranding) };
+  }
 
   // Generate JWT for API authentication
   const jwt = await createJWT(tokenData);
@@ -136,7 +140,7 @@ export async function GET(request: NextRequest) {
     }
     
     .activity-container {
-      background: white;
+      background: var(--background, #FFF);
       border-radius: 12px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
       min-height: 400px;
@@ -156,7 +160,7 @@ export async function GET(request: NextRequest) {
       align-items: center;
       justify-content: center;
       min-height: 200px;
-      color: #6b7280;
+      color: var(--onSurface, #6b7280);
     }
     
     .loading-spinner {
@@ -193,7 +197,7 @@ export async function GET(request: NextRequest) {
     
     .start-button {
       background: var(--primary, #667eea);
-      color: white;
+      color: var(--onPrimary, #FFF);
       border: none;
       padding: 0.75rem 2rem;
       border-radius: 8px;
@@ -217,7 +221,7 @@ export async function GET(request: NextRequest) {
       border: 1px solid #fecaca;
       border-radius: 8px;
       padding: 1rem;
-      color: #dc2626;
+      color: var(--error, #dc2626);
       text-align: center;
     }
     

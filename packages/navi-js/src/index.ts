@@ -1,15 +1,17 @@
-import { NaviConstructor } from './types';
-import { loadScript, initNavi, LoadNavi } from './shared';
+import { NaviConstructor, NaviLoadOptions } from "./types";
+import { loadScript, initNavi, LoadNavi } from "./shared";
 
 let naviPromise: Promise<NaviConstructor | null> | null;
 let loadCalled = false;
 
-const getNaviPromise = (): Promise<NaviConstructor | null> => {
+const getNaviPromise = (
+  options?: NaviLoadOptions
+): Promise<NaviConstructor | null> => {
   if (naviPromise) {
     return naviPromise;
   }
 
-  naviPromise = loadScript().catch((error) => {
+  naviPromise = loadScript(options).catch((error) => {
     // clear cache on error
     naviPromise = null;
     return Promise.reject(error);
@@ -27,12 +29,15 @@ Promise.resolve()
     }
   });
 
-export const loadNavi: LoadNavi = (...args) => {
+export const loadNavi: LoadNavi = (publishableKey, options) => {
   loadCalled = true;
   const startTime = Date.now();
 
   // if previous attempts are unsuccessful, will re-load script
-  return getNaviPromise().then((maybeNavi) =>
-    initNavi(maybeNavi, args, startTime)
+  return getNaviPromise(options).then((maybeNavi) =>
+    initNavi(maybeNavi, [publishableKey], startTime, options)
   );
-}; 
+};
+
+// Export types for use in other packages
+export type { NaviLoadOptions } from "./types";

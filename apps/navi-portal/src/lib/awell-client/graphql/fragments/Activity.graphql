@@ -1,6 +1,5 @@
 fragment Activity on Activity {
   id
-  type
   action
   careflow_id
   container_name
@@ -55,7 +54,7 @@ fragment Activity on Activity {
     }
     ... on DynamicFormActivityInput {
       type
-      dynamicForm {
+      dynamic_form {
         key
         title
         trademark
@@ -86,7 +85,6 @@ fragment Activity on Activity {
         key
         label
         value
-        value_type
       }
     }
     ... on ExtensionActivityInput {

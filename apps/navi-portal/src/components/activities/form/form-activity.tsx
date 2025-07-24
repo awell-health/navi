@@ -155,13 +155,13 @@ export function Form({
     const value = formData[question.key] || "";
     const isFocused = focusedField === question.key;
 
-    switch (question.userQuestionType) {
+    switch (question.user_question_type) {
       case "SHORT_TEXT":
         return (
           <Input
             type="text"
             value={value}
-            placeholder={question.placeholder || ""}
+            placeholder={question.config?.input_validation?.helper_text || ""}
             onChange={(e) => handleFieldChange(question.key, e.target.value)}
             onFocus={() => handleFieldFocus(question.key)}
             onBlur={() => handleFieldBlur(question.key)}
@@ -174,7 +174,7 @@ export function Form({
         return (
           <Textarea
             value={value}
-            placeholder={question.placeholder || ""}
+            placeholder={question.config?.input_validation?.helper_text || ""}
             onChange={(e) => handleFieldChange(question.key, e.target.value)}
             onFocus={() => handleFieldFocus(question.key)}
             onBlur={() => handleFieldBlur(question.key)}
@@ -189,7 +189,6 @@ export function Form({
           <Input
             type="number"
             value={value}
-            placeholder={question.placeholder || ""}
             onChange={(e) => handleFieldChange(question.key, e.target.value)}
             onFocus={() => handleFieldFocus(question.key)}
             onBlur={() => handleFieldBlur(question.key)}
@@ -203,7 +202,6 @@ export function Form({
           <Input
             type="email"
             value={value}
-            placeholder={question.placeholder || ""}
             onChange={(e) => handleFieldChange(question.key, e.target.value)}
             onFocus={() => handleFieldFocus(question.key)}
             onBlur={() => handleFieldBlur(question.key)}
@@ -249,7 +247,7 @@ export function Form({
             {question.options?.map((option: QuestionOption) => (
               <div key={option.id} className="flex items-center space-x-2">
                 <RadioGroupItem
-                  value={option.value}
+                  value={option.value || ""}
                   id={`${question.key}-${option.id}`}
                 />
                 <Label htmlFor={`${question.key}-${option.id}`}>
@@ -294,7 +292,7 @@ export function Form({
           <Input
             type="text"
             value={value}
-            placeholder={question.placeholder || ""}
+            placeholder={question.config?.input_validation?.helper_text || ""}
             onChange={(e) => handleFieldChange(question.key, e.target.value)}
             onFocus={() => handleFieldFocus(question.key)}
             onBlur={() => handleFieldBlur(question.key)}
@@ -345,7 +343,7 @@ export function Form({
               className="text-base font-medium text-foreground"
             >
               {question.title}
-              {question.required && (
+              {question.is_required && (
                 <span className="text-destructive ml-1">*</span>
               )}
             </Label>

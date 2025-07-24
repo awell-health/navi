@@ -69,7 +69,7 @@ export function ActivityDrawer({
     }
     onOpenChange(false); // Close the sheet
   };
-
+  console.log("activities", activities);
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <CustomSheetContent side="left" className="p-0">

@@ -37,7 +37,7 @@ export function TypographyH2({
   return (
     <h2
       className={cn(
-        "mt-10 scroll-m-20 text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight transition-colors first:mt-0",
+        "scroll-m-20 text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight transition-colors first:mt-0",
         "navi-h2",
         className
       )}
@@ -57,7 +57,7 @@ export function TypographyH3({
   return (
     <h3
       className={cn(
-        "mt-8 scroll-m-20 text-lg md:text-xl lg:text-2xl font-semibold tracking-tight",
+        "scroll-m-20 text-lg md:text-xl lg:text-2xl font-semibold tracking-tight",
         "navi-h3",
         className
       )}
@@ -215,12 +215,8 @@ export function TypographyLead({
   ...props
 }: TypographyProps & React.ComponentProps<"p">) {
   return (
-    <p 
-      className={cn(
-        "text-muted-foreground text-xl",
-        "navi-lead",
-        className
-      )}
+    <p
+      className={cn("text-muted-foreground text-xl", "navi-lead", className)}
       {...props}
     >
       {children}
@@ -235,12 +231,8 @@ export function TypographyLarge({
   ...props
 }: TypographyProps & React.ComponentProps<"div">) {
   return (
-    <div 
-      className={cn(
-        "text-lg font-semibold",
-        "navi-large",
-        className
-      )}
+    <div
+      className={cn("text-lg font-semibold", "navi-large", className)}
       {...props}
     >
       {children}
@@ -275,12 +267,8 @@ export function TypographyMuted({
   ...props
 }: TypographyProps & React.ComponentProps<"p">) {
   return (
-    <p 
-      className={cn(
-        "text-muted-foreground text-sm",
-        "navi-muted",
-        className
-      )}
+    <p
+      className={cn("text-muted-foreground text-sm", "navi-muted", className)}
       {...props}
     >
       {children}

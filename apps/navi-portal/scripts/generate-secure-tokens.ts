@@ -18,7 +18,7 @@ async function generateSecureTokens(environment: TokenEnvironment = "test") {
     // Sunrise Health - Bright, friendly healthcare
     const sunrisePayload: SessionTokenData = {
       patientId: "Eh4UQbKZKBk6hKd0M7wKk",
-      careflowId: "GeDg7fJmddZi",
+      careflowId: "Tjsko1X8exEh",
       orgId: "sunrise-health",
       tenantId: "_v0nvLX5zCNd",
       environment: "development",
@@ -38,7 +38,7 @@ async function generateSecureTokens(environment: TokenEnvironment = "test") {
     // TechCorp - Dark, professional tech
     const techCorpPayload: SessionTokenData = {
       patientId: "Eh4UQbKZKBk6hKd0M7wKk",
-      careflowId: "NX9Hw12TBclt",
+      careflowId: "Tjsko1X8exEh",
       orgId: "techcorp",
       tenantId: "_v0nvLX5zCNd",
       environment: "development",
@@ -58,7 +58,7 @@ async function generateSecureTokens(environment: TokenEnvironment = "test") {
     // Default/ baker-pro-local org
     const defaultPayload: SessionTokenData = {
       patientId: "TEYwU35Vr08pZx2IghLjR",
-      careflowId: "Nsfa0TYNqgDG",
+      careflowId: "Tjsko1X8exEh",
       orgId: "baker-pro-local",
       tenantId: "h1TcvWEcVCU7",
       environment: "development",

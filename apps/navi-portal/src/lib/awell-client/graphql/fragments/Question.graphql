@@ -1,0 +1,88 @@
+fragment Question on Question {
+  id
+  key
+  title
+  definition_id
+  question_type
+  user_question_type
+  data_point_value_type
+  is_required
+  options {
+    id
+    label
+    value
+  }
+  config {
+    recode_enabled
+    use_select
+    mandatory
+    slider {
+      min
+      max
+      step_value
+      min_label
+      max_label
+      is_value_tooltip_on
+      display_marks
+      show_min_max_values
+    }
+    phone {
+      default_country
+      available_countries
+    }
+    number {
+      range {
+        enabled
+        min
+        max
+      }
+    }
+    multiple_select {
+      range {
+        enabled
+        min
+        max
+      }
+      exclusive_option {
+        enabled
+        option_id
+      }
+    }
+    date_validation {
+      allowed_dates
+      include_date_of_response
+    }
+    file_storage {
+      file_storage_config_slug
+      accepted_file_types
+    }
+    input_validation {
+      mode
+      pattern
+      helper_text
+      simpleConfig {
+        exactLength
+        allowed {
+          letters
+          numbers
+          whitespace
+          special
+        }
+      }
+    }
+  }
+  rule {
+    id
+    boolean_operator
+    conditions {
+      id
+      reference
+      reference_key
+      operator
+      operand {
+        value
+        type
+      }
+    }
+  }
+}

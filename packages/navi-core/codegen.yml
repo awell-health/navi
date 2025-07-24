@@ -1,6 +1,7 @@
 overwrite: true
 schema:
   - ../../../awell-next/packages/module-navi/src/graphql/schema.graphql
+documents: "../../apps/navi-portal/src/lib/awell-client/graphql/fragments/*.graphql"
 generates:
   src/generated/graphql.ts:
     plugins:
@@ -9,6 +10,10 @@ generates:
       onlyOperationTypes: false
       skipTypename: true
       enumsAsTypes: true
+      withHooks: false
+      withComponent: false
+      withHOC: false
+      withRefetchFn: false
       scalars:
         JSON: unknown
         SafeDate: string

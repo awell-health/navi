@@ -12,7 +12,7 @@ import type {
  * Map Awell question type to conversational form field type
  */
 function mapQuestionType(awellQuestion: Question): string {
-  switch (awellQuestion.userQuestionType) {
+  switch (awellQuestion.user_question_type) {
     case "SHORT_TEXT":
       return "text";
     case "LONG_TEXT":
@@ -53,13 +53,13 @@ function mapFormQuestion(awellQuestion: Question): FormField {
   const fieldType = mapQuestionType(awellQuestion);
 
   // Add yes/no options for boolean questions
-  if (awellQuestion.userQuestionType === "YES_NO") {
+  if (awellQuestion.user_question_type === "YES_NO") {
     return {
       id: awellQuestion.id,
       type: "radio",
       label: awellQuestion.title,
-      description: awellQuestion.placeholder || "",
-      required: awellQuestion.required ?? false,
+      description: awellQuestion.config?.input_validation?.helper_text || "",
+      required: awellQuestion.is_required ?? false,
       options: [
         { value: "yes", label: "Yes" },
         { value: "no", label: "No" },
@@ -79,10 +79,10 @@ function mapFormQuestion(awellQuestion: Question): FormField {
       | "checkbox"
       | "date",
     label: awellQuestion.title,
-    description: awellQuestion.placeholder || "",
-    required: awellQuestion.required ?? false,
+    description: awellQuestion.config?.input_validation?.helper_text || "",
+    required: awellQuestion.is_required ?? false,
     options: awellQuestion.options?.map((option) => ({
-      value: option.value.toString(),
+      value: option.value?.toString() || "",
       label: option.label,
     })),
   };

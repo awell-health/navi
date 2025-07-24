@@ -5,6 +5,13 @@
 
 import type { BrandingConfig } from "@awell-health/navi-core";
 
+interface NaviLoadOptions {
+  /** Override the CDN origin for loading navi.js script */
+  origin?: string;
+  /** Override the embed origin for iframe destinations */
+  embedOrigin?: string;
+}
+
 interface NaviInstance {
   render: (
     containerId: string,
@@ -54,16 +61,20 @@ interface NaviEmbedInstance {
 class NaviLoader {
   private instances: Map<string, NaviEmbedInstance> = new Map();
   private eventHandlers: Map<string, Map<string, Function[]>> = new Map();
+  private config: NaviLoadOptions = {};
 
   constructor() {
     // Listen for messages from iframes
     window.addEventListener("message", this.handleMessage.bind(this));
   }
 
-  createNavi(publishableKey: string): NaviInstance {
+  createNavi(publishableKey: string, options?: NaviLoadOptions): NaviInstance {
+    // Store configuration for this instance
+    this.config = options || {};
+
     return {
-      render: async (containerId: string, options: RenderOptions) => {
-        return this.render(publishableKey, containerId, options);
+      render: async (containerId: string, renderOptions: RenderOptions) => {
+        return this.render(publishableKey, containerId, renderOptions);
       },
     };
   }
@@ -106,14 +117,23 @@ class NaviLoader {
     return instance;
   }
 
+  private getEmbedOrigin(): string {
+    // Use explicit config first
+    if (this.config.embedOrigin) {
+      return this.config.embedOrigin;
+    }
+
+    // Fall back to environment detection
+    return process.env.NODE_ENV === "production"
+      ? "https://navi-portal.awellhealth.com"
+      : "http://localhost:3000";
+  }
+
   private async createSession(
     publishableKey: string,
     options: RenderOptions
   ): Promise<{ redirectUrl: string; careflowId: string; patientId: string }> {
-    const baseUrl =
-      process.env.NODE_ENV === "production"
-        ? "https://navi-portal.awellhealth.com"
-        : "http://localhost:3000";
+    const baseUrl = this.getEmbedOrigin();
 
     // Use Case 1: Start new care flow
     if (options.careflowDefinitionId) {
@@ -199,10 +219,7 @@ class NaviLoader {
     if (options.embedUrl) {
       embedUrl = new URL(options.embedUrl);
     } else {
-      const baseUrl =
-        process.env.NODE_ENV === "production"
-          ? "https://navi-portal.awellhealth.com"
-          : "http://localhost:3000";
+      const baseUrl = this.getEmbedOrigin();
       embedUrl = new URL(sessionInfo.redirectUrl, baseUrl);
     }
 
@@ -245,10 +262,13 @@ class NaviLoader {
     });
 
     // Security: Only accept messages from Navi portal (cross-origin!)
-    if (event.origin !== "http://localhost:3000") {
+    const expectedOrigin = this.getEmbedOrigin();
+    if (event.origin !== expectedOrigin) {
       console.warn(
         "🚫 Navi.js: Rejecting message from wrong origin:",
-        event.origin
+        event.origin,
+        "Expected:",
+        expectedOrigin
       );
       return;
     }
@@ -449,12 +469,15 @@ class NaviLoader {
   // Create global Navi function
   const loader = new NaviLoader();
 
-  (window as any).Navi = function (publishableKey: string): NaviInstance {
+  (window as any).Navi = function (
+    publishableKey: string,
+    options?: NaviLoadOptions
+  ): NaviInstance {
     if (!publishableKey || !publishableKey.startsWith("pk_")) {
       throw new Error('Invalid publishable key. Must start with "pk_"');
     }
 
-    return loader.createNavi(publishableKey);
+    return loader.createNavi(publishableKey, options);
   };
 
   // Add version and debug info

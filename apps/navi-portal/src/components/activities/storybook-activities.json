@@ -1,0 +1,1902 @@
+{
+  "data": {
+    "pathwayActivities": {
+      "success": true,
+      "activities": [
+        {
+          "id": "zRL7ylNSlnKENEz3OnVrw",
+          "action": "ASSIGNED",
+          "careflow_id": "Tjsko1X8exEh",
+          "container_name": "step w/message and checklist",
+          "date": "2025-07-24T04:11:03.644Z",
+          "indirect_object": {
+            "id": "Eh4UQbKZKBk6hKd0M7wKk",
+            "type": "PATIENT",
+            "name": "jb belanger",
+            "email": "jbb@jbb.dev",
+            "preferred_language": "en",
+            "__typename": "ActivityObject"
+          },
+          "object": {
+            "id": "zmGsBhBbmOaL",
+            "type": "CHECKLIST",
+            "name": "my super important checklist",
+            "email": null,
+            "preferred_language": null,
+            "__typename": "ActivityObject"
+          },
+          "pathway_definition_id": "1CnTTHNYM1Q3",
+          "reference_id": "PathwayNavigationNode/291450379",
+          "reference_type": "NAVIGATION",
+          "resolution": null,
+          "session_id": null,
+          "status": "ACTIVE",
+          "tenant_id": "_v0nvLX5zCNd",
+          "is_user_activity": true,
+          "sub_activities": [
+            {
+              "id": "lcXy2rBOCJ7HI64pX4WD4",
+              "action": "ACTIVATE",
+              "object": null,
+              "__typename": "SubActivity"
+            }
+          ],
+          "inputs": {
+            "__typename": "ChecklistActivityInput",
+            "type": "CHECKLIST",
+            "checklist": {
+              "title": "my super important checklist",
+              "items": ["check 1", "check 2"],
+              "__typename": "Checklist"
+            }
+          },
+          "outputs": null,
+          "__typename": "Activity"
+        },
+        {
+          "id": "XDnqWNNyXuKmqtslLWdEA",
+          "action": "ASSIGNED",
+          "careflow_id": "Tjsko1X8exEh",
+          "container_name": "step w/message and checklist",
+          "date": "2025-07-24T04:11:03.192Z",
+          "indirect_object": {
+            "id": "Eh4UQbKZKBk6hKd0M7wKk",
+            "type": "PATIENT",
+            "name": "jb belanger",
+            "email": "jbb@jbb.dev",
+            "preferred_language": "en",
+            "__typename": "ActivityObject"
+          },
+          "object": {
+            "id": "w3wpbHf3QRVvroIfXxeZ7",
+            "type": "MESSAGE",
+            "name": "here's a message",
+            "email": null,
+            "preferred_language": null,
+            "__typename": "ActivityObject"
+          },
+          "pathway_definition_id": "1CnTTHNYM1Q3",
+          "reference_id": "PathwayNavigationNode/291450375",
+          "reference_type": "NAVIGATION",
+          "resolution": null,
+          "session_id": null,
+          "status": "ACTIVE",
+          "tenant_id": "_v0nvLX5zCNd",
+          "is_user_activity": true,
+          "sub_activities": [
+            {
+              "id": "WOAxcpv1G3GDkPwc33uaU",
+              "action": "ACTIVATE",
+              "object": null,
+              "__typename": "SubActivity"
+            },
+            {
+              "id": "4ClJqMvLGvlH158nYctbn",
+              "action": "SEND",
+              "object": null,
+              "__typename": "SubActivity"
+            }
+          ],
+          "inputs": {
+            "__typename": "MessageActivityInput",
+            "type": "MESSAGE",
+            "message": {
+              "id": "w3wpbHf3QRVvroIfXxeZ7",
+              "subject": "here's a message",
+              "body": "<h1 class=\"slate-h1\">heading 1</h1><h2 class=\"slate-h2\">heading 2</h2><h3 class=\"slate-h3\">heading 3</h3><p class=\"slate-p\">Something <strong class=\"slate-bold\">bold </strong>something <em class=\"slate-italic\">italic</em> something <u class=\"slate-underline\">underlined</u>. oh, and don't forget to <s class=\"slate-strikethrough\">cross something out</s>. finally, let's use a <a rel=\"noreferrer\" target=\"_blank\" href=\"https://awellhealth.com\">link</a></p><ul class=\"slate-ul\"><li class=\"slate-li\"><div style=\"position:relative\">bullet 1</div></li><li class=\"slate-li\"><div style=\"position:relative\">bullet 2</div></li></ul><p class=\"slate-p\"></p><ol class=\"slate-ol\"><li class=\"slate-li\"><div style=\"position:relative\">number 1</div></li><li class=\"slate-li\"><div style=\"position:relative\">number 2</div></li></ol><p class=\"slate-p\"></p><div class=\"slate-img\"><div><figure class=\"slate-ImageElement-figure\"><div class=\"slate-ImageElement-resizable\" style=\"position:relative;user-select:auto;width:100%;height:100%;max-width:100%;min-width:92px;box-sizing:border-box;flex-shrink:0\"><img alt=\"\" src=\"https://res.cloudinary.com/da7x4rzl4/image/upload/v1752192989/DEV SANDBOX - Awell Studio - TextEditor - Image upload/mjqpsbmxexbm38pbzkpd.jpg\" class=\"slate-ImageElement-img\"><div><div style=\"position:absolute;user-select:none;width:10px;height:100%;top:0px;left:0;cursor:col-resize\"><div class=\"slate-ImageElement-handleLeft\"></div></div><div style=\"position:absolute;user-select:none;width:10px;height:100%;top:0px;right:0;cursor:col-resize\"><div class=\"slate-ImageElement-handleRight\"></div></div></div></div></figure></div></div><p class=\"slate-p\">let's forget about the attachment and video for now.</p>",
+              "format": "HTML",
+              "attachments": null,
+              "__typename": "ActivityMessage"
+            }
+          },
+          "outputs": null,
+          "__typename": "Activity"
+        },
+        {
+          "id": "zYSdnNkMTLBJ2PrRl6uai",
+          "action": "ASSIGNED",
+          "careflow_id": "Tjsko1X8exEh",
+          "container_name": "step with clinical note",
+          "date": "2025-07-24T04:11:03.101Z",
+          "indirect_object": {
+            "id": "ZgaBi7zVGVXf",
+            "type": "STAKEHOLDER",
+            "name": "Care coordinator",
+            "email": null,
+            "preferred_language": null,
+            "__typename": "ActivityObject"
+          },
+          "object": {
+            "id": "BOuzIcBuPzZz",
+            "type": "FORM",
+            "name": "form with many input validations",
+            "email": null,
+            "preferred_language": null,
+            "__typename": "ActivityObject"
+          },
+          "pathway_definition_id": "1CnTTHNYM1Q3",
+          "reference_id": "PathwayNavigationNode/291450376",
+          "reference_type": "NAVIGATION",
+          "resolution": null,
+          "session_id": null,
+          "status": "ACTIVE",
+          "tenant_id": "_v0nvLX5zCNd",
+          "is_user_activity": true,
+          "sub_activities": [
+            {
+              "id": "KKulVAOu1ugN9BpMg9JIB",
+              "action": "ACTIVATE",
+              "object": null,
+              "__typename": "SubActivity"
+            }
+          ],
+          "inputs": {
+            "__typename": "FormActivityInput",
+            "type": "FORM",
+            "form": {
+              "id": "BOuzIcBuPzZz",
+              "key": "formWithManyInputValidations",
+              "title": "form with many input validations",
+              "trademark": null,
+              "questions": [
+                {
+                  "id": "pPj71qF7bB4y",
+                  "key": "typePChildrenTextDescription1",
+                  "title": "<p class=\"slate-p\">Description 1 </p>",
+                  "definition_id": "ixY0ZEdNKJDG",
+                  "question_type": "NO_INPUT",
+                  "user_question_type": "DESCRIPTION",
+                  "data_point_value_type": null,
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "BLIL1hygyjLB",
+                  "key": "typePChildrenTextDescription2",
+                  "title": "<p class=\"slate-p\">Description 2</p>",
+                  "definition_id": "sIe8wv0lVzgX",
+                  "question_type": "NO_INPUT",
+                  "user_question_type": "DESCRIPTION",
+                  "data_point_value_type": null,
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "cMK8eVpxfEYp",
+                  "key": "firstName",
+                  "title": "What is your first name?",
+                  "definition_id": "mEHObAXFI81q",
+                  "question_type": "INPUT",
+                  "user_question_type": "SHORT_TEXT",
+                  "data_point_value_type": "STRING",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": {
+                      "mode": "simple",
+                      "pattern": "^[A-Za-z]{5}$",
+                      "helper_text": "5 letters, please",
+                      "simpleConfig": {
+                        "exactLength": 5,
+                        "allowed": {
+                          "letters": true,
+                          "numbers": false,
+                          "whitespace": false,
+                          "special": false,
+                          "__typename": "InputValidationAllowed"
+                        },
+                        "__typename": "InputValidationSimpleConfig"
+                      },
+                      "__typename": "InputValidationConfig"
+                    },
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "pkEbMgU7v7dL",
+                  "key": "lastName",
+                  "title": "What is your last name?",
+                  "definition_id": "Kje3bZlfgmMV",
+                  "question_type": "INPUT",
+                  "user_question_type": "SHORT_TEXT",
+                  "data_point_value_type": "STRING",
+                  "is_required": true,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": true,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": {
+                      "mode": "simple",
+                      "pattern": "^[A-Za-z0-9\\s]{7}$",
+                      "helper_text": "7 alphanumeric characters, no symbols! :)",
+                      "simpleConfig": {
+                        "exactLength": 7,
+                        "allowed": {
+                          "letters": true,
+                          "numbers": true,
+                          "whitespace": true,
+                          "special": false,
+                          "__typename": "InputValidationAllowed"
+                        },
+                        "__typename": "InputValidationSimpleConfig"
+                      },
+                      "__typename": "InputValidationConfig"
+                    },
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "31qCQuj43K5I",
+                  "key": "conditionalQuestion",
+                  "title": "Conditional question",
+                  "definition_id": "hYLXsw7miR2p",
+                  "question_type": "INPUT",
+                  "user_question_type": "SHORT_TEXT",
+                  "data_point_value_type": "STRING",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": {
+                    "id": "uQxjRJNVruSY",
+                    "boolean_operator": "AND",
+                    "conditions": [
+                      {
+                        "id": "GrLEoo5YIXfO",
+                        "reference": "mEHObAXFI81q",
+                        "operator": "CONTAINS",
+                        "operand": {
+                          "value": "a",
+                          "type": "STRING",
+                          "__typename": "ConditionOperand"
+                        },
+                        "__typename": "Condition"
+                      }
+                    ],
+                    "__typename": "Rule"
+                  },
+                  "__typename": "Question"
+                },
+                {
+                  "id": "RI3R6n7lemnO",
+                  "key": "aSliderWithMinAndMaxValues",
+                  "title": "a slider with min and max values",
+                  "definition_id": "hjzGTUxrqTeC",
+                  "question_type": "INPUT",
+                  "user_question_type": "SLIDER",
+                  "data_point_value_type": "NUMBER",
+                  "is_required": true,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": true,
+                    "slider": {
+                      "min": -10,
+                      "max": 10,
+                      "step_value": 1,
+                      "min_label": "negative 10",
+                      "max_label": "positive 10",
+                      "is_value_tooltip_on": true,
+                      "display_marks": true,
+                      "show_min_max_values": true,
+                      "__typename": "SliderConfig"
+                    },
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "Igx4qXxuyz4X",
+                  "key": "aNumberBetweenOneAndTen",
+                  "title": "A number between 1 and 10",
+                  "definition_id": "GDkYsbBn7WA8",
+                  "question_type": "INPUT",
+                  "user_question_type": "NUMBER",
+                  "data_point_value_type": "NUMBER",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": {
+                      "range": {
+                        "enabled": true,
+                        "min": 1,
+                        "max": 10,
+                        "__typename": "RangeConfig"
+                      },
+                      "__typename": "NumberConfig"
+                    },
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "2EtGQeSdHHnB",
+                  "key": "futureDate",
+                  "title": "A date in the future",
+                  "definition_id": "mS54XLDiX9Ug",
+                  "question_type": "INPUT",
+                  "user_question_type": "DATE",
+                  "data_point_value_type": "DATE",
+                  "is_required": true,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": true,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": {
+                      "allowed_dates": "FUTURE",
+                      "include_date_of_response": true,
+                      "__typename": "DateConfig"
+                    },
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "nKIWOwArplbD",
+                  "key": "pastDate",
+                  "title": "A date in the past",
+                  "definition_id": "NYDFAp2mKkWn",
+                  "question_type": "INPUT",
+                  "user_question_type": "DATE",
+                  "data_point_value_type": "DATE",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": {
+                      "allowed_dates": "PAST",
+                      "include_date_of_response": false,
+                      "__typename": "DateConfig"
+                    },
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": {
+                    "id": "jrWfi4URY5p9",
+                    "boolean_operator": "AND",
+                    "conditions": [
+                      {
+                        "id": "rnsyBgOIFsCh",
+                        "reference": "mS54XLDiX9Ug",
+                        "operator": "IS_MORE_THAN_X_DAYS_AGO",
+                        "operand": {
+                          "value": "-2",
+                          "type": "NUMBER",
+                          "__typename": "ConditionOperand"
+                        },
+                        "__typename": "Condition"
+                      }
+                    ],
+                    "__typename": "Rule"
+                  },
+                  "__typename": "Question"
+                },
+                {
+                  "id": "0uZwkU8mBOgH",
+                  "key": "usPhoneNumber",
+                  "title": "US Phone number",
+                  "definition_id": "oPQUm8SmYhio",
+                  "question_type": "INPUT",
+                  "user_question_type": "TELEPHONE",
+                  "data_point_value_type": "TELEPHONE",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": {
+                      "default_country": "US",
+                      "available_countries": ["US"],
+                      "__typename": "PhoneConfig"
+                    },
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "j4Xr0siMem7G",
+                  "key": "europeanPhoneNumber",
+                  "title": "European phone number",
+                  "definition_id": "4u7G1A5zQFQp",
+                  "question_type": "INPUT",
+                  "user_question_type": "TELEPHONE",
+                  "data_point_value_type": "TELEPHONE",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": {
+                      "default_country": "GB",
+                      "available_countries": [
+                        "BE",
+                        "FR",
+                        "DE",
+                        "PT",
+                        "ES",
+                        "GB",
+                        "CH"
+                      ],
+                      "__typename": "PhoneConfig"
+                    },
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "UMaxGQ1MFHhB",
+                  "key": "csvUpload",
+                  "title": "CSV upload please",
+                  "definition_id": "iZxFBZqwMdnb",
+                  "question_type": "INPUT",
+                  "user_question_type": "FILE",
+                  "data_point_value_type": "ATTACHMENT",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": {
+                      "file_storage_config_slug": "gcp-file-storage",
+                      "accepted_file_types": ["document/*", "application/csv"],
+                      "__typename": "FileStorageQuestionConfig"
+                    },
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "kwgCJLu9jS6m",
+                  "key": "imageUpload",
+                  "title": "Image upload",
+                  "definition_id": "OKyuwSgoyVsJ",
+                  "question_type": "INPUT",
+                  "user_question_type": "IMAGE",
+                  "data_point_value_type": "ATTACHMENT",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": {
+                      "file_storage_config_slug": "gcp-file-storage",
+                      "accepted_file_types": ["image/png", "image/jpg"],
+                      "__typename": "FileStorageQuestionConfig"
+                    },
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "XmrgSoMtkyWx",
+                  "key": "typeH1ChildrenTextImAHeaderTypeH2ChildrenTextMeTooTypeH3ChildrenTextDontForgetAboutMeeeeeeTypePChildrenTextHelloStrikethroughTrueTextTextImItalicTrueTextATextDescriptionBoldTrueTextTextWithUnderlineTrueTextTypeAUrlHttpsAwellhealthComChildrenTextALinkTextTypeOlChildrenTypeLiChildrenTypeLicChildrenTextNumberedTypeUlChildrenTypeLiChildrenTypeLicChildrenTextBulletedTypeMediaEmbedUrlHttpsWwwYoutubeComEmbedDQw4W9WgXcQChildrenTextTypeImgUrlHttpsResCloudinaryComDa7X4Rzl4ImageUploadV1752250560Dev20Sandbox2020Awell20Studio2020TextEditor2020Image20UploadTrdyp3FsvdfyufemqklmJpgCaptionTextAHolidaySquirrelChildrenTextTypePChildrenText",
+                  "title": "<h1 class=\"slate-h1\">i&#x27;m a header</h1><h2 class=\"slate-h2\">me too</h2><h3 class=\"slate-h3\">dont forget about meeeeee</h3><p class=\"slate-p\"><s class=\"slate-strikethrough\">hello</s> <em class=\"slate-italic\">i&#x27;m</em> a <strong class=\"slate-bold\">description</strong> <u class=\"slate-underline\">with</u> <a href=\"https://awellhealth.com\"  target=\"_blank\" rel=\"noreferrer\" url=\"https://awellhealth.com\">a link</a></p><ol class=\"slate-ol\"><li class=\"slate-li\"><div style=\"position:relative\">numbered</div></li></ol><ul class=\"slate-ul\"><li class=\"slate-li\"><div style=\"position:relative\">bulleted</div></li></ul><div class=\"slate-media_embed\"><div contenteditable=\"false\"><div class=\"slate-MediaEmbedElement-iframeWrapper\"><iframe class=\"slate-MediaEmbedElement-iframe\" title=\"embed\" src=\"https://www.youtube.com/embed/dQw4w9WgXcQ?&amp;title=0&amp;byline=0&amp;portrait=0\" frameBorder=\"0\"></iframe></div><input class=\"slate-MediaEmbedElement-input\" value=\"https://www.youtube.com/embed/dQw4w9WgXcQ\"/></div></div><div class=\"slate-img\"><div contenteditable=\"false\"><figure class=\"slate-ImageElement-figure\"><div style=\"position:relative;user-select:auto;width:100%;height:100%;max-width:100%;min-width:92px;box-sizing:border-box;flex-shrink:0\" class=\"slate-ImageElement-resizable\"><img class=\"slate-ImageElement-img\" src=\"https://res.cloudinary.com/da7x4rzl4/image/upload/v1752250560/DEV SANDBOX - Awell Studio - TextEditor - Image upload/trdyp3fsvdfyufemqklm.jpg\" alt=\"a holiday squirrel\"/><div><div  style=\"position:absolute;user-select:none;width:10px;height:100%;top:0px;left:0;cursor:col-resize\"><div class=\"slate-ImageElement-handleLeft\"></div></div><div  style=\"position:absolute;user-select:none;width:10px;height:100%;top:0px;right:0;cursor:col-resize\"><div class=\"slate-ImageElement-handleRight\"></div></div></div></div><figcaption style=\"width:100%\" class=\"slate-ImageElement-figcaption\"><textarea class=\"slate-ImageElement-caption\" placeholder=\"Write a caption...\">a holiday squirrel</textarea></figcaption></figure></div></div><p class=\"slate-p\"></p>",
+                  "definition_id": "qSFUx0JkfBAv",
+                  "question_type": "NO_INPUT",
+                  "user_question_type": "DESCRIPTION",
+                  "data_point_value_type": null,
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                }
+              ],
+              "__typename": "ActivityForm"
+            }
+          },
+          "outputs": null,
+          "__typename": "Activity"
+        },
+        {
+          "id": "hXVyr266ShGi1YSXFMUC4",
+          "action": "ASSIGNED",
+          "careflow_id": "Tjsko1X8exEh",
+          "container_name": "patient - form with validation",
+          "date": "2025-07-24T04:11:02.970Z",
+          "indirect_object": {
+            "id": "Eh4UQbKZKBk6hKd0M7wKk",
+            "type": "PATIENT",
+            "name": "jb belanger",
+            "email": "jbb@jbb.dev",
+            "preferred_language": "en",
+            "__typename": "ActivityObject"
+          },
+          "object": {
+            "id": "BOuzIcBuPzZz",
+            "type": "FORM",
+            "name": "form with many input validations",
+            "email": null,
+            "preferred_language": null,
+            "__typename": "ActivityObject"
+          },
+          "pathway_definition_id": "1CnTTHNYM1Q3",
+          "reference_id": "PathwayNavigationNode/291450377",
+          "reference_type": "NAVIGATION",
+          "resolution": null,
+          "session_id": null,
+          "status": "ACTIVE",
+          "tenant_id": "_v0nvLX5zCNd",
+          "is_user_activity": true,
+          "sub_activities": [
+            {
+              "id": "f0nbX0et03wjrak10o4IV",
+              "action": "ACTIVATE",
+              "object": null,
+              "__typename": "SubActivity"
+            }
+          ],
+          "inputs": {
+            "__typename": "FormActivityInput",
+            "type": "FORM",
+            "form": {
+              "id": "BOuzIcBuPzZz",
+              "key": "formWithManyInputValidations",
+              "title": "form with many input validations",
+              "trademark": null,
+              "questions": [
+                {
+                  "id": "pPj71qF7bB4y",
+                  "key": "typePChildrenTextDescription1",
+                  "title": "<p class=\"slate-p\">Description 1 </p>",
+                  "definition_id": "ixY0ZEdNKJDG",
+                  "question_type": "NO_INPUT",
+                  "user_question_type": "DESCRIPTION",
+                  "data_point_value_type": null,
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "BLIL1hygyjLB",
+                  "key": "typePChildrenTextDescription2",
+                  "title": "<p class=\"slate-p\">Description 2</p>",
+                  "definition_id": "sIe8wv0lVzgX",
+                  "question_type": "NO_INPUT",
+                  "user_question_type": "DESCRIPTION",
+                  "data_point_value_type": null,
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "cMK8eVpxfEYp",
+                  "key": "firstName",
+                  "title": "What is your first name?",
+                  "definition_id": "mEHObAXFI81q",
+                  "question_type": "INPUT",
+                  "user_question_type": "SHORT_TEXT",
+                  "data_point_value_type": "STRING",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": {
+                      "mode": "simple",
+                      "pattern": "^[A-Za-z]{5}$",
+                      "helper_text": "5 letters, please",
+                      "simpleConfig": {
+                        "exactLength": 5,
+                        "allowed": {
+                          "letters": true,
+                          "numbers": false,
+                          "whitespace": false,
+                          "special": false,
+                          "__typename": "InputValidationAllowed"
+                        },
+                        "__typename": "InputValidationSimpleConfig"
+                      },
+                      "__typename": "InputValidationConfig"
+                    },
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "pkEbMgU7v7dL",
+                  "key": "lastName",
+                  "title": "What is your last name?",
+                  "definition_id": "Kje3bZlfgmMV",
+                  "question_type": "INPUT",
+                  "user_question_type": "SHORT_TEXT",
+                  "data_point_value_type": "STRING",
+                  "is_required": true,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": true,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": {
+                      "mode": "simple",
+                      "pattern": "^[A-Za-z0-9\\s]{7}$",
+                      "helper_text": "7 alphanumeric characters, no symbols! :)",
+                      "simpleConfig": {
+                        "exactLength": 7,
+                        "allowed": {
+                          "letters": true,
+                          "numbers": true,
+                          "whitespace": true,
+                          "special": false,
+                          "__typename": "InputValidationAllowed"
+                        },
+                        "__typename": "InputValidationSimpleConfig"
+                      },
+                      "__typename": "InputValidationConfig"
+                    },
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "31qCQuj43K5I",
+                  "key": "conditionalQuestion",
+                  "title": "Conditional question",
+                  "definition_id": "hYLXsw7miR2p",
+                  "question_type": "INPUT",
+                  "user_question_type": "SHORT_TEXT",
+                  "data_point_value_type": "STRING",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": {
+                    "id": "uQxjRJNVruSY",
+                    "boolean_operator": "AND",
+                    "conditions": [
+                      {
+                        "id": "GrLEoo5YIXfO",
+                        "reference": "mEHObAXFI81q",
+                        "operator": "CONTAINS",
+                        "operand": {
+                          "value": "a",
+                          "type": "STRING",
+                          "__typename": "ConditionOperand"
+                        },
+                        "__typename": "Condition"
+                      }
+                    ],
+                    "__typename": "Rule"
+                  },
+                  "__typename": "Question"
+                },
+                {
+                  "id": "RI3R6n7lemnO",
+                  "key": "aSliderWithMinAndMaxValues",
+                  "title": "a slider with min and max values",
+                  "definition_id": "hjzGTUxrqTeC",
+                  "question_type": "INPUT",
+                  "user_question_type": "SLIDER",
+                  "data_point_value_type": "NUMBER",
+                  "is_required": true,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": true,
+                    "slider": {
+                      "min": -10,
+                      "max": 10,
+                      "step_value": 1,
+                      "min_label": "negative 10",
+                      "max_label": "positive 10",
+                      "is_value_tooltip_on": true,
+                      "display_marks": true,
+                      "show_min_max_values": true,
+                      "__typename": "SliderConfig"
+                    },
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "Igx4qXxuyz4X",
+                  "key": "aNumberBetweenOneAndTen",
+                  "title": "A number between 1 and 10",
+                  "definition_id": "GDkYsbBn7WA8",
+                  "question_type": "INPUT",
+                  "user_question_type": "NUMBER",
+                  "data_point_value_type": "NUMBER",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": {
+                      "range": {
+                        "enabled": true,
+                        "min": 1,
+                        "max": 10,
+                        "__typename": "RangeConfig"
+                      },
+                      "__typename": "NumberConfig"
+                    },
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "2EtGQeSdHHnB",
+                  "key": "futureDate",
+                  "title": "A date in the future",
+                  "definition_id": "mS54XLDiX9Ug",
+                  "question_type": "INPUT",
+                  "user_question_type": "DATE",
+                  "data_point_value_type": "DATE",
+                  "is_required": true,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": true,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": {
+                      "allowed_dates": "FUTURE",
+                      "include_date_of_response": true,
+                      "__typename": "DateConfig"
+                    },
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "nKIWOwArplbD",
+                  "key": "pastDate",
+                  "title": "A date in the past",
+                  "definition_id": "NYDFAp2mKkWn",
+                  "question_type": "INPUT",
+                  "user_question_type": "DATE",
+                  "data_point_value_type": "DATE",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": {
+                      "allowed_dates": "PAST",
+                      "include_date_of_response": false,
+                      "__typename": "DateConfig"
+                    },
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": {
+                    "id": "jrWfi4URY5p9",
+                    "boolean_operator": "AND",
+                    "conditions": [
+                      {
+                        "id": "rnsyBgOIFsCh",
+                        "reference": "mS54XLDiX9Ug",
+                        "operator": "IS_MORE_THAN_X_DAYS_AGO",
+                        "operand": {
+                          "value": "-2",
+                          "type": "NUMBER",
+                          "__typename": "ConditionOperand"
+                        },
+                        "__typename": "Condition"
+                      }
+                    ],
+                    "__typename": "Rule"
+                  },
+                  "__typename": "Question"
+                },
+                {
+                  "id": "0uZwkU8mBOgH",
+                  "key": "usPhoneNumber",
+                  "title": "US Phone number",
+                  "definition_id": "oPQUm8SmYhio",
+                  "question_type": "INPUT",
+                  "user_question_type": "TELEPHONE",
+                  "data_point_value_type": "TELEPHONE",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": {
+                      "default_country": "US",
+                      "available_countries": ["US"],
+                      "__typename": "PhoneConfig"
+                    },
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "j4Xr0siMem7G",
+                  "key": "europeanPhoneNumber",
+                  "title": "European phone number",
+                  "definition_id": "4u7G1A5zQFQp",
+                  "question_type": "INPUT",
+                  "user_question_type": "TELEPHONE",
+                  "data_point_value_type": "TELEPHONE",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": {
+                      "default_country": "GB",
+                      "available_countries": [
+                        "BE",
+                        "FR",
+                        "DE",
+                        "PT",
+                        "ES",
+                        "GB",
+                        "CH"
+                      ],
+                      "__typename": "PhoneConfig"
+                    },
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "UMaxGQ1MFHhB",
+                  "key": "csvUpload",
+                  "title": "CSV upload please",
+                  "definition_id": "iZxFBZqwMdnb",
+                  "question_type": "INPUT",
+                  "user_question_type": "FILE",
+                  "data_point_value_type": "ATTACHMENT",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": {
+                      "file_storage_config_slug": "gcp-file-storage",
+                      "accepted_file_types": ["document/*", "application/csv"],
+                      "__typename": "FileStorageQuestionConfig"
+                    },
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "kwgCJLu9jS6m",
+                  "key": "imageUpload",
+                  "title": "Image upload",
+                  "definition_id": "OKyuwSgoyVsJ",
+                  "question_type": "INPUT",
+                  "user_question_type": "IMAGE",
+                  "data_point_value_type": "ATTACHMENT",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": {
+                      "file_storage_config_slug": "gcp-file-storage",
+                      "accepted_file_types": ["image/png", "image/jpg"],
+                      "__typename": "FileStorageQuestionConfig"
+                    },
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "XmrgSoMtkyWx",
+                  "key": "typeH1ChildrenTextImAHeaderTypeH2ChildrenTextMeTooTypeH3ChildrenTextDontForgetAboutMeeeeeeTypePChildrenTextHelloStrikethroughTrueTextTextImItalicTrueTextATextDescriptionBoldTrueTextTextWithUnderlineTrueTextTypeAUrlHttpsAwellhealthComChildrenTextALinkTextTypeOlChildrenTypeLiChildrenTypeLicChildrenTextNumberedTypeUlChildrenTypeLiChildrenTypeLicChildrenTextBulletedTypeMediaEmbedUrlHttpsWwwYoutubeComEmbedDQw4W9WgXcQChildrenTextTypeImgUrlHttpsResCloudinaryComDa7X4Rzl4ImageUploadV1752250560Dev20Sandbox2020Awell20Studio2020TextEditor2020Image20UploadTrdyp3FsvdfyufemqklmJpgCaptionTextAHolidaySquirrelChildrenTextTypePChildrenText",
+                  "title": "<h1 class=\"slate-h1\">i&#x27;m a header</h1><h2 class=\"slate-h2\">me too</h2><h3 class=\"slate-h3\">dont forget about meeeeee</h3><p class=\"slate-p\"><s class=\"slate-strikethrough\">hello</s> <em class=\"slate-italic\">i&#x27;m</em> a <strong class=\"slate-bold\">description</strong> <u class=\"slate-underline\">with</u> <a href=\"https://awellhealth.com\"  target=\"_blank\" rel=\"noreferrer\" url=\"https://awellhealth.com\">a link</a></p><ol class=\"slate-ol\"><li class=\"slate-li\"><div style=\"position:relative\">numbered</div></li></ol><ul class=\"slate-ul\"><li class=\"slate-li\"><div style=\"position:relative\">bulleted</div></li></ul><div class=\"slate-media_embed\"><div contenteditable=\"false\"><div class=\"slate-MediaEmbedElement-iframeWrapper\"><iframe class=\"slate-MediaEmbedElement-iframe\" title=\"embed\" src=\"https://www.youtube.com/embed/dQw4w9WgXcQ?&amp;title=0&amp;byline=0&amp;portrait=0\" frameBorder=\"0\"></iframe></div><input class=\"slate-MediaEmbedElement-input\" value=\"https://www.youtube.com/embed/dQw4w9WgXcQ\"/></div></div><div class=\"slate-img\"><div contenteditable=\"false\"><figure class=\"slate-ImageElement-figure\"><div style=\"position:relative;user-select:auto;width:100%;height:100%;max-width:100%;min-width:92px;box-sizing:border-box;flex-shrink:0\" class=\"slate-ImageElement-resizable\"><img class=\"slate-ImageElement-img\" src=\"https://res.cloudinary.com/da7x4rzl4/image/upload/v1752250560/DEV SANDBOX - Awell Studio - TextEditor - Image upload/trdyp3fsvdfyufemqklm.jpg\" alt=\"a holiday squirrel\"/><div><div  style=\"position:absolute;user-select:none;width:10px;height:100%;top:0px;left:0;cursor:col-resize\"><div class=\"slate-ImageElement-handleLeft\"></div></div><div  style=\"position:absolute;user-select:none;width:10px;height:100%;top:0px;right:0;cursor:col-resize\"><div class=\"slate-ImageElement-handleRight\"></div></div></div></div><figcaption style=\"width:100%\" class=\"slate-ImageElement-figcaption\"><textarea class=\"slate-ImageElement-caption\" placeholder=\"Write a caption...\">a holiday squirrel</textarea></figcaption></figure></div></div><p class=\"slate-p\"></p>",
+                  "definition_id": "qSFUx0JkfBAv",
+                  "question_type": "NO_INPUT",
+                  "user_question_type": "DESCRIPTION",
+                  "data_point_value_type": null,
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                }
+              ],
+              "__typename": "ActivityForm"
+            }
+          },
+          "outputs": null,
+          "__typename": "Activity"
+        },
+        {
+          "id": "0LvkIvbZTLE3Ua6lhv7vi",
+          "action": "ASSIGNED",
+          "careflow_id": "Tjsko1X8exEh",
+          "container_name": "step with form",
+          "date": "2025-07-24T04:11:02.922Z",
+          "indirect_object": {
+            "id": "Eh4UQbKZKBk6hKd0M7wKk",
+            "type": "PATIENT",
+            "name": "jb belanger",
+            "email": "jbb@jbb.dev",
+            "preferred_language": "en",
+            "__typename": "ActivityObject"
+          },
+          "object": {
+            "id": "48RVFqUdO3XD",
+            "type": "FORM",
+            "name": "Form with all question types",
+            "email": null,
+            "preferred_language": null,
+            "__typename": "ActivityObject"
+          },
+          "pathway_definition_id": "1CnTTHNYM1Q3",
+          "reference_id": "PathwayNavigationNode/291450374",
+          "reference_type": "NAVIGATION",
+          "resolution": null,
+          "session_id": null,
+          "status": "ACTIVE",
+          "tenant_id": "_v0nvLX5zCNd",
+          "is_user_activity": true,
+          "sub_activities": [
+            {
+              "id": "ckl8rztXxvuVEACNk5wdQ",
+              "action": "ACTIVATE",
+              "object": null,
+              "__typename": "SubActivity"
+            }
+          ],
+          "inputs": {
+            "__typename": "FormActivityInput",
+            "type": "FORM",
+            "form": {
+              "id": "48RVFqUdO3XD",
+              "key": "formWithAllQuestionTypes",
+              "title": "Form with all question types",
+              "trademark": null,
+              "questions": [
+                {
+                  "id": "Q66nTrKoOl4W",
+                  "key": "typePChildrenTextThisIsADescriptionQuestionItsDoesntCollectAnyDataButJustShowsSomeTextToTheUser",
+                  "title": "<p class=\"slate-p\">This is a description question. It&#x27;s doesn&#x27;t collect any data but just shows some text to the user.</p>",
+                  "definition_id": "rUfECkXAtCxe",
+                  "question_type": "NO_INPUT",
+                  "user_question_type": "DESCRIPTION",
+                  "data_point_value_type": null,
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "37zFjXvZ3LDb",
+                  "key": "singleSelectNumber",
+                  "title": "Single select (number)",
+                  "definition_id": "UPHy_BJdHhzs",
+                  "question_type": "MULTIPLE_CHOICE",
+                  "user_question_type": "MULTIPLE_CHOICE",
+                  "data_point_value_type": "NUMBER",
+                  "is_required": false,
+                  "options": [
+                    {
+                      "id": "zOTvuy0usHkb",
+                      "label": "Option 1",
+                      "value": "0",
+                      "__typename": "QuestionOption"
+                    },
+                    {
+                      "id": "q6jRNHKATieI",
+                      "label": "Option 2",
+                      "value": "1",
+                      "__typename": "QuestionOption"
+                    },
+                    {
+                      "id": "vvMBtwpHl0o5",
+                      "label": "Option 3",
+                      "value": "2",
+                      "__typename": "QuestionOption"
+                    }
+                  ],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": false,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "JxEkaILiRxU2",
+                  "key": "singleSelectString",
+                  "title": "Single select (string)",
+                  "definition_id": "KjYHPz9kZLlnvguMT3epw",
+                  "question_type": "MULTIPLE_CHOICE",
+                  "user_question_type": "MULTIPLE_CHOICE",
+                  "data_point_value_type": "STRING",
+                  "is_required": false,
+                  "options": [
+                    {
+                      "id": "u9qpd6kPr83f",
+                      "label": "Option 1",
+                      "value": "option_1",
+                      "__typename": "QuestionOption"
+                    },
+                    {
+                      "id": "yRy_LwI1refh",
+                      "label": "Option 2",
+                      "value": "option_2",
+                      "__typename": "QuestionOption"
+                    },
+                    {
+                      "id": "OOCTmiXXvjpN",
+                      "label": "Option 3",
+                      "value": "option_3",
+                      "__typename": "QuestionOption"
+                    },
+                    {
+                      "id": "P32BtMUeLwNN",
+                      "label": "helloo",
+                      "value": "option_4",
+                      "__typename": "QuestionOption"
+                    },
+                    {
+                      "id": "rrgEixvMsF9I",
+                      "label": "helloooooo",
+                      "value": "option_5",
+                      "__typename": "QuestionOption"
+                    },
+                    {
+                      "id": "seZqcRQb2qDm",
+                      "label": "test",
+                      "value": "option_6",
+                      "__typename": "QuestionOption"
+                    }
+                  ],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": false,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": {
+                    "id": "BFTosjA9dcQw8wmwLCh-d",
+                    "boolean_operator": "AND",
+                    "conditions": [],
+                    "__typename": "Rule"
+                  },
+                  "__typename": "Question"
+                },
+                {
+                  "id": "vpcqtsycyzHm",
+                  "key": "multipleSelectNumber",
+                  "title": "Multiple select (number)",
+                  "definition_id": "y8dZyIh1JEHo",
+                  "question_type": "MULTIPLE_CHOICE",
+                  "user_question_type": "MULTIPLE_SELECT",
+                  "data_point_value_type": "NUMBERS_ARRAY",
+                  "is_required": false,
+                  "options": [
+                    {
+                      "id": "NRhfKVrRJ1qQ",
+                      "label": "Option 1",
+                      "value": "0",
+                      "__typename": "QuestionOption"
+                    },
+                    {
+                      "id": "kbdbxrZP9-cY",
+                      "label": "Option 2",
+                      "value": "1",
+                      "__typename": "QuestionOption"
+                    },
+                    {
+                      "id": "7EFDVDtvyZ6h",
+                      "label": "Option 3",
+                      "value": "2",
+                      "__typename": "QuestionOption"
+                    },
+                    {
+                      "id": "CKqrKwhPbObE",
+                      "label": "Option 4",
+                      "value": "3",
+                      "__typename": "QuestionOption"
+                    }
+                  ],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": false,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "YeFJ5vZe8VF8",
+                  "key": "multipleSelectString",
+                  "title": "Multiple select (string)",
+                  "definition_id": "KYcDSScnM8cxu2WMyVuIi",
+                  "question_type": "MULTIPLE_CHOICE",
+                  "user_question_type": "MULTIPLE_SELECT",
+                  "data_point_value_type": "STRINGS_ARRAY",
+                  "is_required": false,
+                  "options": [
+                    {
+                      "id": "v3XJP3ZgMyc9",
+                      "label": "Option 1",
+                      "value": "some option",
+                      "__typename": "QuestionOption"
+                    },
+                    {
+                      "id": "JYHA_c6UFLJX",
+                      "label": "Option 2",
+                      "value": "3232",
+                      "__typename": "QuestionOption"
+                    },
+                    {
+                      "id": "xmXV065kgDEk",
+                      "label": "Option 3",
+                      "value": "another option",
+                      "__typename": "QuestionOption"
+                    },
+                    {
+                      "id": "eCrmxno3fpcy",
+                      "label": "fdsfds",
+                      "value": "option 4",
+                      "__typename": "QuestionOption"
+                    }
+                  ],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": false,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": {
+                    "id": "pJKUPqNNR68_FY9DYf-nb",
+                    "boolean_operator": "AND",
+                    "conditions": [],
+                    "__typename": "Rule"
+                  },
+                  "__typename": "Question"
+                },
+                {
+                  "id": "IIBwYGpXggId",
+                  "key": "yesOrNoBoolean",
+                  "title": "Yes or no? (boolean)",
+                  "definition_id": "QSzAEHWU5SNl",
+                  "question_type": "INPUT",
+                  "user_question_type": "YES_NO",
+                  "data_point_value_type": "BOOLEAN",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "bv3KpOsn4NAU",
+                  "key": "slider",
+                  "title": "Slider",
+                  "definition_id": "qeIf6jhiizCu",
+                  "question_type": "INPUT",
+                  "user_question_type": "SLIDER",
+                  "data_point_value_type": "NUMBER",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": {
+                      "min": 0,
+                      "max": 10,
+                      "step_value": 1,
+                      "min_label": "Min label",
+                      "max_label": "Max label",
+                      "is_value_tooltip_on": false,
+                      "display_marks": false,
+                      "show_min_max_values": false,
+                      "__typename": "SliderConfig"
+                    },
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "MB16VHGkpaMk",
+                  "key": "date",
+                  "title": "Date",
+                  "definition_id": "yX86ygNm5M0a",
+                  "question_type": "INPUT",
+                  "user_question_type": "DATE",
+                  "data_point_value_type": "DATE",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "wRuQ7bxa2afA",
+                  "key": "email",
+                  "title": "Email",
+                  "definition_id": "PKp3cBu5lPvR",
+                  "question_type": "INPUT",
+                  "user_question_type": "EMAIL",
+                  "data_point_value_type": "STRING",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "VehGDSgef6ZT",
+                  "key": "questionThatCollectsANumericValue",
+                  "title": "Question that collects a numeric value",
+                  "definition_id": "0NuSKClQNXV_",
+                  "question_type": "INPUT",
+                  "user_question_type": "NUMBER",
+                  "data_point_value_type": "NUMBER",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "9f5LpA1W2H8E",
+                  "key": "questionThatCollectsASstringValue",
+                  "title": "Question that collects a sstring value",
+                  "definition_id": "qiIFXlNLUVzN",
+                  "question_type": "INPUT",
+                  "user_question_type": "SHORT_TEXT",
+                  "data_point_value_type": "STRING",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "prYQOyNBFOrd",
+                  "key": "questionThatCollectsAStringButLongFormTextarea",
+                  "title": "Question that collects a string but long-form (textarea)",
+                  "definition_id": "tSFHKGROz6Zm",
+                  "question_type": "INPUT",
+                  "user_question_type": "LONG_TEXT",
+                  "data_point_value_type": "STRING",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "homdjEMaK2TV",
+                  "key": "questionThatCollectsAPhoneNumber",
+                  "title": "Question that collects a phone number",
+                  "definition_id": "yZahm5RhM1mb",
+                  "question_type": "INPUT",
+                  "user_question_type": "TELEPHONE",
+                  "data_point_value_type": "TELEPHONE",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": {
+                      "default_country": "GB",
+                      "available_countries": [],
+                      "__typename": "PhoneConfig"
+                    },
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "GM38AyHociso",
+                  "key": "icd",
+                  "title": "ICD",
+                  "definition_id": "LJDrgL3z0pSB",
+                  "question_type": "INPUT",
+                  "user_question_type": "ICD10_CLASSIFICATION",
+                  "data_point_value_type": "STRING",
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                },
+                {
+                  "id": "S4wiPuHS1Vz9",
+                  "key": "typePChildrenTextAnotherDescriptionElement",
+                  "title": "<p class=\"slate-p\">Another description element</p>",
+                  "definition_id": "kTKhru8J2Mtr",
+                  "question_type": "NO_INPUT",
+                  "user_question_type": "DESCRIPTION",
+                  "data_point_value_type": null,
+                  "is_required": false,
+                  "options": [],
+                  "config": {
+                    "recode_enabled": false,
+                    "use_select": null,
+                    "mandatory": false,
+                    "slider": null,
+                    "phone": null,
+                    "number": null,
+                    "multiple_select": null,
+                    "date_validation": null,
+                    "file_storage": null,
+                    "input_validation": null,
+                    "__typename": "QuestionConfig"
+                  },
+                  "rule": null,
+                  "__typename": "Question"
+                }
+              ],
+              "__typename": "ActivityForm"
+            }
+          },
+          "outputs": null,
+          "__typename": "Activity"
+        },
+        {
+          "id": "O02JHjjg5RJT5QlMyClDq",
+          "action": "ACTIVATE",
+          "careflow_id": "Tjsko1X8exEh",
+          "container_name": null,
+          "date": "2025-07-24T04:11:02.580Z",
+          "indirect_object": null,
+          "object": {
+            "id": "GqcizxgKGW8d",
+            "type": "STEP",
+            "name": "step w/message and checklist",
+            "email": null,
+            "preferred_language": null,
+            "__typename": "ActivityObject"
+          },
+          "pathway_definition_id": "1CnTTHNYM1Q3",
+          "reference_id": "PathwayNavigationNode/291450371",
+          "reference_type": "NAVIGATION",
+          "resolution": "SUCCESS",
+          "session_id": null,
+          "status": "DONE",
+          "tenant_id": "_v0nvLX5zCNd",
+          "is_user_activity": false,
+          "sub_activities": [],
+          "inputs": null,
+          "outputs": null,
+          "__typename": "Activity"
+        },
+        {
+          "id": "KfqaqNGqAFxa0TTpoTFGL",
+          "action": "ACTIVATE",
+          "careflow_id": "Tjsko1X8exEh",
+          "container_name": null,
+          "date": "2025-07-24T04:11:02.393Z",
+          "indirect_object": null,
+          "object": {
+            "id": "BI6Wl1P4lveg",
+            "type": "STEP",
+            "name": "step with clinical note",
+            "email": null,
+            "preferred_language": null,
+            "__typename": "ActivityObject"
+          },
+          "pathway_definition_id": "1CnTTHNYM1Q3",
+          "reference_id": "PathwayNavigationNode/291450372",
+          "reference_type": "NAVIGATION",
+          "resolution": "SUCCESS",
+          "session_id": null,
+          "status": "DONE",
+          "tenant_id": "_v0nvLX5zCNd",
+          "is_user_activity": false,
+          "sub_activities": [],
+          "inputs": null,
+          "outputs": null,
+          "__typename": "Activity"
+        },
+        {
+          "id": "czyaw3SoYbGUUWldHxP3M",
+          "action": "SCHEDULED",
+          "careflow_id": "Tjsko1X8exEh",
+          "container_name": null,
+          "date": "2025-07-24T04:11:02.357Z",
+          "indirect_object": null,
+          "object": {
+            "id": "GqcizxgKGW8d",
+            "type": "STEP",
+            "name": "step w/message and checklist",
+            "email": null,
+            "preferred_language": null,
+            "__typename": "ActivityObject"
+          },
+          "pathway_definition_id": "1CnTTHNYM1Q3",
+          "reference_id": "PathwayNavigationNode/291450371",
+          "reference_type": "NAVIGATION",
+          "resolution": "SUCCESS",
+          "session_id": null,
+          "status": "DONE",
+          "tenant_id": "_v0nvLX5zCNd",
+          "is_user_activity": false,
+          "sub_activities": [],
+          "inputs": null,
+          "outputs": null,
+          "__typename": "Activity"
+        },
+        {
+          "id": "MkCQJQ8DKdivyGKKN0ZaV",
+          "action": "ACTIVATE",
+          "careflow_id": "Tjsko1X8exEh",
+          "container_name": null,
+          "date": "2025-07-24T04:11:02.300Z",
+          "indirect_object": null,
+          "object": {
+            "id": "fFVy38YjKIDi",
+            "type": "STEP",
+            "name": "patient - form with validation",
+            "email": null,
+            "preferred_language": null,
+            "__typename": "ActivityObject"
+          },
+          "pathway_definition_id": "1CnTTHNYM1Q3",
+          "reference_id": "PathwayNavigationNode/291450373",
+          "reference_type": "NAVIGATION",
+          "resolution": "SUCCESS",
+          "session_id": null,
+          "status": "DONE",
+          "tenant_id": "_v0nvLX5zCNd",
+          "is_user_activity": false,
+          "sub_activities": [],
+          "inputs": null,
+          "outputs": null,
+          "__typename": "Activity"
+        },
+        {
+          "id": "htu4h1RF3P6mk3jGOIiNU",
+          "action": "ACTIVATE",
+          "careflow_id": "Tjsko1X8exEh",
+          "container_name": null,
+          "date": "2025-07-24T04:11:02.247Z",
+          "indirect_object": null,
+          "object": {
+            "id": "5vZsEgfc41aq",
+            "type": "STEP",
+            "name": "step with form",
+            "email": null,
+            "preferred_language": null,
+            "__typename": "ActivityObject"
+          },
+          "pathway_definition_id": "1CnTTHNYM1Q3",
+          "reference_id": "PathwayNavigationNode/291450370",
+          "reference_type": "NAVIGATION",
+          "resolution": "SUCCESS",
+          "session_id": null,
+          "status": "DONE",
+          "tenant_id": "_v0nvLX5zCNd",
+          "is_user_activity": false,
+          "sub_activities": [],
+          "inputs": null,
+          "outputs": null,
+          "__typename": "Activity"
+        }
+      ],
+      "totalCount": null,
+      "__typename": "ActivitiesPayload"
+    }
+  }
+}

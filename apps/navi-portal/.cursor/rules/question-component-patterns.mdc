@@ -1,0 +1,254 @@
+---
+description: When working with Form activities or individual question components of a particular user_question_type
+alwaysApply: false
+---
+
+# Form Questions & Activity Events
+
+## 🎯 **Core Pattern**
+
+```typescript
+// ✅ Question Component (Controller pattern)
+export interface ControlledQuestionProps {
+  question: Question;
+  field: ControllerRenderProps<any, string>; // From react-hook-form
+  fieldState: ControllerFieldState; // Includes error, invalid, isDirty, etc.
+  disabled?: boolean;
+  className?: string;
+  // NO individual event handlers!
+}
+
+// ✅ Validation Utility (Co-located with component)
+export function createXValidationRules(question: Question) {
+  const rules: any = {};
+
+  // Required validation
+  if (question.is_required) {
+    rules.required = "This field is required";
+  }
+
+  // Component-specific validation logic here
+  // e.g., email pattern, date constraints, text patterns
+
+  return rules;
+}
+```
+
+Examples: [date-question.tsx](mdc:apps/navi-portal/src/components/activities/form/questions/date-question.tsx), [email-question.tsx](mdc:apps/navi-portal/src/components/activities/form/questions/email-question.tsx), [short-text-question.tsx](mdc:apps/navi-portal/src/components/activities/form/questions/short-text-question.tsx)
+
+## 📊 **Activity Events (Form-Level Only)**
+
+```typescript
+function FormActivity() {
+  const { control, handleSubmit, watch } = useForm();
+  const { emitActivityEvent } = useActivityEvents(activityId, "FORM");
+
+  // 1. Ready event on mount
+  useEffect(() => emitActivityEvent("activity-ready"), []);
+
+  // 2. Data changes via watch()
+  useEffect(() => {
+    const subscription = watch((data, { name, type }) => {
+      if (name && type === "change") {
+        emitActivityEvent("activity-data-change", {
+          field: name,
+          value: data[name],
+        });
+        emitActivityEvent("activity-progress", {
+          progress: Object.values(data).filter(Boolean).length,
+          total: Object.keys(data).length,
+        });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
+
+  // 3. Form-level focus/blur
+  const onSubmit = (data) =>
+    emitActivityEvent("activity-complete", { submissionData: data });
+
+  return (
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      onFocus={() => emitActivityEvent("activity-focus")}
+      onBlur={() => emitActivityEvent("activity-blur")}
+    >
+      {questions.map((question) => (
+        <Controller
+          key={question.key}
+          name={question.key}
+          control={control}
+          rules={createValidationRules(question)} // ✅ Use component's validation utility
+          render={({ field, fieldState }) => (
+            <QuestionComponent
+              question={question}
+              field={field}
+              fieldState={fieldState}
+            />
+          )}
+        />
+      ))}
+    </form>
+  );
+}
+```
+
+## 🎨 **Branding (3 Methods)**
+
+### **1. SlateViewer (Rich Content)**
+
+```typescript
+// ✅ BEST - Perfect branding for JSON content
+const parseSlateJSON = (content: string) => {
+  if (content.startsWith("<")) return null;
+  try {
+    const parsed = JSON.parse(content);
+    return Array.isArray(parsed) && hasSlateStructure(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+};
+
+const slateContent = parseSlateJSON(question.title);
+if (slateContent) return <SlateViewer value={slateContent} />;
+```
+
+### **2. Typography Components**
+
+```typescript
+// ✅ GOOD - Direct component usage
+<Typography.H1>{title}</Typography.H1>
+<Typography.P>{content}</Typography.P>
+```
+
+### **3. CSS Variables**
+
+```typescript
+// ✅ BASIC - For simple components
+"font-[var(--font-family-body,inherit)]";
+"text-[var(--font-size-base,1rem)]";
+"text-foreground bg-background";
+```
+
+## 🚫 **Anti-Patterns**
+
+```typescript
+// ❌ WRONG - Individual question events
+interface WrongProps {
+  onFocus?: () => void;    // NO - use form-level events
+  onChange?: () => void;   // NO - use react-hook-form
+}
+
+// ❌ WRONG - Internal state
+function WrongQuestion() {
+  const [value, setValue] = useState(""); // NO - use Controller
+}
+
+// ❌ WRONG - Validation logic in stories/parents
+function WrongStory() {
+  rules={{
+    required: "Required",
+    pattern: /email/ // NO - use createXValidationRules()
+  }}
+}
+
+// ❌ WRONG - Helper text in non-ShortText components
+function WrongComponent() {
+  return <p>{helperText}</p>; // NO - only ShortText gets helper text
+}
+
+// ❌ WRONG - Complex CSS mapping
+.slate-h1 { @apply navi-h1; } /* Avoid global CSS */
+
+// ❌ WRONG - Fixed styling
+<input className="font-sans" /> // NO - use CSS variables
+```
+
+## ✅ **Quick Checklist**
+
+- [ ] Uses `ControlledQuestionProps` interface
+- [ ] Exports `createXValidationRules(question)` utility function
+- [ ] Spreads `{...field}` props (no custom handlers)
+- [ ] Uses SlateViewer for JSON content
+- [ ] Uses CSS variables for branding: `font-[var(--font-family-body,inherit)]`
+- [ ] Validation logic co-located with component (not in stories)
+- [ ] Helper text ONLY in ShortText component (never in others)
+- [ ] Has Storybook stories using FormFixture
+- [ ] Stories demonstrate activity events in console
+
+## 📋 **Question Types & Helper Text Rule**
+
+**Text**: `SHORT_TEXT` → Input + Helper Text Support, `LONG_TEXT` → Textarea, `EMAIL` → Input type="email"  
+**Selection**: `YES_NO` → RadioGroup, `MULTIPLE_CHOICE` → RadioGroup, `MULTIPLE_SELECT` → Checkbox group  
+**Special**: `NUMBER` → Input type="number", `DATE` → Calendar Picker, `SLIDER` → Slider, `FILE` → File upload  
+**Display**: `DESCRIPTION` → JSON detection → SlateViewer (preferred) or HTML fallback
+
+**🚨 CRITICAL**: Helper text should ONLY exist in `ShortTextQuestion` and NEVER in any other component.
+
+## 🧪 **Testing Pattern**
+
+```typescript
+// ✅ Updated Storybook Pattern: Use FormFixture
+import { FormFixture } from "./form-fixture";
+import {
+  QuestionComponent,
+  createQuestionValidationRules,
+} from "./question-component";
+
+export const Default: Story = {
+  render: () => (
+    <FormFixture question={baseQuestion}>
+      {({ field, fieldState }) => (
+        <QuestionComponent
+          question={baseQuestion}
+          field={field}
+          fieldState={fieldState}
+        />
+      )}
+    </FormFixture>
+  ),
+};
+
+export const WithValidation: Story = {
+  render: () => {
+    const question = { ...baseQuestion, is_required: true };
+    return (
+      <FormFixture
+        question={question}
+        validationRules={createQuestionValidationRules(question)}
+      >
+        {({ field, fieldState }) => (
+          <QuestionComponent
+            question={question}
+            field={field}
+            fieldState={fieldState}
+          />
+        )}
+      </FormFixture>
+    );
+  },
+};
+```
+
+**FormFixture automatically provides**:
+
+- Activity events logging (`activity-ready`, `activity-data-change`, `activity-progress`, `activity-focus`, `activity-blur`, `activity-complete`)
+- Form submission with "Submit Form" button
+- React-hook-form context with validation
+- Debug info (current value, activity ID)
+
+**Events to verify in console**: `activity-ready` → `activity-data-change` → `activity-progress` → `activity-complete`
+
+## 🔄 **Component Development Workflow**
+
+1. **Create component** with `ControlledQuestionProps`
+2. **Export validation utility** `createXValidationRules(question)`
+3. **Add Storybook stories** using `FormFixture`
+4. **Test activity events** in browser console
+5. **Verify accessibility** with proper aria attributes
+6. **Check branding** with CSS variables
+
+```
+
+**Events to verify**: `activity-ready` → `activity-data-change` → `activity-progress` → `activity-complete`
+```

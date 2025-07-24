@@ -22,12 +22,83 @@ npm install @awell-health/navi-js
 ```typescript
 import { loadNavi } from "@awell-health/navi-js";
 
+// Load Navi SDK once at app initialization
 const navi = await loadNavi("pk_test_your_key_here");
 
 const instance = navi.renderActivities("#container", {
   pathwayId: "pathway_patient_intake",
   organizationId: "org_customer_123",
   userId: "user_patient_456",
+});
+```
+
+## React Integration Pattern
+
+```typescript
+// App.tsx - Load once at app level
+import { loadNavi } from "@awell-health/navi-js";
+import { NaviProvider, NaviEmbed } from "@awell-health/navi-js-react";
+
+function App() {
+  const [naviLoaded, setNaviLoaded] = useState(false);
+
+  useEffect(() => {
+    // Load Navi SDK once when app starts
+    loadNavi("pk_test_your_key_here", {
+      origin: "https://cdn.awellhealth.com",
+      embedOrigin: "http://localhost:3000", // For testing
+    }).then(() => setNaviLoaded(true));
+  }, []);
+
+  if (!naviLoaded) return <div>Loading...</div>;
+
+  return (
+    <NaviProvider publishableKey="pk_test_your_key_here">
+      <NaviEmbed careflowDefinitionId="flow_123" />
+    </NaviProvider>
+  );
+}
+```
+
+## Configuration Options
+
+You can control where the Navi SDK loads from and where embeds point to:
+
+### Default (Production)
+
+```typescript
+// Uses CDN by default (recommended for production)
+const navi = await loadNavi("pk_live_your_key_here");
+// Script from: https://cdn.awellhealth.com
+// Embeds to: https://navi-portal.awellhealth.com
+```
+
+### Force Local Development
+
+```typescript
+// Force local development mode
+const navi = await loadNavi("pk_test_your_key_here", { local: true });
+// Script from: http://localhost:3000
+// Embeds to: http://localhost:3000
+```
+
+### Mixed Configuration
+
+```typescript
+// Pull script from CDN but embed to localhost (for testing)
+const navi = await loadNavi("pk_test_your_key_here", {
+  origin: "https://cdn.awellhealth.com", // Script from CDN
+  embedOrigin: "http://localhost:3000", // Embed to local
+});
+```
+
+### Custom URLs
+
+```typescript
+// Completely custom configuration
+const navi = await loadNavi("pk_test_your_key_here", {
+  origin: "https://custom-cdn.example.com",
+  embedOrigin: "https://custom-portal.example.com",
 });
 ```
 
