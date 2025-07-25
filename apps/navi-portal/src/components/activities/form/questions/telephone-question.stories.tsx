@@ -3,7 +3,7 @@ import {
   TelephoneQuestion,
   createTelephoneValidationRules,
 } from "./telephone-question";
-import { FormFixture } from "./form-fixture";
+import { FormFixture } from "./form.fixture";
 import type { Question } from "@/lib/awell-client/generated/graphql";
 
 // Custom args interface for the story

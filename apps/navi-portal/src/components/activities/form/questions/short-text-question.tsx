@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
  * Can be used by parent forms with react-hook-form validation rules
  */
 export function createShortTextValidationRules(question: Question) {
-  const rules: any = {};
+  const rules: Record<string, unknown> = {};
 
   // Required validation
   if (question.is_required) {
@@ -58,6 +58,7 @@ export function ShortTextQuestion({
 
       <Input
         {...field}
+        value={(field.value as string) || ""}
         id={field.name}
         type="text"
         autoComplete="off"

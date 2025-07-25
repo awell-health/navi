@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import React from "react";
 import { ICD10Question, createICD10ValidationRules } from "./icd10-question";
-import { FormFixture } from "./form-fixture";
+import { FormFixture } from "./form.fixture";
 import type { Question } from "@/lib/awell-client/generated/graphql";
 
 const meta: Meta<typeof ICD10Question> = {

@@ -24,17 +24,21 @@ import {
  * Leverages Apollo's cache instead of maintaining its own
  */
 class ActivityService {
-  private listeners: Map<string, Set<(data: any) => void>> = new Map();
+  private listeners: Map<string, Set<(data: unknown) => void>> = new Map();
 
   // Event bus for cross-service communication
-  emit(event: string, data: any) {
+  emit(event: string, data: unknown) {
+    console.log("🔔 Emitting event:", event);
     const handlers = this.listeners.get(event);
     if (handlers) {
-      handlers.forEach((handler) => handler(data));
+      handlers.forEach((handler) => {
+        console.log("🔔 Calling handler for event:", event);
+        handler(data);
+      });
     }
   }
 
-  on(event: string, handler: (data: any) => void) {
+  on(event: string, handler: (data: unknown) => void) {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
@@ -186,7 +190,7 @@ interface ActivityContextType {
   refetchActivities: () => Promise<void>;
   completeActivity: (
     activityId: string,
-    data: any,
+    data: Record<string, unknown>,
     activityType?: string
   ) => Promise<void>;
 
@@ -211,7 +215,6 @@ export function ActivityProvider({
   children,
   careflowId,
   stakeholderId,
-  onActivityActivate,
   service: injectedService,
 }: ActivityProviderProps) {
   // Create service instance only once
@@ -327,7 +330,7 @@ export function ActivityProvider({
           if (nextActivity) {
             console.log("🎯 Auto-advancing to next activity:", nextActivity.id);
             setActiveActivityState(nextActivity);
-            onActivityActivate?.(nextActivity.id, nextActivity);
+            service.emit("activity.activated", { activity: nextActivity });
           } else {
             console.log("🏁 No more activities to complete");
           }
@@ -384,7 +387,7 @@ export function ActivityProvider({
           service.findFirstCompletableActivity(filteredActivities);
         if (firstCompletable) {
           setActiveActivityState(firstCompletable);
-          onActivityActivate?.(firstCompletable.id, firstCompletable);
+          service.emit("activity.activated", { activity: firstCompletable });
           console.log(
             "🎯 Auto-selected first completable activity:",
             firstCompletable.id
@@ -392,13 +395,7 @@ export function ActivityProvider({
         }
       }
     }
-  }, [
-    activitiesData,
-    stakeholderId,
-    activeActivity,
-    onActivityActivate,
-    // service is now stable (created once), no need in deps
-  ]);
+  }, [activitiesData, stakeholderId, activeActivity, service]);
 
   // =================== ACTION HANDLERS ===================
 
@@ -407,14 +404,13 @@ export function ActivityProvider({
       const activity = activities.find((a) => a.id === activityId);
       if (activity) {
         setActiveActivityState(activity);
-        onActivityActivate?.(activity.id, activity);
         service.emit("activity.activated", { activity });
         console.log("🎯 Active activity set to:", activityId);
       } else {
         console.warn("⚠️ Activity not found:", activityId);
       }
     },
-    [activities, onActivityActivate, service]
+    [activities, service]
   );
 
   const markActivityAsViewed = useCallback(
@@ -437,7 +433,11 @@ export function ActivityProvider({
   }, [refetch]);
 
   const completeActivity = useCallback(
-    async (activityId: string, data: any, activityType?: string) => {
+    async (
+      activityId: string,
+      data: Record<string, unknown>,
+      activityType?: string
+    ) => {
       console.log("🔄 Completing activity:", activityId, activityType, data);
 
       try {

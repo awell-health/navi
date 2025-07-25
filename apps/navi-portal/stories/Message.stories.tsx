@@ -4,7 +4,7 @@ import {
   isActivityReadyEvent,
   isActivityCompleteEvent,
   isActivityErrorEvent,
-} from "../src/hooks/use-activity-events";
+} from "../src/domains/communications/hooks/use-activity-events.client";
 import { ActivityFactory } from "@awell-health/navi-core";
 
 const messageActivity = {

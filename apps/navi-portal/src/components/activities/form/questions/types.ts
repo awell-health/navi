@@ -15,7 +15,7 @@ export interface BaseQuestionProps {
 
 // Props for Controller render function with proper error support
 export interface ControlledQuestionProps extends BaseQuestionProps {
-  field: ControllerRenderProps<any, string>;
+  field: ControllerRenderProps<Record<string, unknown>, string>;
   fieldState: ControllerFieldState; // Includes error, invalid, isDirty, etc.
 }
 

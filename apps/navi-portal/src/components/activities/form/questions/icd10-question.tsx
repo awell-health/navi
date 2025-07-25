@@ -27,7 +27,7 @@ import type { Question } from "@/lib/awell-client/generated/graphql";
  * Validation utility for ICD10Question
  */
 export function createICD10ValidationRules(question: Question) {
-  const rules: any = {};
+  const rules: Record<string, unknown> = {};
 
   // Required validation
   if (question.is_required) {
@@ -178,7 +178,7 @@ export function ICD10Question({
                   searchValue.length > 1 &&
                   options.length === 0 && (
                     <CommandEmpty>
-                      No ICD-10 codes found for "{searchValue}"
+                      No ICD-10 codes found for &quot;{searchValue}&quot;
                     </CommandEmpty>
                   )}
 

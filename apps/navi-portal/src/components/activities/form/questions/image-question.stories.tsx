@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import React from "react";
 import { ImageQuestion, createImageValidationRules } from "./image-question";
-import { FormFixture } from "./form-fixture";
+import { FormFixture } from "./form.fixture";
 import type { Question } from "@/lib/awell-client/generated/graphql";
 
 const meta: Meta<typeof ImageQuestion> = {
@@ -47,10 +47,10 @@ const baseQuestion: Question = {
       accepted_file_types: null,
     },
     input_validation: null,
-    __typename: "QuestionConfig"
+    __typename: "QuestionConfig",
   },
   rule: null,
-  __typename: "Question"
+  __typename: "Question",
 };
 
 export const Default: Story = {
@@ -69,14 +69,14 @@ export const Default: Story = {
 
 export const Required: Story = {
   render: () => {
-    const question = { 
-      ...baseQuestion, 
+    const question = {
+      ...baseQuestion,
       title: "Upload profile photo (required)",
-      is_required: true 
+      is_required: true,
     };
-    
+
     return (
-      <FormFixture 
+      <FormFixture
         question={question}
         validationRules={createImageValidationRules(question)}
       >
@@ -94,8 +94,8 @@ export const Required: Story = {
 
 export const SpecificImageTypes: Story = {
   render: () => {
-    const question = { 
-      ...baseQuestion, 
+    const question = {
+      ...baseQuestion,
       title: "Upload JPEG or PNG image",
       config: {
         ...baseQuestion.config,
@@ -103,10 +103,10 @@ export const SpecificImageTypes: Story = {
           __typename: "FileStorageQuestionConfig",
           file_storage_config_slug: "photo-storage",
           accepted_file_types: ["image/jpeg", "image/png"],
-        }
-      }
+        },
+      },
     };
-    
+
     return (
       <FormFixture question={question}>
         {({ field, fieldState }) => (
@@ -123,8 +123,8 @@ export const SpecificImageTypes: Story = {
 
 export const MedicalPhotos: Story = {
   render: () => {
-    const question = { 
-      ...baseQuestion, 
+    const question = {
+      ...baseQuestion,
       title: "Upload medical photos",
       config: {
         ...baseQuestion.config,
@@ -132,10 +132,10 @@ export const MedicalPhotos: Story = {
           __typename: "FileStorageQuestionConfig",
           file_storage_config_slug: "medical-photos",
           accepted_file_types: ["image/*"],
-        }
-      }
+        },
+      },
     };
-    
+
     return (
       <FormFixture question={question}>
         {({ field, fieldState }) => (
@@ -152,8 +152,8 @@ export const MedicalPhotos: Story = {
 
 export const WithValidation: Story = {
   render: () => {
-    const question = { 
-      ...baseQuestion, 
+    const question = {
+      ...baseQuestion,
       title: "Upload identification photo (required)",
       is_required: true,
       config: {
@@ -162,12 +162,12 @@ export const WithValidation: Story = {
           __typename: "FileStorageQuestionConfig",
           file_storage_config_slug: "id-photos",
           accepted_file_types: ["image/jpeg", "image/png", "image/webp"],
-        }
-      }
+        },
+      },
     };
-    
+
     return (
-      <FormFixture 
+      <FormFixture
         question={question}
         validationRules={createImageValidationRules(question)}
       >
@@ -185,13 +185,13 @@ export const WithValidation: Story = {
 
 export const Disabled: Story = {
   render: () => {
-    const question = { 
-      ...baseQuestion, 
-      title: "Previous image upload (readonly)" 
+    const question = {
+      ...baseQuestion,
+      title: "Previous image upload (readonly)",
     };
-    
+
     return (
-      <FormFixture 
+      <FormFixture
         question={question}
         defaultValue="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=300&fit=crop&crop=face"
       >
@@ -206,4 +206,4 @@ export const Disabled: Story = {
       </FormFixture>
     );
   },
-}; 
+};

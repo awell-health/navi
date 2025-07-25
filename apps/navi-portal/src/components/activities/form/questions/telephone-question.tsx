@@ -1,5 +1,4 @@
 import React, { useMemo, useCallback } from "react";
-import { Controller } from "react-hook-form";
 import { ControlledQuestionProps } from "./types";
 import type { Question } from "@/lib/awell-client/generated/graphql";
 import { PhoneInput, Label, Typography } from "@/components/ui";
@@ -12,7 +11,7 @@ import type { Country, Value as PhoneValue } from "react-phone-number-input";
  * Uses react-phone-number-input for proper phone validation
  */
 export function createTelephoneValidationRules(question: Question) {
-  const rules: any = {};
+  const rules: Record<string, unknown> = {};
 
   // Required validation
   if (question.is_required) {
@@ -47,7 +46,7 @@ export function createTelephoneValidationRules(question: Question) {
       }
 
       return true;
-    } catch (error) {
+    } catch {
       return "Please enter a valid phone number";
     }
   };
@@ -107,7 +106,7 @@ export function TelephoneQuestion({
               return;
             }
           }
-        } catch (error) {
+        } catch {
           // If parsing fails, continue with normal flow
         }
       }
@@ -130,7 +129,7 @@ export function TelephoneQuestion({
       </Label>
 
       <PhoneInput
-        value={field.value}
+        value={field.value as PhoneValue}
         onChange={handlePhoneChange}
         onBlur={field.onBlur}
         name={field.name}

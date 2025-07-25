@@ -9,7 +9,7 @@ import type { Question } from "@/lib/awell-client/generated/graphql";
  * Co-located with component for maintainability
  */
 export function createYesNoValidationRules(question: Question) {
-  const rules: any = {};
+  const rules: Record<string, unknown> = {};
 
   // For boolean fields, we ONLY use custom validation since false is a valid value
   // Do NOT use rules.required as it treats false as falsy/empty

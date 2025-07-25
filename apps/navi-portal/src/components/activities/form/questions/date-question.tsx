@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
  * Can be used by parent forms with react-hook-form validation rules
  */
 export function createDateValidationRules(question: Question) {
-  const rules: any = {};
+  const rules: Record<string, unknown> = {};
 
   // Required validation
   if (question.is_required) {
@@ -96,7 +96,7 @@ export function DateQuestion({
   // Date constraints based on configuration
   const getDateConstraints = () => {
     const today = new Date();
-    const constraints: any = {};
+    const constraints: Record<string, unknown> = {};
 
     if (dateConfig?.allowed_dates === "FUTURE") {
       constraints.disabled = (date: Date) => {

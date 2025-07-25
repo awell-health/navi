@@ -1,5 +1,5 @@
 ---
-globs: **/*event*,examples/**/*.ts,packages/navi.js/**/*,**/*messaging*
+globs: **/*event*,examples/**/*.ts,packages/navi.js/**/*,**/domains/communications/**
 alwaysApply: false
 ---
 

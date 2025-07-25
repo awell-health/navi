@@ -1,13 +1,22 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import {
+  useForm,
+  Controller,
+  type ControllerRenderProps,
+  type ControllerFieldState,
+} from "react-hook-form";
 import type { Question } from "@/lib/awell-client/generated/graphql";
 import { Typography, Button } from "@/components/ui";
 
 interface FormFixtureProps {
   question: Question;
-  validationRules?: any;
+  validationRules?: Record<string, unknown>;
   activityId?: string;
-  children: (props: { field: any; fieldState: any }) => React.ReactNode;
+  children: (props: {
+    field: ControllerRenderProps<Record<string, unknown>, string>;
+    fieldState: ControllerFieldState;
+  }) => React.ReactElement;
 }
 
 /**
@@ -22,7 +31,7 @@ export function FormFixture({
 }: FormFixtureProps) {
   const { control, handleSubmit, watch } = useForm({
     defaultValues: {
-      [question.key]: undefined as any,
+      [question.key]: undefined,
     },
     mode: "onChange",
   });

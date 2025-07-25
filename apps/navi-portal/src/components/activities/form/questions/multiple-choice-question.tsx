@@ -5,11 +5,6 @@ import {
   RadioGroupItem,
   Label,
   Typography,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Button,
   Drawer,
   DrawerContent,
@@ -30,13 +25,14 @@ import { cn } from "@/lib/utils";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Check } from "lucide-react";
 import type { Question } from "@/lib/awell-client/generated/graphql";
+import { FieldValues } from "react-hook-form";
 
 /**
  * Validation utility for MultipleChoiceQuestion
  * Co-located with component for maintainability
  */
 export function createMultipleChoiceValidationRules(question: Question) {
-  const rules: any = {};
+  const rules: Record<string, unknown> = {};
 
   if (question.is_required) {
     rules.required = "This field is required";
@@ -60,7 +56,7 @@ export function createMultipleChoiceValidationRules(question: Question) {
 
 interface OptionListProps {
   question: Question;
-  field: any;
+  field: FieldValues;
   setOpen: (open: boolean) => void;
 }
 
@@ -237,7 +233,7 @@ export function MultipleChoiceQuestion({
       </Label>
 
       <RadioGroup
-        value={field.value || ""}
+        value={(field.value as string) || ""}
         onValueChange={field.onChange}
         onBlur={field.onBlur}
         disabled={disabled}

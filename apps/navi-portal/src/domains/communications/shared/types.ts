@@ -5,6 +5,8 @@ import type { ActivityEvent, UserActivityType } from "@awell-health/navi-core";
  *
  * Handles iframe-to-parent communication via PostMessage
  * Builds on top of navi-core ActivityEvent for consistency
+ *
+ * 📖 For complete architecture documentation, see: ./ARCHITECTURE.md
  */
 
 /**

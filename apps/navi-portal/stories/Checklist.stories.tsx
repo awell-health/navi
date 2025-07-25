@@ -5,7 +5,7 @@ import {
   isActivityCompleteEvent,
   isActivityErrorEvent,
   isActivityProgressEvent,
-} from "../src/hooks/use-activity-events";
+} from "../src/domains/communications/hooks/use-activity-events.client";
 import { ActivityFactory } from "@awell-health/navi-core";
 
 const meta: Meta<typeof Checklist> = {

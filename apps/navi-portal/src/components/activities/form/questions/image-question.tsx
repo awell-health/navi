@@ -1,11 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable jsx-a11y/alt-text */
 import React, { useCallback, useState } from "react";
 import { ControlledQuestionProps } from "./types";
-import {
-  Button,
-  Label,
-  Typography,
-} from "@/components/ui";
-import { Upload, Image, X, Loader2 } from "lucide-react";
+import { Button, Label, Typography } from "@/components/ui";
+import { Image, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHandleFileUpload } from "@/hooks/use-handle-file-upload";
 import type { Question } from "@/lib/awell-client/generated/graphql";
@@ -14,7 +12,7 @@ import type { Question } from "@/lib/awell-client/generated/graphql";
  * Validation utility for ImageQuestion
  */
 export function createImageValidationRules(question: Question) {
-  const rules: any = {};
+  const rules: Record<string, unknown> = {};
 
   // Required validation
   if (question.is_required) {
@@ -25,12 +23,12 @@ export function createImageValidationRules(question: Question) {
   rules.validate = (value: string) => {
     if (!value && !question.is_required) return true;
     if (!value && question.is_required) return "Please upload an image";
-    
+
     // Value should be a file URL after upload
-    if (!value.startsWith('http')) {
+    if (!value.startsWith("http")) {
       return "Please upload a valid image";
     }
-    
+
     return true;
   };
 
@@ -40,28 +38,40 @@ export function createImageValidationRules(question: Question) {
 /**
  * Utility to check if file type is accepted for images
  */
-function isImageTypeAccepted(file: File, acceptedTypes?: string[] | null): boolean {
+function isImageTypeAccepted(
+  file: File,
+  acceptedTypes?: string[] | null
+): boolean {
   // Default to common image types if none specified
-  const defaultImageTypes = ['image/*', 'image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-  const typesToCheck = acceptedTypes && acceptedTypes.length > 0 ? acceptedTypes : defaultImageTypes;
+  const defaultImageTypes = [
+    "image/*",
+    "image/jpeg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+  ];
+  const typesToCheck =
+    acceptedTypes && acceptedTypes.length > 0
+      ? acceptedTypes
+      : defaultImageTypes;
 
-  return typesToCheck.some(acceptedType => {
+  return typesToCheck.some((acceptedType) => {
     // Handle wildcards like "image/*"
-    if (acceptedType.includes('*')) {
-      const baseType = acceptedType.split('/')[0];
-      return file.type.startsWith(baseType + '/');
+    if (acceptedType.includes("*")) {
+      const baseType = acceptedType.split("/")[0];
+      return file.type.startsWith(baseType + "/");
     }
-    
+
     // Handle exact matches like "image/jpeg"
-    if (acceptedType.includes('/')) {
+    if (acceptedType.includes("/")) {
       return file.type === acceptedType;
     }
-    
+
     // Handle extensions like ".jpg", ".png"
-    if (acceptedType.startsWith('.')) {
+    if (acceptedType.startsWith(".")) {
       return file.name.toLowerCase().endsWith(acceptedType.toLowerCase());
     }
-    
+
     return false;
   });
 }
@@ -73,9 +83,9 @@ function getFileNameFromUrl(url: string): string {
   try {
     const urlObj = new URL(url);
     const pathname = urlObj.pathname;
-    return decodeURIComponent(pathname.split('/').pop() || 'image');
+    return decodeURIComponent(pathname.split("/").pop() || "image");
   } catch {
-    return 'image';
+    return "image";
   }
 }
 
@@ -93,80 +103,92 @@ export function ImageQuestion({
   const [dragActive, setDragActive] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { handleFileUpload } = useHandleFileUpload();
-  
+
   const hasError = fieldState.invalid && fieldState.error;
   const errorMessage = fieldState.error?.message;
   const fileConfig = question.config?.file_storage;
   const acceptedTypes = fileConfig?.accepted_file_types;
   const configSlug = fileConfig?.file_storage_config_slug;
 
-  const handleFileSelect = useCallback(async (file: File) => {
-    if (!configSlug) {
-      console.error('No file storage config slug provided');
-      return;
-    }
-
-    // Validate file type (ensure it's an image)
-    if (!isImageTypeAccepted(file, acceptedTypes)) {
-      console.error(`File type ${file.type} not accepted for images`);
-      return;
-    }
-
-    try {
-      setIsUploading(true);
-      
-      // Create preview URL
-      const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
-      
-      const fileUrl = await handleFileUpload(file, configSlug);
-      field.onChange(fileUrl);
-      
-      // Clean up object URL after upload
-      URL.revokeObjectURL(objectUrl);
-      setPreviewUrl(null);
-    } catch (error) {
-      console.error('Image upload failed:', error);
-      // Clean up on error
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-        setPreviewUrl(null);
+  const handleFileSelect = useCallback(
+    async (file: File) => {
+      if (!configSlug) {
+        console.error("No file storage config slug provided");
+        return;
       }
-    } finally {
-      setIsUploading(false);
-    }
-  }, [handleFileUpload, configSlug, acceptedTypes, field, previewUrl]);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragActive(false);
-    
-    if (disabled || isUploading) return;
-    
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) {
-      handleFileSelect(files[0]);
-    }
-  }, [disabled, isUploading, handleFileSelect]);
+      // Validate file type (ensure it's an image)
+      if (!isImageTypeAccepted(file, acceptedTypes)) {
+        console.error(`File type ${file.type} not accepted for images`);
+        return;
+      }
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    if (!disabled && !isUploading) {
-      setDragActive(true);
-    }
-  }, [disabled, isUploading]);
+      try {
+        setIsUploading(true);
+
+        // Create preview URL
+        const objectUrl = URL.createObjectURL(file);
+        setPreviewUrl(objectUrl);
+
+        const fileUrl = await handleFileUpload(file, configSlug);
+        field.onChange(fileUrl);
+
+        // Clean up object URL after upload
+        URL.revokeObjectURL(objectUrl);
+        setPreviewUrl(null);
+      } catch (error) {
+        console.error("Image upload failed:", error);
+        // Clean up on error
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+          setPreviewUrl(null);
+        }
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [handleFileUpload, configSlug, acceptedTypes, field, previewUrl]
+  );
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragActive(false);
+
+      if (disabled || isUploading) return;
+
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length > 0) {
+        handleFileSelect(files[0]);
+      }
+    },
+    [disabled, isUploading, handleFileSelect]
+  );
+
+  const handleDragOver = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      if (!disabled && !isUploading) {
+        setDragActive(true);
+      }
+    },
+    [disabled, isUploading]
+  );
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragActive(false);
   }, []);
 
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      handleFileSelect(files[0]);
-    }
-  }, [handleFileSelect]);
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        handleFileSelect(files[0]);
+      }
+    },
+    [handleFileSelect]
+  );
 
   const handleClear = useCallback(() => {
     field.onChange("");
@@ -177,12 +199,14 @@ export function ImageQuestion({
   }, [field, previewUrl]);
 
   // Default to image types if none specified
-  const imageTypes = acceptedTypes && acceptedTypes.length > 0 
-    ? acceptedTypes 
-    : ['image/*'];
-  const acceptString = imageTypes.join(',');
-  const currentFileName = field.value ? getFileNameFromUrl(field.value) : null;
-  const displayImageUrl = previewUrl || field.value;
+  const imageTypes =
+    acceptedTypes && acceptedTypes.length > 0 ? acceptedTypes : ["image/*"];
+  const acceptString = imageTypes.join(",");
+  const currentFileName =
+    field.value && typeof field.value === "string"
+      ? getFileNameFromUrl(field.value)
+      : null;
+  const displayImageUrl = previewUrl || (field.value as string);
 
   return (
     <div className={cn("space-y-2", className)}>
@@ -204,7 +228,9 @@ export function ImageQuestion({
             dragActive && "border-primary bg-primary/5",
             hasError && "border-destructive",
             (disabled || isUploading) && "opacity-50 cursor-not-allowed",
-            !disabled && !isUploading && "hover:border-muted-foreground/40 cursor-pointer"
+            !disabled &&
+              !isUploading &&
+              "hover:border-muted-foreground/40 cursor-pointer"
           )}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
@@ -231,13 +257,13 @@ export function ImageQuestion({
                     Click to upload or drag and drop an image
                   </Typography.Small>
                   <Typography.Small className="text-muted-foreground mt-1">
-                    Accepted formats: {imageTypes.join(', ')}
+                    Accepted formats: {imageTypes.join(", ")}
                   </Typography.Small>
                 </div>
               </>
             )}
           </div>
-          
+
           <input
             id={`image-input-${field.name}`}
             type="file"
@@ -257,8 +283,8 @@ export function ImageQuestion({
                 alt={currentFileName || "Uploaded image"}
                 className="w-full h-48 object-cover"
                 onError={(e) => {
-                  console.error('Failed to load image:', displayImageUrl);
-                  e.currentTarget.style.display = 'none';
+                  console.error("Failed to load image:", displayImageUrl);
+                  e.currentTarget.style.display = "none";
                 }}
               />
               {isUploading && (
@@ -270,7 +296,7 @@ export function ImageQuestion({
                 </div>
               )}
             </div>
-            
+
             {!disabled && (
               <Button
                 type="button"
@@ -283,7 +309,7 @@ export function ImageQuestion({
               </Button>
             )}
           </div>
-          
+
           {/* File Info */}
           <div className="flex items-center space-x-3 p-3 border border-border rounded-lg bg-muted/30">
             <Image className="h-5 w-5 text-muted-foreground" />
@@ -311,4 +337,4 @@ export function ImageQuestion({
       )}
     </div>
   );
-} 
+}

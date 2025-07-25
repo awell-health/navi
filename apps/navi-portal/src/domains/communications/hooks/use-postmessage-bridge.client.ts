@@ -4,7 +4,6 @@ import { useCallback } from "react";
 import type { ActivityEvent, UserActivityType } from "@awell-health/navi-core";
 import type {
   HeightChangeEvent,
-  ActivityActivateEvent,
   PostMessageActivityEvent,
   AllPostMessageEvents,
 } from "../shared/types";
@@ -47,32 +46,6 @@ export function usePostMessageBridge({
         type: "navi.height.changed",
         height,
         activity_id: activityId,
-        timestamp: Date.now(),
-      };
-
-      sendMessage(event);
-    },
-    [instanceId, sendMessage]
-  );
-
-  const sendActivityActivate = useCallback(
-    (
-      activityId: string,
-      activityType: UserActivityType,
-      data: {
-        activityId: string;
-        activityType: string;
-        activityName: string;
-        status: string;
-      }
-    ) => {
-      const event: ActivityActivateEvent = {
-        source: "navi",
-        instance_id: instanceId!,
-        type: "navi.activity.activate",
-        activity_id: activityId,
-        activity_type: activityType,
-        data,
         timestamp: Date.now(),
       };
 
@@ -124,7 +97,6 @@ export function usePostMessageBridge({
   return {
     sendMessage,
     sendHeightChange,
-    sendActivityActivate,
     sendActivityEvent,
     isReady: !!instanceId,
   };

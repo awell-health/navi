@@ -10,7 +10,7 @@ import type { Question } from "@/lib/awell-client/generated/graphql";
  * Validation utility for FileQuestion
  */
 export function createFileValidationRules(question: Question) {
-  const rules: any = {};
+  const rules: Record<string, unknown> = {};
 
   // Required validation
   if (question.is_required) {
@@ -68,7 +68,8 @@ function isFileTypeAccepted(
 /**
  * Utility to format file size
  */
-function formatFileSize(bytes: number): string {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _formatFileSize(bytes: number): string {
   if (bytes === 0) return "0 Bytes";
   const k = 1024;
   const sizes = ["Bytes", "KB", "MB", "GB"];
@@ -180,7 +181,9 @@ export function FileQuestion({
   }, [field]);
 
   const acceptString = acceptedTypes?.join(",") || "";
-  const currentFileName = field.value ? getFileNameFromUrl(field.value) : null;
+  const currentFileName = field.value
+    ? getFileNameFromUrl(field.value as string)
+    : null;
 
   return (
     <div className={cn("space-y-2", className)}>

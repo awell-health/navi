@@ -56,7 +56,7 @@ import {
 
 interface QuestionRendererProps {
   question: Question;
-  control: Control<any>;
+  control: Control<Record<string, unknown>>;
   errors: FieldErrors;
   disabled?: boolean;
 }
@@ -80,7 +80,6 @@ const validationRuleCreators = {
 export function QuestionRenderer({
   question,
   control,
-  errors,
   disabled = false,
 }: QuestionRendererProps) {
   // Skip rendering non-data questions (descriptions are handled separately)
@@ -173,8 +172,8 @@ export function getQuestionKeys(questions: Question[]): string[] {
  */
 export function createDefaultValues(
   questions: Question[]
-): Record<string, any> {
-  const defaults: Record<string, any> = {};
+): Record<string, unknown> {
+  const defaults: Record<string, unknown> = {};
 
   questions.forEach((question) => {
     // Skip description questions

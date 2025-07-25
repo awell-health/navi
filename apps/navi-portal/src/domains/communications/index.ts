@@ -13,6 +13,7 @@ export {
 // Hooks
 export { useHeightManager } from "./hooks/use-height-manager.client";
 export { usePostMessageBridge } from "./hooks/use-postmessage-bridge.client";
+export { useActivityEvents } from "./hooks/use-activity-events.client";
 
 // Types
 export type {

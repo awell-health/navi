@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Activities } from "@/components/activities/index";
 import { ActivityProvider } from "@/lib/activity-provider";
@@ -9,7 +9,6 @@ import {
   ChecklistActivity,
   FormActivity,
   MessageActivity,
-  type ActivityEventHandlers,
 } from "@awell-health/navi-core";
 import {
   ActivityFragment,
@@ -88,21 +87,8 @@ export default function CareflowActivitiesClient({
     url: typeof window !== "undefined" ? window.location.href : "SSR",
   });
 
-  // Handle activity activation for event forwarding
-  const handleActivityActivate = useCallback(
-    (activityId: string, activity: ActivityFragment) => {
-      console.log("🎯 Activity activated:", activityId);
-      // Activity activation will be handled by the communications context
-    },
-    []
-  );
-
   return (
-    <ActivityProvider
-      careflowId={careflowId}
-      stakeholderId={stakeholderId}
-      onActivityActivate={handleActivityActivate}
-    >
+    <ActivityProvider careflowId={careflowId} stakeholderId={stakeholderId}>
       <IframeCommunicator instanceId={instanceId}>
         <CareflowActivitiesContent />
       </IframeCommunicator>
@@ -113,7 +99,6 @@ export default function CareflowActivitiesClient({
 // Inner component that uses the useActivity hook
 function CareflowActivitiesContent() {
   const {
-    activities,
     activeActivity,
     isLoading,
     error,
@@ -122,8 +107,7 @@ function CareflowActivitiesContent() {
     completeActivity,
   } = useActivity();
   const { getStackSpacing } = useBranding();
-  const { createActivityEventHandlers, handleActivityActivate } =
-    useCommunications();
+  const { createActivityEventHandlers } = useCommunications();
 
   // State for activity drawer
   const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);

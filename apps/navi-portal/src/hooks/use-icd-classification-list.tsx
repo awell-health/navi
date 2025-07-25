@@ -9,7 +9,7 @@ interface ICDOption {
   name: string;
 }
 
-// Simple debounce implementation
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function debounce<T extends (...args: any[]) => any>(
   func: T,
   delay: number
@@ -85,15 +85,16 @@ export const useICDClassificationList = (questionId: string) => {
   );
 
   useEffect(() => {
+    const ref = debouncedFetchICDCodesRef.current;
     if (searchValue.length > 1) {
-      debouncedFetchICDCodesRef.current(searchValue);
+      ref(searchValue);
     } else {
       setOptions([]);
     }
 
     return () => {
       // Cancel any pending debounced calls when component unmounts or searchValue changes
-      clearTimeout(debouncedFetchICDCodesRef.current as any);
+      clearTimeout(ref as unknown as number);
     };
   }, [searchValue]);
 

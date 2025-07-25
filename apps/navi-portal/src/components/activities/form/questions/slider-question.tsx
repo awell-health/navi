@@ -11,7 +11,7 @@ import { X } from "lucide-react";
  * Similar to NumberQuestion but reads from slider config
  */
 export function createSliderValidationRules(question: Question) {
-  const rules: any = {};
+  const rules: Record<string, unknown> = {};
 
   // Required validation
   if (question.is_required) {
@@ -64,7 +64,7 @@ export function SliderQuestion({
   const hasValue =
     field.value !== null && field.value !== undefined && field.value !== "";
   const currentValue = hasValue
-    ? field.value
+    ? (field.value as number)
     : fieldState.isTouched
     ? min
     : undefined;

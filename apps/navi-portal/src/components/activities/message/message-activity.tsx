@@ -3,7 +3,7 @@ import type {
   BaseActivityProps,
   MessageActivity,
 } from "@awell-health/navi-core";
-import { useActivityEvents } from "@/hooks/use-activity-events";
+import { useActivityEvents } from "@/domains/communications";
 import { SlateViewer } from "@/components/ui/slate-viewer";
 import { Button, Typography, Stack, HStack } from "../../ui";
 import { cn } from "@/lib/utils";

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import React from "react";
 import { DateQuestion, createDateValidationRules } from "./date-question";
-import { FormFixture } from "./form-fixture";
+import { FormFixture } from "./form.fixture";
 import type { Question } from "@/lib/awell-client/generated/graphql";
 
 const meta: Meta<typeof DateQuestion> = {

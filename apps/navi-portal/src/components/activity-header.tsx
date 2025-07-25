@@ -44,6 +44,7 @@ export function ActivityHeader({ onActivityListClick }: ActivityHeaderProps) {
       {/* Center - Logo */}
       <div className="flex-1 flex justify-center items-center">
         {logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={
               "https://res.cloudinary.com/da7x4rzl4/image/upload/v1678995530/DEV%20SANDBOX%20-%20Awell%20Studio%20-%20TextEditor%20-%20Image%20upload/jxv6d1qm7cwmsznj4pzc.png"

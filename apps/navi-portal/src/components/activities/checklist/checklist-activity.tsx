@@ -3,7 +3,7 @@ import type {
   BaseActivityProps,
   ChecklistActivity,
 } from "@awell-health/navi-core";
-import { useActivityEvents } from "@/hooks/use-activity-events";
+import { useActivityEvents } from "@/domains/communications/hooks/use-activity-events.client";
 import { Button, Checkbox, Label, Progress, Typography } from "@/components/ui";
 import { Stack } from "@/components/ui/stack";
 import { cn } from "@/lib/utils";

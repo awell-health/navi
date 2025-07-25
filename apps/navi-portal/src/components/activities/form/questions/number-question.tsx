@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
  * Can be used by parent forms with react-hook-form validation rules
  */
 export function createNumberValidationRules(question: Question) {
-  const rules: any = {};
+  const rules: Record<string, unknown> = {};
 
   // Required validation
   if (question.is_required) {
@@ -67,6 +67,7 @@ export function NumberQuestion({
 
       <Input
         {...field}
+        value={(field.value as string) || ""}
         id={field.name}
         type="number"
         min={range?.enabled ? range.min ?? undefined : undefined}
@@ -87,7 +88,6 @@ export function NumberQuestion({
           // This supports negative numbers, decimals, etc.
           field.onChange(value === "" ? "" : Number(value));
         }}
-        value={field.value ?? ""}
       />
 
       {/* Error message */}

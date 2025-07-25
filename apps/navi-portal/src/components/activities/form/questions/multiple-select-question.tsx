@@ -24,13 +24,14 @@ import { cn } from "@/lib/utils";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Check, X } from "lucide-react";
 import type { Question } from "@/lib/awell-client/generated/graphql";
+import { FieldValues } from "react-hook-form";
 
 /**
  * Validation utility for MultipleSelectQuestion
  * Co-located with component for maintainability
  */
 export function createMultipleSelectValidationRules(question: Question) {
-  const rules: any = {};
+  const rules: Record<string, unknown> = {};
 
   if (question.is_required) {
     rules.required = "Please select at least one option";
@@ -91,14 +92,13 @@ export function createMultipleSelectValidationRules(question: Question) {
 
 interface MultiSelectOptionListProps {
   question: Question;
-  field: any;
+  field: FieldValues;
   setOpen: (open: boolean) => void;
 }
 
 function MultiSelectOptionList({
   question,
   field,
-  setOpen,
 }: MultiSelectOptionListProps) {
   const currentValues = field.value || [];
 
@@ -183,7 +183,7 @@ export function MultipleSelectQuestion({
   const [open, setOpen] = useState(false);
   const hasError = fieldState.invalid && fieldState.error;
   const errorMessage = fieldState.error?.message;
-  const currentValues = field.value || [];
+  const currentValues = (field.value as string[]) || [];
   const useSelect = question.config?.use_select === true;
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
@@ -417,7 +417,6 @@ export function MultipleSelectQuestion({
         role="group"
         aria-labelledby={`${field.name}-label`}
         aria-describedby={hasError ? `${field.name}-error` : undefined}
-        aria-invalid={!!hasError}
       >
         {question.options?.map((option) => {
           const isChecked = currentValues.includes(option.value || "");

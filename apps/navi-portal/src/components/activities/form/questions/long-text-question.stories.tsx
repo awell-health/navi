@@ -4,7 +4,7 @@ import {
   LongTextQuestion,
   createLongTextValidationRules,
 } from "./long-text-question";
-import { FormFixture } from "./form-fixture";
+import { FormFixture } from "./form.fixture";
 import type { Question } from "@/lib/awell-client/generated/graphql";
 
 const meta: Meta<typeof LongTextQuestion> = {

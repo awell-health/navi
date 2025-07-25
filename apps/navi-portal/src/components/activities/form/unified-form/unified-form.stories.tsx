@@ -31,16 +31,34 @@ const activities = storybookActivities.data.pathwayActivities.activities;
 
 // Form with comprehensive validation and multiple question types
 const comprehensiveFormActivity = activities.find(
-  (activity: any) =>
-    activity.inputs?.__typename === "FormActivityInput" &&
-    activity.inputs.form?.title === "form with many input validations"
+  (activity: Record<string, unknown>) =>
+    activity.inputs &&
+    typeof activity.inputs === "object" &&
+    activity.inputs !== null &&
+    "__typename" in activity.inputs &&
+    activity.inputs.__typename === "FormActivityInput" &&
+    "form" in activity.inputs &&
+    activity.inputs.form &&
+    typeof activity.inputs.form === "object" &&
+    activity.inputs.form !== null &&
+    "title" in activity.inputs.form &&
+    activity.inputs.form.title === "form with many input validations"
 ) as unknown as FormActivity;
 
 // Form with all question types
 const allQuestionTypesFormActivity = activities.find(
-  (activity: any) =>
-    activity.inputs?.__typename === "FormActivityInput" &&
-    activity.inputs.form?.title === "Form with all question types"
+  (activity: Record<string, unknown>) =>
+    activity.inputs &&
+    typeof activity.inputs === "object" &&
+    activity.inputs !== null &&
+    "__typename" in activity.inputs &&
+    activity.inputs.__typename === "FormActivityInput" &&
+    "form" in activity.inputs &&
+    activity.inputs.form &&
+    typeof activity.inputs.form === "object" &&
+    activity.inputs.form !== null &&
+    "title" in activity.inputs.form &&
+    activity.inputs.form.title === "Form with all question types"
 ) as unknown as FormActivity;
 
 // Traditional form configuration

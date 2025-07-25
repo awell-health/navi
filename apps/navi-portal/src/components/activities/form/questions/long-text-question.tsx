@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
  * Can be used by parent forms with react-hook-form validation rules
  */
 export function createLongTextValidationRules(question: Question) {
-  const rules: any = {};
+  const rules: Record<string, unknown> = {};
 
   // Required validation
   if (question.is_required) {
@@ -50,6 +50,7 @@ export function LongTextQuestion({
 
       <Textarea
         {...field}
+        value={(field.value as string) || ""}
         id={field.name}
         rows={4}
         disabled={disabled}

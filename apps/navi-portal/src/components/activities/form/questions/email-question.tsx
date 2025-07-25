@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
  * Can be used by parent forms with react-hook-form validation rules
  */
 export function createEmailValidationRules(question: Question) {
-  const rules: any = {};
+  const rules: Record<string, unknown> = {};
 
   // Required validation
   if (question.is_required) {
@@ -52,6 +52,7 @@ export function EmailQuestion({
 
       <Input
         {...field}
+        value={(field.value as string) || ""}
         id={field.name}
         type="email"
         autoComplete="email"

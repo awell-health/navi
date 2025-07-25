@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import React from "react";
@@ -26,8 +28,9 @@ export function IframeCommunicator({
   activeActivityId,
   children,
 }: IframeCommunicatorProps) {
-  const { sendHeightChange, sendActivityActivate, sendActivityEvent } =
-    usePostMessageBridge({ instanceId });
+  const { sendHeightChange, sendActivityEvent } = usePostMessageBridge({
+    instanceId,
+  });
 
   const { calculateHeight } = useHeightManager({
     instanceId,
@@ -76,26 +79,11 @@ export function IframeCommunicator({
     },
   });
 
-  const handleActivityActivate = (
-    activityId: string,
-    activityType: UserActivityType,
-    data: {
-      activityId: string;
-      activityType: string;
-      activityName: string;
-      status: string;
-    }
-  ) => {
-    console.log("🎯 Activity activated:", activityId);
-    sendActivityActivate(activityId, activityType, data);
-  };
-
   // Provide communication functions to children via React context
   return (
     <CommunicationsContext.Provider
       value={{
         createActivityEventHandlers,
-        handleActivityActivate,
         calculateHeight,
         isReady: !!instanceId,
       }}
@@ -111,11 +99,6 @@ interface CommunicationsContextType {
     activityId: string,
     activityType: UserActivityType
   ) => any;
-  handleActivityActivate: (
-    activityId: string,
-    activityType: UserActivityType,
-    data: any
-  ) => void;
   calculateHeight: () => number;
   isReady: boolean;
 }
