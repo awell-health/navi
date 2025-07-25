@@ -44,6 +44,13 @@ export function DescriptionQuestion({
     return null;
   };
 
+  // Decode HTML entities using the browser's built-in parser
+  const decodeHtmlEntities = (html: string): string => {
+    const textarea = document.createElement("textarea");
+    textarea.innerHTML = html;
+    return textarea.value;
+  };
+
   const slateContent = parseSlateJSON(question.title);
 
   // Prefer SlateViewer for JSON content (perfect branding integration)
@@ -66,6 +73,9 @@ export function DescriptionQuestion({
     );
   }
 
+  // Decode HTML entities before rendering
+  const decodedHtml = decodeHtmlEntities(question.title);
+
   // Simple HTML fallback - relies on existing prose styles
   return (
     <div
@@ -85,7 +95,7 @@ export function DescriptionQuestion({
       aria-label={`Description: ${question.title
         .replace(/<[^>]*>/g, "")
         .slice(0, 100)}`}
-      dangerouslySetInnerHTML={{ __html: question.title }}
+      dangerouslySetInnerHTML={{ __html: decodedHtml }}
     />
   );
 }

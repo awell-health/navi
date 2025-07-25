@@ -69,7 +69,8 @@ export function SliderQuestion({
     ? min
     : undefined;
 
-  // For the slider component, we need a number array, but only if we have a value
+  // For the slider component, we need a number array
+  // When no value is set, position slider at min but with visual indication it's inactive
   const sliderValue = currentValue !== undefined ? [currentValue] : [min];
 
   const handleActivate = () => {
@@ -128,7 +129,7 @@ export function SliderQuestion({
         {sliderConfig?.is_value_tooltip_on && (
           <div className="text-center">
             <Typography.Small className="font-medium">
-              {currentValue !== undefined ? (
+              {hasValue ? (
                 currentValue
               ) : (
                 <span className="text-muted-foreground italic">
@@ -160,7 +161,7 @@ export function SliderQuestion({
             step={step}
             disabled={disabled}
             className={cn(
-              "w-full",
+              "w-full py-8 z-20", // Add significant vertical padding for larger touch area
               hasError && "data-[disabled]:opacity-50",
               // Visual indication that no value is selected
               !hasValue && !isActivated && "opacity-50"
@@ -169,6 +170,25 @@ export function SliderQuestion({
             aria-invalid={!!hasError}
           />
 
+          {/* Tick marks for display - positioned right under the slider */}
+          {sliderConfig?.display_marks && (
+            <div className="flex justify-between px-2 -mt-4 z-10">
+              {Array.from(
+                { length: Math.floor((max - min) / step) + 1 },
+                (_, i) => {
+                  const value = min + i * step;
+                  return (
+                    <div
+                      key={value}
+                      className="w-px h-2 bg-muted-foreground/50"
+                      title={value.toString()}
+                    />
+                  );
+                }
+              )}
+            </div>
+          )}
+
           {/* Hover tooltip for inactive state */}
           {!hasValue && !isActivated && (
             <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-popover text-popover-foreground px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border shadow-sm">
@@ -176,25 +196,6 @@ export function SliderQuestion({
             </div>
           )}
         </div>
-
-        {/* Tick marks for display */}
-        {sliderConfig?.display_marks && (
-          <div className="flex justify-between px-2">
-            {Array.from(
-              { length: Math.floor((max - min) / step) + 1 },
-              (_, i) => {
-                const value = min + i * step;
-                return (
-                  <div
-                    key={value}
-                    className="w-px h-2 bg-muted-foreground/50"
-                    title={value.toString()}
-                  />
-                );
-              }
-            )}
-          </div>
-        )}
       </div>
 
       {/* Error message */}

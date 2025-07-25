@@ -246,6 +246,7 @@ export type ClinicalNoteActivityInput = ActivityInput & {
 export type CompleteActivityInput = {
   activity_id: Scalars['ID']['input'];
   completion_context: CompletionContextInput;
+  form_response?: InputMaybe<Array<QuestionResponseInput>>;
   input_data?: InputMaybe<Scalars['JSON']['input']>;
   input_type: ActivityInputType;
 };
@@ -589,6 +590,11 @@ export type QuestionOption = {
   label: Scalars['String']['output'];
   value?: Maybe<Scalars['String']['output']>;
   value_string?: Maybe<Scalars['String']['output']>;
+};
+
+export type QuestionResponseInput = {
+  question_id: Scalars['String']['input'];
+  value: Scalars['String']['input'];
 };
 
 export type QuestionType =
