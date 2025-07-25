@@ -269,7 +269,7 @@ export type Condition = {
   operand: ConditionOperand;
   operator: ConditionOperator;
   reference: Scalars['String']['output'];
-  reference_key: Scalars['String']['output'];
+  reference_key?: Maybe<Scalars['String']['output']>;
 };
 
 export type ConditionOperand = {

@@ -75,16 +75,6 @@ export function ShortTextQuestion({
         aria-invalid={!!hasError}
       />
 
-      {/* Helper text - only show when no error */}
-      {helperText && !hasError && (
-        <Typography.Small
-          id={`${field.name}-helper`}
-          className="text-muted-foreground"
-        >
-          {helperText}
-        </Typography.Small>
-      )}
-
       {/* Error message - show when there's an error */}
       {hasError && (
         <Typography.Small

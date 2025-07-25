@@ -237,11 +237,7 @@ export function UnifiedFormRenderer({
           {currentPage.questions.map((question) => (
             <div
               key={question.id}
-              className={cn(
-                "space-y-3",
-                config.mode === "traditional" &&
-                  "p-6 bg-card border border-customborder rounded-lg"
-              )}
+              className="space-y-3"
             >
               <QuestionRenderer
                 question={question}

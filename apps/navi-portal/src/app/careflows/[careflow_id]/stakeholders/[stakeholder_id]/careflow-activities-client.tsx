@@ -1,11 +1,6 @@
 "use client";
 
-import React, {
-  useEffect,
-  useLayoutEffect,
-  useState,
-  useCallback,
-} from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { Activities } from "@/components/activities/index";
 import { ActivityProvider } from "@/lib/activity-provider";
@@ -26,6 +21,10 @@ import { ActivityHeader } from "@/components/activity-header";
 import { ActivityDrawer } from "@/components/activity-drawer";
 import { cn } from "@/lib/utils";
 import { useBranding } from "@/lib/branding-provider";
+import {
+  IframeCommunicator,
+  useCommunications,
+} from "@/domains/communications";
 
 interface CareflowActivitiesClientProps {
   careflowId: string;
@@ -93,29 +92,9 @@ export default function CareflowActivitiesClient({
   const handleActivityActivate = useCallback(
     (activityId: string, activity: ActivityFragment) => {
       console.log("🎯 Activity activated:", activityId);
-
-      // Forward activate event to parent window via postMessage
-      if (instanceId) {
-        window.parent.postMessage(
-          {
-            source: "navi",
-            instance_id: instanceId,
-            type: "navi.activity.activate",
-            activity_id: activityId,
-            activity_type: activity.object.type,
-            data: {
-              activityId,
-              activityType: activity.object.type,
-              activityName: activity.object.name,
-              status: activity.status,
-            },
-            timestamp: Date.now(),
-          },
-          "*"
-        );
-      }
+      // Activity activation will be handled by the communications context
     },
-    [instanceId]
+    []
   );
 
   return (
@@ -124,25 +103,27 @@ export default function CareflowActivitiesClient({
       stakeholderId={stakeholderId}
       onActivityActivate={handleActivityActivate}
     >
-      <CareflowActivitiesContent instanceId={instanceId} />
+      <IframeCommunicator instanceId={instanceId}>
+        <CareflowActivitiesContent />
+      </IframeCommunicator>
     </ActivityProvider>
   );
 }
 
 // Inner component that uses the useActivity hook
-function CareflowActivitiesContent({
-  instanceId,
-}: {
-  instanceId: string | null;
-}) {
+function CareflowActivitiesContent() {
   const {
+    activities,
     activeActivity,
     isLoading,
     error,
     setActiveActivity,
     markActivityAsViewed,
+    completeActivity,
   } = useActivity();
   const { getStackSpacing } = useBranding();
+  const { createActivityEventHandlers, handleActivityActivate } =
+    useCommunications();
 
   // State for activity drawer
   const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);
@@ -154,100 +135,6 @@ function CareflowActivitiesContent({
     }
   }, [activeActivity, markActivityAsViewed]);
 
-  // Height calculation utilities
-  const calculateHeight = useCallback(() => {
-    // Force DOM reflow to ensure accurate measurements after content changes
-    document.body.style.height = "auto";
-    document.documentElement.style.height = "auto";
-
-    const body = document.body;
-    const html = document.documentElement;
-
-    // Use offsetHeight instead of scrollHeight to handle shrinking content better
-    const bodyHeight = body.offsetHeight;
-    const htmlHeight = html.offsetHeight;
-
-    // Take the larger of the two, but don't include clientHeight which can be stale
-    const finalHeight = Math.max(bodyHeight, htmlHeight);
-
-    console.debug("📏 Height calculation details:", {
-      bodyScrollHeight: body.scrollHeight,
-      bodyOffsetHeight: body.offsetHeight,
-      htmlScrollHeight: html.scrollHeight,
-      htmlOffsetHeight: html.offsetHeight,
-      htmlClientHeight: html.clientHeight,
-      bodyHeight,
-      htmlHeight,
-      finalHeight: finalHeight + 20,
-    });
-
-    return finalHeight + 20; // Add padding to prevent scrollbars
-  }, []);
-
-  const emitHeightChange = useCallback(
-    (source: string, activityId?: string) => {
-      if (!instanceId) return;
-
-      const currentHeight = calculateHeight();
-
-      console.log(`📏 ${source} height:`, currentHeight);
-
-      window.parent.postMessage(
-        {
-          source: "navi",
-          instance_id: instanceId,
-          type: "navi.height.changed",
-          height: currentHeight,
-          activity_id: activityId || activeActivity?.id,
-          timestamp: Date.now(),
-        },
-        "*"
-      );
-    },
-    [instanceId, calculateHeight, activeActivity?.id]
-  );
-
-  // 1. Measure height after activity renders (useLayoutEffect = after DOM updates, before paint)
-  useLayoutEffect(() => {
-    if (instanceId && activeActivity?.id) {
-      emitHeightChange("Activity change", activeActivity.id);
-    }
-  }, [instanceId, activeActivity?.id, emitHeightChange]);
-
-  // 2. Set up ResizeObserver for ongoing content changes (debounced)
-  useEffect(() => {
-    if (!instanceId || typeof window === "undefined") return;
-
-    let resizeTimeout: NodeJS.Timeout;
-    let lastHeight = 0;
-
-    const resizeObserver = new ResizeObserver(() => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-        const currentHeight = calculateHeight();
-
-        // Only emit if height changed significantly (>5px)
-        if (Math.abs(currentHeight - lastHeight) > 5) {
-          console.log(
-            "📏 ResizeObserver height change:",
-            lastHeight,
-            "→",
-            currentHeight
-          );
-          lastHeight = currentHeight;
-          emitHeightChange("ResizeObserver");
-        }
-      }, 50);
-    });
-
-    resizeObserver.observe(document.body);
-
-    return () => {
-      clearTimeout(resizeTimeout);
-      resizeObserver.disconnect();
-    };
-  }, [instanceId, calculateHeight, emitHeightChange]);
-
   const handleFormSubmit = async (
     activityId: string,
     data: Record<string, unknown>
@@ -255,15 +142,23 @@ function CareflowActivitiesContent({
     console.log("📝 Form submitted with data:", data);
     console.log("📋 Activity ID:", activityId);
 
-    // For prototype, just log the submission
-    console.log("✅ Form submission logged (prototype mode)");
+    try {
+      await completeActivity(activityId, { formData: data }, "FORM");
+      console.log("✅ Form completion successful");
+    } catch (error) {
+      console.error("❌ Form completion failed:", error);
+    }
   };
 
   const handleMessageMarkAsRead = async (activityId: string) => {
     console.log("📧 Message marked as read:", activityId);
 
-    // For prototype, just log the action
-    console.log("✅ Message marked as read (prototype mode)");
+    try {
+      await completeActivity(activityId, { action: "read" }, "MESSAGE");
+      console.log("✅ Message completion successful");
+    } catch (error) {
+      console.error("❌ Message completion failed:", error);
+    }
   };
 
   const handleChecklistComplete = async (
@@ -272,8 +167,12 @@ function CareflowActivitiesContent({
   ) => {
     console.log("☑️ Checklist completed:", activityId, data);
 
-    // For prototype, just log the action
-    console.log("✅ Checklist completion logged (prototype mode)");
+    try {
+      await completeActivity(activityId, data, "CHECKLIST");
+      console.log("✅ Checklist completion successful");
+    } catch (error) {
+      console.error("❌ Checklist completion failed:", error);
+    }
   };
 
   // Handle activity list icon click
@@ -282,172 +181,7 @@ function CareflowActivitiesContent({
     setIsActivityDrawerOpen(true);
   };
 
-  // Create unified event handlers for activity events with postMessage forwarding
-  const createActivityEventHandlers = (
-    activityId: string
-  ): ActivityEventHandlers => ({
-    onActivityReady: (event) => {
-      console.log("🎯 Activity ready:", activityId, event);
-      console.log(
-        "🔍 Debug - instanceId:",
-        instanceId,
-        "typeof:",
-        typeof instanceId
-      );
-
-      // Forward to parent window via postMessage
-      if (instanceId) {
-        const message = {
-          source: "navi",
-          instance_id: instanceId,
-          type: "navi.activity.ready",
-          activity_id: activityId,
-          activity_type: event.activityType,
-          data: event.data,
-          timestamp: event.timestamp,
-        };
-        console.log("📤 Sending postMessage:", message);
-        window.parent.postMessage(message, "*");
-      } else {
-        console.warn(
-          "⚠️ Not sending postMessage - instanceId is null/undefined"
-        );
-      }
-    },
-    onActivityActivate: (event) => {
-      console.log("🎯 Activity activated:", activityId, event);
-
-      // Forward to parent window via postMessage
-      if (instanceId) {
-        window.parent.postMessage(
-          {
-            source: "navi",
-            instance_id: instanceId,
-            type: "navi.activity.activate",
-            activity_id: activityId,
-            activity_type: event.activityType,
-            data: event.data,
-            timestamp: event.timestamp,
-          },
-          "*"
-        );
-      }
-    },
-    onActivityProgress: (event) => {
-      console.log("📊 Activity progress:", activityId, event.data);
-
-      // Forward to parent window via postMessage
-      if (instanceId) {
-        window.parent.postMessage(
-          {
-            source: "navi",
-            instance_id: instanceId,
-            type: "navi.activity.progress",
-            activity_id: activityId,
-            activity_type: event.activityType,
-            data: event.data,
-            timestamp: event.timestamp,
-          },
-          "*"
-        );
-      }
-    },
-    onActivityDataChange: (event) => {
-      console.log("📝 Activity data change:", activityId, event.data);
-
-      // Forward to parent window via postMessage
-      if (instanceId) {
-        window.parent.postMessage(
-          {
-            source: "navi",
-            instance_id: instanceId,
-            type: "navi.activity.data-change",
-            activity_id: activityId,
-            activity_type: event.activityType,
-            data: event.data,
-            timestamp: event.timestamp,
-          },
-          "*"
-        );
-      }
-    },
-    onActivityComplete: (event) => {
-      console.log("🎉 Activity completed:", activityId, event.data);
-
-      // Forward to parent window via postMessage
-      if (instanceId) {
-        window.parent.postMessage(
-          {
-            source: "navi",
-            instance_id: instanceId,
-            type: "navi.activity.completed",
-            activity_id: activityId,
-            activity_type: event.activityType,
-            data: event.data,
-            timestamp: event.timestamp,
-          },
-          "*"
-        );
-      }
-    },
-    onActivityError: (event) => {
-      console.error("❌ Activity error:", activityId, event.data);
-
-      // Forward to parent window via postMessage
-      if (instanceId) {
-        window.parent.postMessage(
-          {
-            source: "navi",
-            instance_id: instanceId,
-            type: "navi.activity.error",
-            activity_id: activityId,
-            activity_type: event.activityType,
-            data: event.data,
-            timestamp: event.timestamp,
-          },
-          "*"
-        );
-      }
-    },
-    onActivityFocus: (event) => {
-      console.log("👁️ Activity focused:", activityId, event);
-
-      // Forward to parent window via postMessage
-      if (instanceId) {
-        window.parent.postMessage(
-          {
-            source: "navi",
-            instance_id: instanceId,
-            type: "navi.activity.focus",
-            activity_id: activityId,
-            activity_type: event.activityType,
-            data: event.data,
-            timestamp: event.timestamp,
-          },
-          "*"
-        );
-      }
-    },
-    onActivityBlur: (event) => {
-      console.log("👀 Activity blurred:", activityId, event);
-
-      // Forward to parent window via postMessage
-      if (instanceId) {
-        window.parent.postMessage(
-          {
-            source: "navi",
-            instance_id: instanceId,
-            type: "navi.activity.blur",
-            activity_id: activityId,
-            activity_type: event.activityType,
-            data: event.data,
-            timestamp: event.timestamp,
-          },
-          "*"
-        );
-      }
-    },
-  });
+  // Event handlers are now provided by the communications context
 
   const handleActivityClick = (activity: ActivityFragment) => {
     console.log("🔍 Activity clicked:", activity);
@@ -483,7 +217,10 @@ function CareflowActivitiesContent({
           return (
             <Activities.Form
               activity={formActivity}
-              eventHandlers={createActivityEventHandlers(activeActivity.id)}
+              eventHandlers={createActivityEventHandlers(
+                activeActivity.id,
+                activeActivity.object.type
+              )}
               onSubmit={handleFormSubmit}
             />
           );
@@ -500,7 +237,10 @@ function CareflowActivitiesContent({
           return (
             <Activities.Message
               activity={messageActivity}
-              eventHandlers={createActivityEventHandlers(activeActivity.id)}
+              eventHandlers={createActivityEventHandlers(
+                activeActivity.id,
+                activeActivity.object.type
+              )}
               onMarkAsRead={handleMessageMarkAsRead}
             />
           );
@@ -514,7 +254,10 @@ function CareflowActivitiesContent({
         return (
           <Activities.Checklist
             activity={checklistActivity}
-            eventHandlers={createActivityEventHandlers(activeActivity.id)}
+            eventHandlers={createActivityEventHandlers(
+              activeActivity.id,
+              activeActivity.object.type
+            )}
             onComplete={handleChecklistComplete}
           />
         );

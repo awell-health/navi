@@ -4,7 +4,6 @@
 import React from "react";
 import { Typography } from ".";
 import Link from "next/link";
-import Image from "next/image";
 
 export function SlateViewer({ value }: { value: any[] }) {
   return (
@@ -65,10 +64,14 @@ function Element({ node }: { node: any }) {
     case "img":
       return (
         <figure style={{ margin: "1em 0" }}>
-          <Image
+          <img
             src={node.url}
             alt={getPlainText(node.caption)}
-            style={{ maxWidth: "100%" }}
+            style={{
+              maxWidth: "100%",
+              height: "auto",
+              display: "block",
+            }}
           />
           {node.caption && (
             <figcaption
