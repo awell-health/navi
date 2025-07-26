@@ -1,14 +1,25 @@
 import type { Question } from "@/lib/awell-client/generated/graphql";
-import type {
-  BaseActivityProps,
-  FormActivityData,
-  isFormActivity,
+import type { FormActivityData } from "@awell-health/navi-core";
+
+export type FormActivity = FormActivityData;
+
+export { 
+  isFormActivity, 
   assertFormActivity,
+  type FormActivityData 
 } from "@awell-health/navi-core";
 
-// Re-export for convenience
-export { isFormActivity, assertFormActivity };
-export type FormActivity = FormActivityData;
+// Re-export rule types
+export type {
+  QuestionResponse,
+  ConditionOperand,
+  Condition,
+  Rule,
+  RuleEvaluationRequest,
+  RuleEvaluationResult,
+  VisibilityState,
+  VisibilityChangeEvent,
+} from "./types/rule-types";
 
 /**
  * Represents a page within a form - contains questions that should be displayed together
@@ -54,17 +65,13 @@ export interface FormData {
 /**
  * Props for the unified form renderer
  */
-export interface UnifiedFormRendererProps
-  extends Omit<BaseActivityProps, "activity"> {
-  /** The form activity containing the form data */
-  activity: FormActivity;
-  /** Configuration for how to render the form */
+export interface UnifiedFormRendererProps {
+  activity: FormActivityData;
   config: UnifiedFormConfig;
-  /** Callback when form is submitted */
-  onSubmit?: (
-    activityId: string,
-    data: Record<string, unknown>
-  ) => void | Promise<void>;
+  disabled?: boolean;
+  className?: string;
+  eventHandlers?: Record<string, (event: any) => void>;
+  onSubmit?: (activityId: string, data: Record<string, unknown>) => void | Promise<void>;
 }
 
 /**
