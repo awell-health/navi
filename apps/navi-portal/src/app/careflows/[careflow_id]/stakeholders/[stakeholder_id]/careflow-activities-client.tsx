@@ -5,10 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { Activities } from "@/components/activities/index";
 import { ActivityProvider } from "@/lib/activity-provider";
 import {
-  ActivityType,
-  ChecklistActivity,
-  FormActivity,
-  MessageActivity,
+  ActivityData,
+  assertFormActivity,
+  assertMessageActivity,
+  assertChecklistActivity,
 } from "@awell-health/navi-core";
 import {
   ActivityFragment,
@@ -197,7 +197,9 @@ function CareflowActivitiesContent() {
       case "FORM": {
         const form = getFormFromActivity(activeActivity);
         if (form) {
-          const formActivity = new FormActivity(activeActivity as ActivityType);
+          const formActivity = assertFormActivity(
+            activeActivity as ActivityData
+          );
           return (
             <Activities.Form
               activity={formActivity}
@@ -214,8 +216,8 @@ function CareflowActivitiesContent() {
       case "MESSAGE": {
         const message = getMessageFromActivity(activeActivity);
         if (message) {
-          const messageActivity = new MessageActivity(
-            activeActivity as ActivityType
+          const messageActivity = assertMessageActivity(
+            activeActivity as ActivityData
           );
 
           return (
@@ -232,8 +234,8 @@ function CareflowActivitiesContent() {
         break;
       }
       case "CHECKLIST": {
-        const checklistActivity = new ChecklistActivity(
-          activeActivity as ActivityType
+        const checklistActivity = assertChecklistActivity(
+          activeActivity as ActivityData
         );
         return (
           <Activities.Checklist

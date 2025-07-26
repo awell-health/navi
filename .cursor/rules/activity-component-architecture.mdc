@@ -1,0 +1,75 @@
+---
+description: Complete activity component architecture using functional types and type guards
+alwaysApply: false
+---
+
+# Activity Component Architecture
+
+## Dependencies (REQUIRED)
+
+```
+navi-core → activity components → specialized hooks/UI → question components
+```
+
+## Module Responsibilities
+
+### **navi-core**
+
+- **Base type**: `ActivityData` (GraphQL Activity interface)
+- **Activity types**: `FormActivityData`, `MessageActivityData`, `ChecklistActivityData`, `DynamicFormActivityData`, `ExtensionActivityData`, `CalculationActivityData`, `ClinicalNoteActivityData`
+- **Type guards**: `isFormActivity()`, `isMessageActivity()`, `isChecklistActivity()`, etc.
+- **Assertions**: `assertFormActivity()`, `assertMessageActivity()`, `assertChecklistActivity()`, etc.
+- **Event definitions**: `ActivityEvent` types
+- **No UI**: Pure types and utilities only
+
+### **Activity Components**
+
+- **form-activity.tsx**: Uses `FormActivityData`
+- **message-activity.tsx**: Uses `MessageActivityData`
+- **checklist-activity.tsx**: Uses `ChecklistActivityData`
+- **Type safety**: Each component requires specific activity type
+
+### **Form System (unified-form/)**
+
+- **unified-form-renderer.tsx**: Orchestrator, delegates to hooks
+- **hooks/use-form-setup.ts**: Data transformation, form initialization
+- **hooks/use-form-navigation.ts**: Page state, navigation logic
+- **hooks/use-form-events.ts**: Activity events, submission
+- **components/**: Pure UI components (progress, navigation)
+- **question-renderer.tsx**: Routes questions to components
+
+## Import Patterns
+
+```typescript
+// Types and guards from navi-core
+import type {
+  ActivityData,
+  FormActivityData,
+  isFormActivity,
+  assertFormActivity,
+} from "@awell-health/navi-core";
+
+// Activity components
+import { FormActivity } from "./form/form-activity";
+
+// Form hooks (for forms only)
+import { useFormSetup } from "./form/unified-form/hooks";
+```
+
+## ✅ CORRECT PATTERNS
+
+```typescript
+// Type-safe activity handling
+if (isFormActivity(activity)) {
+  return <FormActivity activity={activity} />;
+}
+
+// Assertion for guaranteed types
+const formActivity = assertFormActivity(activity);
+```
+
+## ❌ NEVER DO
+
+- `import { Activity }` - Use activity interfaces instead
+- `activity as any` - Use type guards instead
+- Mix activity types without type checking

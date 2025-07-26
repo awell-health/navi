@@ -1,5 +1,14 @@
 import type { Question } from "@/lib/awell-client/generated/graphql";
-import type { BaseActivityProps, FormActivity } from "@awell-health/navi-core";
+import type {
+  BaseActivityProps,
+  FormActivityData,
+  isFormActivity,
+  assertFormActivity,
+} from "@awell-health/navi-core";
+
+// Re-export for convenience
+export { isFormActivity, assertFormActivity };
+export type FormActivity = FormActivityData;
 
 /**
  * Represents a page within a form - contains questions that should be displayed together
@@ -29,6 +38,11 @@ export interface FormRenderConfig {
 }
 
 /**
+ * Type alias for form configuration
+ */
+export type UnifiedFormConfig = FormRenderConfig;
+
+/**
  * Form data structure that matches Awell's form activity input
  */
 export interface FormData {
@@ -40,11 +54,12 @@ export interface FormData {
 /**
  * Props for the unified form renderer
  */
-export interface UnifiedFormRendererProps extends BaseActivityProps {
+export interface UnifiedFormRendererProps
+  extends Omit<BaseActivityProps, "activity"> {
   /** The form activity containing the form data */
   activity: FormActivity;
   /** Configuration for how to render the form */
-  config: FormRenderConfig;
+  config: UnifiedFormConfig;
   /** Callback when form is submitted */
   onSubmit?: (
     activityId: string,

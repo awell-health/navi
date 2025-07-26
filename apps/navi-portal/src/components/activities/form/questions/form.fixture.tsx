@@ -29,14 +29,14 @@ export function FormFixture({
   activityId = "storybook-demo",
   children,
 }: FormFixtureProps) {
-  const { control, handleSubmit, watch } = useForm({
+  const { control, handleSubmit, watch } = useForm<Record<string, unknown>>({
     defaultValues: {
-      [question.key]: undefined,
-    },
+      [question.id]: undefined,
+    } as Record<string, unknown>,
     mode: "onChange",
   });
 
-  const watchedValue = watch(question.key);
+  const watchedValue = watch(question.id);
 
   // 1. Ready event on mount
   useEffect(() => {

@@ -5,7 +5,7 @@ import {
   isActivityCompleteEvent,
   isActivityErrorEvent,
 } from "../src/domains/communications/hooks/use-activity-events.client";
-import { ActivityFactory } from "@awell-health/navi-core";
+import { createMessageActivity } from "./storybook-helpers";
 
 const messageActivity = {
   id: "UvMjkfriBXBk3upd7zdwd",
@@ -147,14 +147,20 @@ const createEventHandlers = (storyName: string) => ({
 
 export const BasicMessage: Story = {
   args: {
-    activity: ActivityFactory.create(messageActivity as any),
+    activity: createMessageActivity({
+      inputs: {
+        __typename: "MessageActivityInput",
+        type: "MESSAGE",
+        message: messageActivity.inputs.message,
+      },
+    }),
     eventHandlers: createEventHandlers("BasicMessage"),
   },
 };
 
 export const HTMLWithAttachments: Story = {
   args: {
-    activity: ActivityFactory.create({
+    activity: createMessageActivity({
       id: "msg-2",
       status: "ACTIVE",
       date: "2024-01-15T14:45:00Z",
@@ -203,7 +209,7 @@ export const HTMLWithAttachments: Story = {
 
 export const MarkdownMessage: Story = {
   args: {
-    activity: ActivityFactory.create({
+    activity: createMessageActivity({
       id: "msg-3",
       status: "ACTIVE",
       date: "2024-01-16T09:15:00Z",
@@ -241,7 +247,7 @@ export const MarkdownMessage: Story = {
 
 export const CompletedMessage: Story = {
   args: {
-    activity: ActivityFactory.create({
+    activity: createMessageActivity({
       id: "msg-4",
       status: "ACTIVE",
       date: "2024-01-14T16:20:00Z",
@@ -261,7 +267,7 @@ export const CompletedMessage: Story = {
 
 export const ErrorHandling: Story = {
   args: {
-    activity: ActivityFactory.create({
+    activity: createMessageActivity({
       id: "msg-5",
       status: "ACTIVE",
       date: "2024-01-15T11:00:00Z",
@@ -293,7 +299,7 @@ export const ErrorHandling: Story = {
 
 export const DisabledState: Story = {
   args: {
-    activity: ActivityFactory.create({
+    activity: createMessageActivity({
       id: "msg-6",
       status: "ACTIVE",
       date: "2024-01-15T13:30:00Z",
@@ -314,7 +320,7 @@ export const DisabledState: Story = {
 
 export const NoMessageContent: Story = {
   args: {
-    activity: ActivityFactory.create({
+    activity: createMessageActivity({
       id: "msg-7",
       status: "ACTIVE",
       date: "2024-01-15T15:00:00Z",
@@ -328,7 +334,7 @@ export const NoMessageContent: Story = {
 
 export const SlateFormatMessage: Story = {
   args: {
-    activity: ActivityFactory.create({
+    activity: createMessageActivity({
       id: "msg-8",
       status: "ACTIVE",
       date: "2024-01-16T10:00:00Z",

@@ -463,10 +463,20 @@ export function ActivityProvider({
           case "FORM": {
             // For forms, convert form data to question responses
             const formResponse = data.formData
-              ? Object.entries(data.formData).map(([questionKey, value]) => ({
-                  question_id: questionKey,
-                  value: String(value || ""),
-                }))
+              ? Object.entries(data.formData).map(([questionId, value]) => {
+                  // Convert Date objects to ISO8601 format
+                  let formattedValue: string;
+                  if (value instanceof Date) {
+                    formattedValue = value.toISOString(); // Full ISO8601 datetime format
+                  } else {
+                    formattedValue = String(value || "");
+                  }
+
+                  return {
+                    question_id: questionId,
+                    value: formattedValue,
+                  };
+                })
               : [];
 
             input = {

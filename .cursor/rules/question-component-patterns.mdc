@@ -1,0 +1,88 @@
+---
+description: Question component patterns, activity lifecycle, and form integration
+alwaysApply: false
+---
+
+# Question Component Patterns
+
+## Architecture Flow
+
+```
+unified-form-renderer → question-renderer → individual question components
+```
+
+**See**: `unified-form-renderer.tsx`, `question-renderer.tsx`
+
+## Question Component Pattern (REQUIRED)
+
+```typescript
+export interface ControlledQuestionProps {
+  question: Question;
+  field: ControllerRenderProps<any, string>;
+  fieldState: ControllerFieldState;
+  disabled?: boolean;
+  className?: string;
+  // NO individual event handlers
+}
+
+export function createXValidationRules(question: Question) {
+  const rules: any = {}; // react-hook-form validation rules
+  if (question.is_required) rules.required = "Required";
+  // Component-specific validation
+  return rules;
+}
+```
+
+**Examples**: `date-question.tsx`, `email-question.tsx`, `short-text-question.tsx`
+
+## Activity Lifecycle (Form-Level Events)
+
+**Flow**: `activity-ready` → `activity-data-change` → `activity-progress` → `activity-focus/blur` → `activity-complete/error`
+
+**Implementation**: `use-form-events.ts` handles all activity events via `useActivityEvents()` hook
+
+## Branding Methods
+
+1. **SlateViewer** (preferred): JSON content → `<SlateViewer value={parsed} />`
+2. **Typography**: `<Typography.H1>`, `<Typography.P>`
+3. **Inline Styling** (current): Prefer inline styling until [REV-421](https://linear.app/awell/issue/REV-421/build-time-css-bundles-for-org-theming-performance) is completed
+
+## Question Types
+
+**Text**: `SHORT_TEXT` (+ helper text), `LONG_TEXT`, `EMAIL`  
+**Selection**: `YES_NO`, `MULTIPLE_CHOICE`, `MULTIPLE_SELECT`  
+**Special**: `NUMBER`, `DATE`, `SLIDER`, `FILE`, `IMAGE`
+**Display**: `DESCRIPTION` (JSON → SlateViewer preferred)
+
+## Testing Pattern
+
+**Use FormFixture**: Provides react-hook-form context, activity events, validation
+
+```typescript
+<FormFixture
+  question={question}
+  validationRules={createXValidationRules(question)}
+>
+  {({ field, fieldState }) => <QuestionComponent {...props} />}
+</FormFixture>
+```
+
+**Verify events**: Console should show activity lifecycle progression
+
+## Component Checklist
+
+- [ ] `ControlledQuestionProps` interface
+- [ ] `createXValidationRules()` export
+- [ ] Spreads `{...field}` props (no custom handlers)
+- [ ] SlateViewer for JSON content
+- [ ] Inline styling for branding (until REV-421)
+- [ ] Storybook with FormFixture
+- [ ] Helper text ONLY in ShortText
+
+## ❌ Never Do
+
+- Individual question event handlers (`onChange`, `onFocus`)
+- Internal state (`useState` - use Controller)
+- Validation in stories/parents (co-locate with component)
+- Helper text in non-ShortText components
+- Fixed hard-coded styling (use inline styles until REV-421)

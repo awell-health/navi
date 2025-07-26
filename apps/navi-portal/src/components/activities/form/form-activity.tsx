@@ -1,12 +1,15 @@
 import React from "react";
-import type { BaseActivityProps, FormActivity } from "@awell-health/navi-core";
+import type {
+  BaseActivityProps,
+  FormActivityData,
+} from "@awell-health/navi-core";
 import { cn } from "@/lib/utils";
 
 import { UnifiedFormRenderer } from "./unified-form/unified-form-renderer";
 import type { FormRenderConfig } from "./unified-form/types";
 
-export interface FormActivityProps extends BaseActivityProps {
-  activity: FormActivity;
+export interface FormActivityProps extends Omit<BaseActivityProps, "activity"> {
+  activity: FormActivityData;
   onSubmit?: (
     activityId: string,
     data: Record<string, unknown>

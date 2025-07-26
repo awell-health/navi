@@ -1,15 +1,16 @@
 import React, { useEffect } from "react";
 import type {
   BaseActivityProps,
-  MessageActivity,
+  MessageActivityData,
 } from "@awell-health/navi-core";
 import { useActivityEvents } from "@/domains/communications";
 import { SlateViewer } from "@/components/ui/slate-viewer";
 import { Button, Typography, Stack, HStack } from "../../ui";
 import { cn } from "@/lib/utils";
 
-export interface MessageActivityProps extends BaseActivityProps {
-  activity: MessageActivity;
+export interface MessageActivityProps
+  extends Omit<BaseActivityProps, "activity"> {
+  activity: MessageActivityData;
   onMarkAsRead?: (activityId: string) => void | Promise<void>;
 }
 

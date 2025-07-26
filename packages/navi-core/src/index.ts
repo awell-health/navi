@@ -3,14 +3,3 @@ export * from "./types";
 
 // Export utility functions
 export { generateCSSCustomProperties } from "./utils";
-
-export {
-  type BaseActivityProps,
-  ActivityFactory,
-  Activity,
-  ChecklistActivity,
-  FormActivity,
-  MessageActivity,
-  ExtensionActivity,
-  DynamicFormActivity,
-} from "./Activity";

@@ -53,6 +53,7 @@ import {
   createMultipleSelectValidationRules,
   MultipleSelectQuestion,
 } from "../questions/multiple-select-question";
+import { LongTextQuestion } from "../questions/long-text-question";
 
 interface QuestionRendererProps {
   question: Question;
@@ -96,8 +97,8 @@ export function QuestionRenderer({
 
   return (
     <Controller
-      key={question.key}
-      name={question.key}
+      key={question.id} // Keep key for React rendering
+      name={question.id} // Use question.id as the field name for react-hook-form
       control={control}
       rules={validationRules}
       render={({ field, fieldState }) => {
@@ -111,6 +112,9 @@ export function QuestionRenderer({
         switch (question.user_question_type) {
           case "SHORT_TEXT":
             return <ShortTextQuestion {...componentProps} />;
+
+          case "LONG_TEXT":
+            return <LongTextQuestion {...componentProps} />;
 
           case "EMAIL":
             return <EmailQuestion {...componentProps} />;
@@ -184,17 +188,17 @@ export function createDefaultValues(
     // Set appropriate default values based on question type
     switch (question.user_question_type) {
       case "YES_NO":
-        defaults[question.key] = undefined; // Boolean questions need undefined as default
+        defaults[question.id] = undefined; // Boolean questions need undefined as default
         break;
       case "MULTIPLE_SELECT":
-        defaults[question.key] = []; // Array for multiple select
+        defaults[question.id] = []; // Array for multiple select
         break;
       case "NUMBER":
       case "SLIDER":
-        defaults[question.key] = ""; // Empty string for numbers and sliders
+        defaults[question.id] = ""; // Empty string for numbers and sliders
         break;
       default:
-        defaults[question.key] = ""; // String default for most types
+        defaults[question.id] = ""; // String default for most types
         break;
     }
   });

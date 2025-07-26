@@ -6,7 +6,7 @@ import {
   isActivityErrorEvent,
   isActivityProgressEvent,
 } from "../src/domains/communications/hooks/use-activity-events.client";
-import { ActivityFactory } from "@awell-health/navi-core";
+import { createChecklistActivity } from "./storybook-helpers";
 
 const meta: Meta<typeof Checklist> = {
   title: "Activities/Checklist",
@@ -103,12 +103,18 @@ const createEventHandlers = (storyName: string) => ({
 
 export const BasicChecklist: Story = {
   args: {
-    activity: ActivityFactory.create({
+    activity: createChecklistActivity({
       id: "checklist-1",
-      type: "CHECKLIST",
-      status: "ACTIVE",
       date: "2024-01-15T10:30:00Z",
+      object: {
+        id: "checklist-object-1",
+        type: "CHECKLIST",
+        name: "Pre-Appointment Checklist",
+        email: null,
+        preferred_language: null,
+      },
       inputs: {
+        __typename: "ChecklistActivityInput",
         type: "CHECKLIST",
         checklist: {
           title: "Pre-Appointment Checklist",
@@ -120,7 +126,7 @@ export const BasicChecklist: Story = {
           ],
         },
       },
-    } as any),
+    }),
     disabled: false,
     className: "",
     onComplete: (activityId, data) => {
@@ -132,7 +138,7 @@ export const BasicChecklist: Story = {
 
 export const LongChecklist: Story = {
   args: {
-    activity: ActivityFactory.create({
+    activity: createChecklistActivity({
       id: "checklist-2",
       type: "CHECKLIST",
       status: "ACTIVE",
@@ -172,7 +178,7 @@ export const LongChecklist: Story = {
 
 export const ShortChecklist: Story = {
   args: {
-    activity: ActivityFactory.create({
+    activity: createChecklistActivity({
       id: "checklist-3",
       type: "CHECKLIST",
       status: "ACTIVE",
@@ -196,7 +202,7 @@ export const ShortChecklist: Story = {
 
 export const SingleItemChecklist: Story = {
   args: {
-    activity: ActivityFactory.create({
+    activity: createChecklistActivity({
       id: "checklist-4",
       type: "CHECKLIST",
       status: "ACTIVE",
@@ -220,7 +226,7 @@ export const SingleItemChecklist: Story = {
 
 export const EmptyChecklist: Story = {
   args: {
-    activity: ActivityFactory.create({
+    activity: createChecklistActivity({
       id: "checklist-5",
       type: "CHECKLIST",
       status: "ACTIVE",
@@ -244,7 +250,7 @@ export const EmptyChecklist: Story = {
 
 export const MedicalProcedureChecklist: Story = {
   args: {
-    activity: ActivityFactory.create({
+    activity: createChecklistActivity({
       id: "checklist-6",
       type: "CHECKLIST",
       status: "ACTIVE",
@@ -282,7 +288,7 @@ export const MedicalProcedureChecklist: Story = {
 
 export const DisabledChecklist: Story = {
   args: {
-    activity: ActivityFactory.create({
+    activity: createChecklistActivity({
       id: "checklist-7",
       type: "CHECKLIST",
       status: "ACTIVE",
@@ -311,7 +317,7 @@ export const DisabledChecklist: Story = {
 
 export const CustomStyledChecklist: Story = {
   args: {
-    activity: ActivityFactory.create({
+    activity: createChecklistActivity({
       id: "checklist-8",
       type: "CHECKLIST",
       status: "ACTIVE",
@@ -340,7 +346,7 @@ export const CustomStyledChecklist: Story = {
 
 export const MissingChecklistData: Story = {
   args: {
-    activity: ActivityFactory.create({
+    activity: createChecklistActivity({
       id: "checklist-9",
       type: "CHECKLIST",
       status: "ACTIVE",
@@ -361,7 +367,7 @@ export const MissingChecklistData: Story = {
 
 export const EventHandlingDemo: Story = {
   args: {
-    activity: ActivityFactory.create({
+    activity: createChecklistActivity({
       id: "checklist-10",
       type: "CHECKLIST",
       status: "ACTIVE",

@@ -215,15 +215,15 @@ function ActivityEventsDemoComponent() {
         {questions.map((question) => {
           if (question.user_question_type === "DESCRIPTION") {
             return (
-              <DescriptionQuestion key={question.key} question={question} />
+              <DescriptionQuestion key={question.id} question={question} />
             );
           }
 
           if (question.user_question_type === "SHORT_TEXT") {
             return (
               <Controller
-                key={question.key}
-                name={question.key as keyof typeof initialValues}
+                key={question.id}
+                name={question.id as keyof typeof initialValues}
                 control={control}
                 render={({ field, fieldState }) => (
                   <ShortTextQuestion

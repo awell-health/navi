@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from "react";
 import type {
   BaseActivityProps,
-  ChecklistActivity,
+  ChecklistActivityData,
 } from "@awell-health/navi-core";
 import { useActivityEvents } from "@/domains/communications/hooks/use-activity-events.client";
 import { Button, Checkbox, Label, Progress, Typography } from "@/components/ui";
 import { Stack } from "@/components/ui/stack";
 import { cn } from "@/lib/utils";
 
-export interface ChecklistActivityProps extends BaseActivityProps {
-  activity: ChecklistActivity;
+export interface ChecklistActivityProps
+  extends Omit<BaseActivityProps, "activity"> {
+  activity: ChecklistActivityData;
   onComplete?: (
     activityId: string,
     data: Record<string, unknown>
