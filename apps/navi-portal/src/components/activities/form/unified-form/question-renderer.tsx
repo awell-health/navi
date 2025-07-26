@@ -60,6 +60,7 @@ interface QuestionRendererProps {
   control: Control<Record<string, unknown>>;
   errors: FieldErrors;
   disabled?: boolean;
+  isVisible?: boolean; // New prop for visibility
 }
 
 // Map of question types to their validation rule creators
@@ -82,10 +83,18 @@ export function QuestionRenderer({
   question,
   control,
   disabled = false,
+  isVisible = true,
 }: QuestionRendererProps) {
   // Skip rendering non-data questions (descriptions are handled separately)
   if (question.user_question_type === "DESCRIPTION") {
-    return <DescriptionQuestion question={question} disabled={disabled} />;
+    return (
+      <div
+        className={isVisible ? "opacity-100 transition-opacity duration-200" : "opacity-0 pointer-events-none transition-opacity duration-200"}
+        style={{ display: isVisible ? "block" : "none" }}
+      >
+        <DescriptionQuestion question={question} disabled={disabled} />
+      </div>
+    );
   }
 
   // Get validation rules for this question type
@@ -96,12 +105,16 @@ export function QuestionRenderer({
   const validationRules = createValidationRules?.(question) || {};
 
   return (
-    <Controller
-      key={question.id} // Keep key for React rendering
-      name={question.id} // Use question.id as the field name for react-hook-form
-      control={control}
-      rules={validationRules}
-      render={({ field, fieldState }) => {
+    <div
+      className={isVisible ? "opacity-100 transition-opacity duration-200" : "opacity-0 pointer-events-none transition-opacity duration-200"}
+      style={{ display: isVisible ? "block" : "none" }}
+    >
+      <Controller
+        key={question.id} // Keep key for React rendering
+        name={question.id} // Use question.id as the field name for react-hook-form
+        control={control}
+        rules={isVisible ? validationRules : {}} // Skip validation for hidden questions
+        render={({ field, fieldState }) => {
         const componentProps: ControlledQuestionProps = {
           question,
           field,
@@ -159,6 +172,7 @@ export function QuestionRenderer({
         }
       }}
     />
+    </div>
   );
 }
 
