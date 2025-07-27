@@ -3,12 +3,13 @@ import type { UseFormWatch } from "react-hook-form";
 import type { Question } from "@/lib/awell-client/generated/graphql";
 import type { ActivityEvent } from "@awell-health/navi-core";
 import { useActivityEvents } from "@/domains/communications";
+import { ActivityEventHandlers } from "@awell-health/navi-core/src/types";
 
 interface UseFormEventsProps {
   activityId: string;
   allQuestions: Question[];
   watch: UseFormWatch<Record<string, unknown>>;
-  eventHandlers?: Record<string, (event: ActivityEvent) => void>;
+  eventHandlers?: ActivityEventHandlers;
 }
 
 export function useFormEvents({

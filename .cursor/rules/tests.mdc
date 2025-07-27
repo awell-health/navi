@@ -1,0 +1,9 @@
+---
+description: When working with tests
+alwaysApply: false
+---
+
+We use vitest for tests. Examples:
+
+- apps/navi-portal/src/lib/branding/branding-service.test.ts
+- apps/navi-portal/src/app/magic/route.test.ts

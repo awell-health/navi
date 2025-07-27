@@ -228,7 +228,7 @@ export type ClinicalNoteActivityInput = ActivityInput & {
 export type CompleteActivityInput = {
   activity_id: Scalars['ID']['input'];
   completion_context: CompletionContextInput;
-  form_response?: InputMaybe<Array<QuestionResponseInput>>;
+  form_response?: InputMaybe<Array<FormResponseInput>>;
   input_data?: InputMaybe<Scalars['JSON']['input']>;
   input_type: ActivityInputType;
 };
@@ -272,9 +272,21 @@ export type Condition = {
   reference_key?: Maybe<Scalars['String']['output']>;
 };
 
+export type ConditionInput = {
+  id: Scalars['String']['input'];
+  operand: ConditionOperandInput;
+  operator: ConditionOperator;
+  reference: Scalars['String']['input'];
+};
+
 export type ConditionOperand = {
   type: ConditionOperandType;
   value: Scalars['String']['output'];
+};
+
+export type ConditionOperandInput = {
+  type: Scalars['String']['input'];
+  value: Scalars['String']['input'];
 };
 
 export type ConditionOperandType =
@@ -364,6 +376,18 @@ export type DynamicQuestion = {
   user_question_type?: Maybe<UserQuestionType>;
 };
 
+export type EvaluateFormRulesInput = {
+  question_responses: Array<QuestionResponseInput>;
+  rules: Array<RuleInput>;
+};
+
+export type EvaluateFormRulesPayload = {
+  code: Scalars['String']['output'];
+  message?: Maybe<Scalars['String']['output']>;
+  results?: Maybe<Array<Scalars['Boolean']['output']>>;
+  success: Scalars['Boolean']['output'];
+};
+
 export type ExclusiveOptionConfig = {
   enabled?: Maybe<Scalars['Boolean']['output']>;
   option_id?: Maybe<Scalars['String']['output']>;
@@ -392,6 +416,11 @@ export type FormActivityInput = ActivityInput & {
 export type FormActivityOutput = ActivityOutput & {
   response?: Maybe<Scalars['JSON']['output']>;
   type: ActivityOutputType;
+};
+
+export type FormResponseInput = {
+  question_id: Scalars['String']['input'];
+  value: Scalars['String']['input'];
 };
 
 export type GeneratedClinicalNoteContextField = {
@@ -450,6 +479,7 @@ export type MultipleSelectConfig = {
 export type Mutation = {
   completeActivity: CompleteActivityPayload;
   createActivity: ActivityPayload;
+  evaluateFormRules: EvaluateFormRulesPayload;
   updateActivity: ActivityPayload;
 };
 
@@ -461,6 +491,11 @@ export type MutationCompleteActivityArgs = {
 
 export type MutationCreateActivityArgs = {
   input: CreateActivityInput;
+};
+
+
+export type MutationEvaluateFormRulesArgs = {
+  input: EvaluateFormRulesInput;
 };
 
 
@@ -521,7 +556,7 @@ export type Question = {
   question_type?: Maybe<QuestionType>;
   rule?: Maybe<Rule>;
   title: Scalars['String']['output'];
-  user_question_type?: Maybe<UserQuestionType>;
+  user_question_type: UserQuestionType;
 };
 
 export type QuestionConfig = {
@@ -547,6 +582,7 @@ export type QuestionOption = {
 export type QuestionResponseInput = {
   question_id: Scalars['String']['input'];
   value: Scalars['String']['input'];
+  value_type: Scalars['String']['input'];
 };
 
 export type QuestionType =
@@ -564,6 +600,12 @@ export type Rule = {
   boolean_operator: BooleanOperator;
   conditions: Array<Condition>;
   id: Scalars['ID']['output'];
+};
+
+export type RuleInput = {
+  boolean_operator: Scalars['String']['input'];
+  conditions: Array<ConditionInput>;
+  id: Scalars['String']['input'];
 };
 
 export type SliderConfig = {

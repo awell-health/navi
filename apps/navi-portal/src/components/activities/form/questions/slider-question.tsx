@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { ControlledQuestionProps } from "./types";
 import type { Question } from "@/lib/awell-client/generated/graphql";
 import { Slider, Label, Typography, Button } from "@/components/ui";
@@ -71,7 +71,11 @@ export function SliderQuestion({
 
   // For the slider component, we need a number array
   // When no value is set, position slider at min but with visual indication it's inactive
-  const sliderValue = currentValue !== undefined ? [currentValue] : [min];
+  // Use useMemo to prevent array recreation on every render (fixes max update depth error)
+  const sliderValue = useMemo(() => {
+    const value = currentValue !== undefined ? [currentValue] : [min];
+    return value;
+  }, [currentValue, min]);
 
   const handleActivate = () => {
     if (!isActivated) {
