@@ -41,6 +41,7 @@
     "@awell-health/navi-core": "workspace:*"
   },
   "peerDependencies": {
+    "@awell-health/navi-js": "workspace:*",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
   },

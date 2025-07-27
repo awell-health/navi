@@ -38,7 +38,7 @@ export class NaviLoader {
     }
 
     // Generate unique instance ID
-    const instanceId = `navi-${Math.random().toString(36).substr(2, 9)}`;
+    const instanceId = `navi-${Math.random().toString(36).slice(2, 9)}`;
 
     // Determine which use case and get session/redirect info
     const sessionInfo = await this.createSession(publishableKey, options);
@@ -118,7 +118,7 @@ export class NaviLoader {
     }
 
     // Use Case 2: Resume existing care flow
-    const careflowId = options.careflowId || options.pathwayId; // Support legacy pathwayId
+    const careflowId = options.careflowId;
     if (careflowId) {
       const response = await fetch(`${baseUrl}/api/create-careflow-session`, {
         method: "POST",
@@ -387,25 +387,10 @@ export class NaviLoader {
     width: string;
     height: string;
   } {
-    // Custom dimensions
-    if (options.size === "custom") {
-      return {
-        width: options.width || "100%",
-        height: `${options.height || 500}px`,
-      };
-    }
-
-    // Preset sizes for different use cases
-    switch (options.size) {
-      case "compact":
-        return { width: "100%", height: "300px" };
-      case "standard":
-        return { width: "100%", height: "500px" };
-      case "full":
-        return { width: "100%", height: "80vh" };
-      default:
-        return { width: "100%", height: "500px" }; // default to standard
-    }
+    return {
+      width: options.width || "100%",
+      height: "100px", // Minimal initial height, gets dynamically updated
+    };
   }
 
   private maybeLog(...args: any[]) {

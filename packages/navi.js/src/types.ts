@@ -38,16 +38,11 @@ export interface RenderOptions {
   trackId?: string;
   activityId?: string;
 
-  // Legacy support (backward compatibility)
-  pathwayId?: string; // Maps to careflowId
-
   // Common options
   stakeholderId?: string;
   branding?: BrandingConfig;
 
-  // Iframe sizing
-  size?: "compact" | "standard" | "full" | "custom";
-  height?: number;
+  // Iframe styling
   width?: string;
 
   // Custom embed URL override (for testing)

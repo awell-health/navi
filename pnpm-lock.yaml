@@ -436,6 +436,9 @@ importers:
       '@awell-health/navi-core':
         specifier: workspace:*
         version: link:../navi-core
+      '@awell-health/navi-js':
+        specifier: workspace:*
+        version: link:../navi-js
     devDependencies:
       '@rollup/plugin-node-resolve':
         specifier: ^15.3.0

@@ -10,44 +10,48 @@ export interface NaviLoadOptions {
 }
 
 export interface NaviInstance {
-  renderActivities: (
+  render: (
     containerId: string,
     options: RenderOptions
-  ) => NaviEmbedInstance;
+  ) => Promise<NaviEmbedInstance>;
 }
 
 export interface RenderOptions {
-  pathwayId: string;
+  // Use Case 1: Start new careflow
+  careflowDefinitionId?: string;
+  patientIdentifier?: {
+    system: string;
+    value: string;
+  };
+  awellPatientId?: string;
+
+  // Use Case 2: Resume existing careflow
+  careflowId?: string;
+  careflowToken?: string; // Alternative to session creation
+  trackId?: string;
+  activityId?: string;
+
+  // Common options
   stakeholderId?: string;
-
-  // For JWT creation - what we need from the customer
-  organizationId?: string; // Customer's org ID (for JWT aud claim)
-  userId?: string; // End user ID (for JWT sub claim)
-  sessionId?: string; // Session tracking
-
-  // UI customization
   branding?: BrandingConfig;
 
-  // Iframe sizing
-  size?: "compact" | "standard" | "full" | "custom";
-  height?: number; // Custom height in pixels
-  width?: string; // Custom width (e.g., '100%', '800px')
+  // Iframe styling
+  width?: string; // e.g., "100%", "800px", "50vw"
+
+  // Custom embed URL override (for testing)
+  embedUrl?: string;
 }
 
 export interface NaviEmbedInstance {
+  instanceId: string;
   destroy: () => void;
   iframe: HTMLIFrameElement;
   on: (event: string, callback: (data: any) => void) => void;
 }
 
 export interface NaviConstructor {
-  (publishableKey: string, options?: { embedOrigin?: string }): NaviInstance;
+  (publishableKey: string, options?: NaviLoadOptions): NaviInstance;
   version?: string;
-  _registerWrapper?: (details: {
-    name: string;
-    version: string;
-    startTime: number;
-  }) => void;
 }
 
 export interface Navi extends NaviInstance {

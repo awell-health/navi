@@ -164,7 +164,7 @@ export function DateQuestion({
             selected={currentDate}
             {...dateConstraints}
             onSelect={(date) => {
-              field.onChange(date);
+              field.onChange(date?.toISOString());
               setOpen(false);
             }}
           />
