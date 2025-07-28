@@ -1,6 +1,9 @@
 import React from "react";
 import { Controller, Control, FieldErrors } from "react-hook-form";
-import type { Question } from "@/lib/awell-client/generated/graphql";
+import type {
+  Question,
+  UserQuestionType,
+} from "@/lib/awell-client/generated/graphql";
 import { ControlledQuestionProps } from "../questions/types";
 
 // Import all the question components
@@ -53,18 +56,26 @@ import {
   createMultipleSelectValidationRules,
   MultipleSelectQuestion,
 } from "../questions/multiple-select-question";
-import { LongTextQuestion } from "../questions/long-text-question";
+import {
+  createLongTextValidationRules,
+  LongTextQuestion,
+} from "../questions/long-text-question";
 
 interface QuestionRendererProps {
   question: Question;
   control: Control<Record<string, unknown>>;
   errors: FieldErrors;
   disabled?: boolean;
+  isVisible?: boolean; // New prop for visibility
 }
 
 // Map of question types to their validation rule creators
-const validationRuleCreators = {
+const validationRuleCreators: Record<
+  UserQuestionType,
+  (question: Question) => Record<string, unknown>
+> = {
   SHORT_TEXT: createShortTextValidationRules,
+  LONG_TEXT: createLongTextValidationRules,
   EMAIL: createEmailValidationRules,
   NUMBER: createNumberValidationRules,
   DATE: createDateValidationRules,
@@ -76,89 +87,111 @@ const validationRuleCreators = {
   ICD10_CLASSIFICATION: createICD10ValidationRules,
   SLIDER: createSliderValidationRules,
   IMAGE: createImageValidationRules,
+  DESCRIPTION: () => ({}),
+  MULTIPLE_CHOICE_GRID: () => ({}),
+  SIGNATURE: () => ({}),
 } as const;
 
 export function QuestionRenderer({
   question,
   control,
   disabled = false,
+  isVisible = true,
 }: QuestionRendererProps) {
   // Skip rendering non-data questions (descriptions are handled separately)
   if (question.user_question_type === "DESCRIPTION") {
-    return <DescriptionQuestion question={question} disabled={disabled} />;
+    return (
+      <div
+        className={
+          isVisible
+            ? "opacity-100 transition-opacity duration-200"
+            : "opacity-0 pointer-events-none transition-opacity duration-200"
+        }
+        style={{ display: isVisible ? "block" : "none" }}
+      >
+        <DescriptionQuestion question={question} disabled={disabled} />
+      </div>
+    );
   }
 
   // Get validation rules for this question type
   const createValidationRules =
-    validationRuleCreators[
-      question.user_question_type as keyof typeof validationRuleCreators
-    ];
-  const validationRules = createValidationRules?.(question) || {};
+    validationRuleCreators[question.user_question_type];
+  const validationRules = createValidationRules(question);
 
   return (
-    <Controller
-      key={question.id} // Keep key for React rendering
-      name={question.id} // Use question.id as the field name for react-hook-form
-      control={control}
-      rules={validationRules}
-      render={({ field, fieldState }) => {
-        const componentProps: ControlledQuestionProps = {
-          question,
-          field,
-          fieldState,
-          disabled,
-        };
+    <div
+      className={
+        isVisible
+          ? "opacity-100 transition-opacity duration-200"
+          : "opacity-0 pointer-events-none transition-opacity duration-200"
+      }
+      style={{ display: isVisible ? "block" : "none" }}
+    >
+      <Controller
+        key={question.id} // Keep key for React rendering
+        name={question.id} // Use question.id as the field name for react-hook-form
+        control={control}
+        rules={isVisible ? validationRules : {}} // Skip validation for hidden questions
+        render={({ field, fieldState }) => {
+          const componentProps: ControlledQuestionProps = {
+            question,
+            field,
+            fieldState,
+            disabled,
+          };
 
-        switch (question.user_question_type) {
-          case "SHORT_TEXT":
-            return <ShortTextQuestion {...componentProps} />;
+          switch (question.user_question_type) {
+            case "SHORT_TEXT":
+              return <ShortTextQuestion {...componentProps} />;
 
-          case "LONG_TEXT":
-            return <LongTextQuestion {...componentProps} />;
+            case "LONG_TEXT":
+              return <LongTextQuestion {...componentProps} />;
 
-          case "EMAIL":
-            return <EmailQuestion {...componentProps} />;
+            case "EMAIL":
+              return <EmailQuestion {...componentProps} />;
 
-          case "NUMBER":
-            return <NumberQuestion {...componentProps} />;
+            case "NUMBER":
+              return <NumberQuestion {...componentProps} />;
 
-          case "DATE":
-            return <DateQuestion {...componentProps} />;
+            case "DATE":
+              return <DateQuestion {...componentProps} />;
 
-          case "YES_NO":
-            return <YesNoQuestion {...componentProps} />;
+            case "YES_NO":
+              return <YesNoQuestion {...componentProps} />;
 
-          case "MULTIPLE_CHOICE":
-            return <MultipleChoiceQuestion {...componentProps} />;
+            case "MULTIPLE_CHOICE":
+              return <MultipleChoiceQuestion {...componentProps} />;
 
-          case "MULTIPLE_SELECT":
-            return <MultipleSelectQuestion {...componentProps} />;
+            case "MULTIPLE_SELECT":
+              return <MultipleSelectQuestion {...componentProps} />;
 
-          case "TELEPHONE":
-            return <TelephoneQuestion {...componentProps} />;
+            case "TELEPHONE":
+              return <TelephoneQuestion {...componentProps} />;
 
-          case "FILE":
-            return <FileQuestion {...componentProps} />;
+            case "FILE":
+              return <FileQuestion {...componentProps} />;
 
-          case "ICD10_CLASSIFICATION":
-            return <ICD10Question {...componentProps} />;
+            case "ICD10_CLASSIFICATION":
+              return <ICD10Question {...componentProps} />;
 
-          case "SLIDER":
-            return <SliderQuestion {...componentProps} />;
+            case "SLIDER":
+              return <SliderQuestion {...componentProps} />;
 
-          case "IMAGE":
-            return <ImageQuestion {...componentProps} />;
+            case "IMAGE":
+              return <ImageQuestion {...componentProps} />;
 
-          // Add more question types as they're implemented
-          default:
-            return (
-              <div className="p-4 text-muted-foreground">
-                Unsupported question type: {question.user_question_type}
-              </div>
-            );
-        }
-      }}
-    />
+            // Add more question types as they're implemented
+            default:
+              return (
+                <div className="p-4 text-muted-foreground">
+                  Unsupported question type: {question.user_question_type}
+                </div>
+              );
+          }
+        }}
+      />
+    </div>
   );
 }
 

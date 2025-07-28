@@ -1,0 +1,6 @@
+---
+description: When working with graphql, subscriptions, or the apollo client in navi-portal or navi-core
+alwaysApply: false
+---
+
+Please generate your graphql files in `apps/navi-portal/src/lib/awell-client/graphql` (navi-portal) and use the generated types / operations in `packages/navi-core/src/generated/graphql.ts` (navi-core) and `apps/navi-portal/src/lib/awell-client/generated/graphql.ts` (navi-portal).

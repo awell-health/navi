@@ -1,0 +1,118 @@
+name: Pin navi-js to navi.js Major Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      navi_dot_js_version:
+        description: 'navi.js version to pin to (e.g., "1.0.0")'
+        required: true
+        type: string
+      release_type:
+        description: "Release type for navi-js update"
+        required: true
+        default: "minor"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  pin-version:
+    name: Pin navi-js version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Extract major version from navi.js
+        id: major-version
+        run: |
+          MAJOR_VERSION=$(echo "${{ inputs.navi_dot_js_version }}" | cut -d. -f1)
+          echo "major=$MAJOR_VERSION" >> $GITHUB_OUTPUT
+          echo "📌 Extracted major version: $MAJOR_VERSION"
+
+      - name: Update navi-js to pin to navi.js v${{ steps.major-version.outputs.major }}
+        run: |
+          # Update the navi-js source to reference the correct major version
+          NAVI_JS_FILE="packages/navi-js/src/index.ts"
+
+          # Update the CDN URL to use the major version
+          sed -i.bak "s|https://cdn.awellhealth.com/navi/v[0-9]\+/navi.js|https://cdn.awellhealth.com/navi/v${{ steps.major-version.outputs.major }}/navi.js|g" "$NAVI_JS_FILE"
+
+          # Also update any version constants if they exist
+          if grep -q "NAVI_JS_VERSION\|naviJsVersion\|version.*=.*['\"]" "$NAVI_JS_FILE"; then
+            sed -i.bak "s/version.*=.*['\"][^'\"]*['\"]/version = '${{ inputs.navi_dot_js_version }}'/g" "$NAVI_JS_FILE"
+          fi
+
+          echo "✅ Updated navi-js to pin to navi.js v${{ steps.major-version.outputs.major }}"
+
+      - name: Create changeset for navi-js version pin
+        run: |
+          cat << EOF > .changeset/pin-navi-js-version.md
+          ---
+          "@awell-health/navi-js": ${{ inputs.release_type }}
+          ---
+
+          Pin navi-js to navi.js v${{ steps.major-version.outputs.major }}
+
+          - Updated CDN reference to use navi.js v${{ inputs.navi_dot_js_version }}
+          - Ensures compatibility with navi.js major version ${{ steps.major-version.outputs.major }}
+          EOF
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          git add packages/navi-js/src/index.ts .changeset/pin-navi-js-version.md
+          git commit -m "Pin navi-js to navi.js v${{ steps.major-version.outputs.major }}"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "Pin navi-js to navi.js v${{ steps.major-version.outputs.major }}"
+          body: |
+            ## 📌 Pin navi-js to navi.js Major Version
+
+            This PR updates `@awell-health/navi-js` to pin to navi.js v${{ steps.major-version.outputs.major }}.
+
+            ### Changes
+            - Updated CDN URL to reference navi.js v${{ steps.major-version.outputs.major }}
+            - Created changeset for ${{ inputs.release_type }} version bump
+
+            ### navi.js Version
+            - **Pinned to**: v${{ inputs.navi_dot_js_version }}
+            - **Major version**: v${{ steps.major-version.outputs.major }}
+
+            ### Release Impact
+            This will trigger a **${{ inputs.release_type }}** release of `@awell-health/navi-js` when merged.
+
+            🚀 **Next Steps**: Merge this PR to trigger the release workflow.
+          branch: pin-navi-js-v${{ steps.major-version.outputs.major }}
+          delete-branch: true
+
+      - name: Summary
+        run: |
+          echo "## 📌 Version Pinning Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **navi.js version**: ${{ inputs.navi_dot_js_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Major version**: ${{ steps.major-version.outputs.major }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Release type**: ${{ inputs.release_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **PR created**: Pin navi-js to navi.js v${{ steps.major-version.outputs.major }}" >> $GITHUB_STEP_SUMMARY

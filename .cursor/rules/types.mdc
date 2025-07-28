@@ -1,0 +1,7 @@
+---
+alwaysApply: true
+---
+
+## Types
+
+- Please avoid using 'any'. if you must use it, please include a FIXME comment and `// eslint-disable-next-line @typescript-eslint/no-explicit-any`

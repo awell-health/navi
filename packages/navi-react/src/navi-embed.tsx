@@ -56,17 +56,6 @@ export interface NaviEmbedProps extends RenderOptions {
   onReady?: () => void;
 }
 
-declare global {
-  interface Window {
-    Navi: (publishableKey: string) => {
-      render: (
-        containerId: string,
-        options: RenderOptions
-      ) => Promise<NaviEmbedInstance>;
-    };
-  }
-}
-
 export function NaviEmbed({
   containerId,
   className,
@@ -78,12 +67,17 @@ export function NaviEmbed({
   onReady,
   ...renderOptions
 }: NaviEmbedProps) {
-  console.log("🔍 NaviEmbed component mounting/re-rendering");
+  // Add ref to track if rendering is in progress to prevent race conditions
+  const isRenderingRef = useRef(false);
+  console.log("🔍 NaviEmbed component mounting/re-rendering...", {
+    renderOptions,
+  });
 
   const {
     publishableKey,
     branding,
-    isLoading,
+    loading,
+    initialized,
     error: providerError,
   } = useNavi();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -91,25 +85,19 @@ export function NaviEmbed({
   const [embedError, setEmbedError] = useState<string | null>(null);
   const [isEmbedLoading, setIsEmbedLoading] = useState(false);
 
-  // Add ref to track if rendering is in progress to prevent race conditions
-  const isRenderingRef = useRef(false);
-
   useEffect(() => {
-    if (isLoading || providerError || !publishableKey) {
+    if (isRenderingRef.current) {
+      console.log("🔍 Iframe creation already in progress, skipping duplicate");
+      return;
+    }
+    isRenderingRef.current = true;
+    if (loading || providerError || !publishableKey || !initialized) {
       return;
     }
 
     async function renderEmbed() {
       // Prevent race conditions from React StrictMode or rapid re-renders
-      if (isRenderingRef.current) {
-        console.log(
-          "🔍 Iframe creation already in progress, skipping duplicate"
-        );
-        return;
-      }
-
       try {
-        isRenderingRef.current = true;
         setIsEmbedLoading(true);
         setEmbedError(null);
 
@@ -166,16 +154,6 @@ export function NaviEmbed({
           return;
         }
 
-        // Create unique container ID
-        const uniqueContainerId =
-          containerId ||
-          `navi-embed-${Math.random().toString(36).substr(2, 9)}`;
-
-        // Create the container div
-        const embedDiv = document.createElement("div");
-        embedDiv.id = uniqueContainerId;
-        containerRef.current.appendChild(embedDiv);
-
         // Merge branding from provider with component-specific branding
         const mergedBranding = {
           ...branding,
@@ -193,7 +171,7 @@ export function NaviEmbed({
 
         // Create Navi instance and render
         const navi = window.Navi(publishableKey);
-        const embedInstance = await navi.render(`#${uniqueContainerId}`, {
+        const embedInstance = await navi.render(`#navi-embed-container`, {
           ...renderOptions,
           branding: mergedBranding,
         });
@@ -246,7 +224,8 @@ export function NaviEmbed({
     };
   }, [
     publishableKey,
-    isLoading,
+    initialized,
+    loading,
     providerError,
     // Simplified dependencies - only track essential changes
     renderOptions.careflowDefinitionId,
@@ -256,41 +235,8 @@ export function NaviEmbed({
     // Don't stringify branding - causes unnecessary re-renders
   ]);
 
-  // Show loading state
-  if (isLoading || isEmbedLoading) {
-    return (
-      <div
-        className={className}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "200px",
-          background: "#f8f9fa",
-          borderRadius: "8px",
-          ...style,
-        }}
-      >
-        <div>
-          <div
-            style={{
-              width: "40px",
-              height: "40px",
-              border: "3px solid #e5e7eb",
-              borderTop: "3px solid var(--navi-primary, #667eea)",
-              borderRadius: "50%",
-              animation: "spin 1s linear infinite",
-              margin: "0 auto 1rem",
-            }}
-          />
-          <p style={{ color: "#6b7280", textAlign: "center" }}>
-            {isLoading
-              ? "Initializing Navi..."
-              : "Loading your care journey..."}
-          </p>
-        </div>
-      </div>
-    );
+  if (loading || !initialized) {
+    return <div id="navi-embed-container-loading" />;
   }
 
   // Show error state
@@ -309,9 +255,13 @@ export function NaviEmbed({
         }}
       >
         <p>
-          <strong>Error loading care journey:</strong>
+          <strong>There was a problem while loading your care journey:</strong>
         </p>
         <p>{providerError || embedError}</p>
+        <p>
+          (A message has already been sent to our support team. Please try
+          again.)
+        </p>
         <button
           onClick={() => window.location.reload()}
           style={{
@@ -330,5 +280,14 @@ export function NaviEmbed({
     );
   }
 
-  return <div ref={containerRef} className={className} style={style} />;
+  console.log("🔍 NaviEmbed container ref id", containerRef.current?.id);
+
+  return (
+    <div
+      id="navi-embed-container"
+      ref={containerRef}
+      className={className}
+      style={style}
+    />
+  );
 }

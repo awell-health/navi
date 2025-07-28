@@ -46,23 +46,23 @@ export function IframeCommunicator({
     activityType: UserActivityType
   ) => ({
     onActivityReady: (event: any) => {
-      console.log("🎯 Activity ready:", activityId, event);
+      console.debug("🎯 Activity ready:", activityId, event);
       sendActivityEvent(event, activityId, activityType);
     },
     onActivityActivate: (event: any) => {
-      console.log("🎯 Activity activated:", activityId, event);
+      console.debug("🎯 Activity activated:", activityId, event);
       sendActivityEvent(event, activityId, activityType);
     },
     onActivityProgress: (event: any) => {
-      console.log("📊 Activity progress:", activityId, event.data);
+      console.debug("📊 Activity progress:", activityId, event.data);
       sendActivityEvent(event, activityId, activityType);
     },
     onActivityDataChange: (event: any) => {
-      console.log("📝 Activity data change:", activityId, event.data);
+      console.debug("📝 Activity data change:", activityId, event.data);
       sendActivityEvent(event, activityId, activityType);
     },
     onActivityComplete: (event: any) => {
-      console.log("🎉 Activity completed:", activityId, event.data);
+      console.debug("🎉 Activity completed:", activityId, event.data);
       sendActivityEvent(event, activityId, activityType);
     },
     onActivityError: (event: any) => {
@@ -70,11 +70,11 @@ export function IframeCommunicator({
       sendActivityEvent(event, activityId, activityType);
     },
     onActivityFocus: (event: any) => {
-      console.log("👁️ Activity focused:", activityId, event);
+      console.debug("👁️ Activity focused:", activityId, event);
       sendActivityEvent(event, activityId, activityType);
     },
     onActivityBlur: (event: any) => {
-      console.log("👀 Activity blurred:", activityId, event);
+      console.debug("👀 Activity blurred:", activityId, event);
       sendActivityEvent(event, activityId, activityType);
     },
   });

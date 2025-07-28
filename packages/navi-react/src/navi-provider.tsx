@@ -1,9 +1,17 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 import type { BrandingConfig } from "@awell-health/navi-core";
+import { loadNavi } from "@awell-health/navi-js";
 
 export interface NaviContextType {
   branding: BrandingConfig;
-  isLoading: boolean;
+  initialized: boolean;
+  loading: boolean;
   error: string | null;
   publishableKey: string;
 }
@@ -21,13 +29,33 @@ export function NaviProvider({
   branding = {},
   children,
 }: NaviProviderProps) {
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    setIsLoading(true);
+    loadNavi(publishableKey, {
+      origin: "https://cdn.awellhealth.com",
+      embedOrigin: "http://localhost:3000",
+    })
+      .then(() => {
+        console.log("✅ Navi SDK loaded successfully");
+        setIsLoading(false);
+        setIsInitialized(true);
+      })
+      .catch((error) => {
+        console.error("❌ Failed to load Navi SDK:", error);
+        setLoadError(error.message);
+        setIsInitialized(false);
+      });
+  }, []);
 
   const value: NaviContextType = {
     branding,
-    isLoading,
-    error,
+    initialized: isInitialized,
+    loading: isLoading,
+    error: loadError,
     publishableKey,
   };
 
