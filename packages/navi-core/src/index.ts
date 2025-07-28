@@ -3,3 +3,4 @@ export * from "./types";
 
 // Export utility functions
 export { generateCSSCustomProperties } from "./utils";
+export { AuthService } from "./auth";

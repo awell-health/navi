@@ -41,7 +41,6 @@ interface NaviEmbedInstance {
 }
 
 export interface NaviEmbedProps extends RenderOptions {
-  containerId?: string;
   className?: string;
   style?: React.CSSProperties;
 
@@ -57,7 +56,6 @@ export interface NaviEmbedProps extends RenderOptions {
 }
 
 export function NaviEmbed({
-  containerId,
   className,
   style,
   onCareFlowStarted,
@@ -98,6 +96,10 @@ export function NaviEmbed({
     async function renderEmbed() {
       // Prevent race conditions from React StrictMode or rapid re-renders
       try {
+        if (isEmbedLoading) {
+          console.debug("🔍 Embed is already loading, skipping duplicate");
+          return;
+        }
         setIsEmbedLoading(true);
         setEmbedError(null);
 

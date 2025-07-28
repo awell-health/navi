@@ -21,49 +21,87 @@ alwaysApply: false
 - **Audit trails**: All authentication events must be logged securely
 - **Encryption**: All PHI must be encrypted in transit and at rest
 
-## 🔐 JWT Authentication Patterns
+## 🔑 Authentication Architecture
 
-### **Secure Token Creation**
+### **Two-Phase Authentication Flow**
+
+Navi implements a secure two-phase authentication system:
+
+**📋 Complete Flow Documentation**: See `packages/navi-core/src/types/auth.ts` for detailed type definitions and flow documentation.
+
+**🔧 Implementation**: See `packages/navi-core/src/auth.ts` for the `AuthService` class with all methods.
+
+#### **Phase 1: Session Management (navi-portal internal)**
+
+1. **Browser request**: User opens navi-portal and requests care flow access
+2. **Session creation**: navi-portal backend creates `SessionTokenData` (camelCase fields)
+3. **KV storage**: Session stored in KV store for internal tracking
+4. **Internal validation**: Use `AuthService.createSessionToken()` and `AuthService.verifySessionToken()`
+
+#### **Phase 2: GraphQL API Authentication (external)**
+
+1. **JWT conversion**: navi-portal backend converts `SessionTokenData` → `JWTPayload` (snake_case fields)
+2. **JWT signing**: Use `AuthService.createJWTFromSession(sessionData, sessionId, issuer)`
+3. **Frontend usage**: Frontend uses signed JWT to call module-navi GraphQL API
+4. **API validation**: module-navi uses `AuthService.verifyToken()` to authenticate requests
+
+### **Key Methods**
 
 ```typescript
-// ✅ CORRECT - Secure JWT handling in navi-portal
-import { SignJWT, jwtVerify } from "jose";
+// Phase 1: Internal session management
+const sessionToken = await authService.createSessionToken(sessionData);
+const sessionData = await authService.verifySessionToken(sessionToken);
 
-// Use proper key management
-const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-
-// Include proper claims
-const token = await new SignJWT({
-  sub: userId,
-  careflow_id: careflowId,
-  iat: Math.floor(Date.now() / 1000),
-  exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour
-})
-  .setProtectedHeader({ alg: "HS256" })
-  .sign(secret);
+// Phase 2: External API authentication
+const jwt = await authService.createJWTFromSession(
+  sessionData,
+  sessionId,
+  issuer
+);
+const jwtPayload = await authService.verifyToken(jwt);
 ```
 
-### **Token Validation Patterns**
+### **Data Structure Mapping**
+
+- **`SessionTokenData`**: camelCase (`patientId`, `careflowId`) - Internal KV storage
+- **`JWTPayload`**: snake_case (`patient_id`, `careflow_id`) - External GraphQL API
+
+## 🔐 JWT Security Patterns
+
+### **Secure Implementation with AuthService**
 
 ```typescript
-// ✅ Proper JWT verification with error handling
-async function verifyToken(token: string) {
-  try {
-    const { payload } = await jwtVerify(token, secret);
+// ✅ CORRECT - Use AuthService for all JWT operations
+import { AuthService } from "@awell-health/navi-core";
 
-    // Validate required claims
-    if (!payload.sub || !payload.careflow_id) {
-      throw new Error("Missing required claims");
-    }
+const authService = new AuthService();
+await authService.initialize(process.env.JWT_SECRET);
 
-    return payload;
-  } catch (error) {
-    // Log security events (without PHI)
-    logger.warn("JWT verification failed", {
-      error: error.message,
-      timestamp: new Date().toISOString(),
-    });
-    throw new Error("Invalid token");
+// Convert session to JWT for GraphQL API
+const jwt = await authService.createJWTFromSession(
+  sessionData,
+  sessionId,
+  "navi-portal.awellhealth.com"
+);
+```
+
+### **Runtime Validation with Zod**
+
+All token operations include runtime validation using Zod schemas:
+
+- Input validation on token creation
+- Payload validation on token verification
+- Detailed error reporting with validation issues
+
+```typescript
+// ✅ Runtime validation happens automatically
+try {
+  const payload = await authService.verifyToken(jwt);
+  // payload is fully validated JWTPayload type
+} catch (error) {
+  if (error instanceof NaviAuthError) {
+    // Includes validation errors if Zod parsing failed
+    console.log(error.validationErrors);
   }
 }
 ```
@@ -140,17 +178,7 @@ function logSecurityEvent(event: SecurityEvent) {
 }
 ```
 
-## 🔑 Authentication Architecture
-
-### **navi-portal Authentication Flow**
-
-1. **External auth**: Customer provides JWT with user context
-2. **Internal validation**: Verify JWT signature and claims
-3. **Careflow authorization**: Check user access to specific careflow
-4. **Session creation**: Create internal session with minimal claims
-5. **Activity authorization**: Validate access per activity request
-
-### **module-navi Authentication**
+### **module-navi GraphQL Context**
 
 ```typescript
 // ✅ Proper GraphQL context authentication
@@ -164,7 +192,10 @@ interface AuthenticatedContext {
 async function createAuthenticatedContext(
   token: string
 ): Promise<AuthenticatedContext> {
-  const payload = await verifyToken(token);
+  const authService = new AuthService();
+  await authService.initialize(process.env.JWT_SECRET);
+
+  const payload = await authService.verifyToken(token);
 
   // Validate careflow access
   const hasAccess = await validateCareflowAccess(
@@ -212,6 +243,8 @@ const config =
 
 ### **Authentication Testing**
 
+- [ ] SessionTokenData validation works
+- [ ] JWT payload conversion works (camelCase → snake_case)
 - [ ] JWT signature validation works
 - [ ] Expired tokens are rejected
 - [ ] Invalid claims are handled properly
@@ -234,15 +267,17 @@ pnpm dev  # Starts localhost:3000 and localhost:3001
 # Verify:
 # 1. iframe loads with proper CSP
 # 2. postMessage validation works
-# 3. Authentication flows end-to-end
+# 3. Two-phase authentication flows end-to-end
 # 4. Unauthorized origins rejected
+# 5. JWT conversion and validation works
 ```
 
 ## 🚨 Security Incident Response
 
 ### **Authentication Failures**
 
-- **Invalid tokens**: Log attempt, return generic error
+- **Invalid session tokens**: Log attempt, return generic error
+- **JWT validation failures**: Log with validation errors (no PHI)
 - **Expired tokens**: Redirect to authentication flow
 - **Missing tokens**: Return 401 with clear instructions
 - **Brute force**: Implement rate limiting and alerting
@@ -269,268 +304,6 @@ pnpm dev  # Starts localhost:3000 and localhost:3001
 - **Encryption**: AES-256 encryption for PHI at rest
 - **Access controls**: Role-based access with principle of least privilege
 
-# Navi Authentication & Security Rules
-
-## 🚨 ABSOLUTE SECURITY RULES
-
-### **Environment File Protection**
-
-- **ABSOLUTE RULE**: Only the user can modify `.env` files (Memory ID: 2526200)
-- **NEVER** bypass file editing restrictions using shell commands (Memory ID: 2526076)
-- **ALWAYS** ask user to handle environment file modifications manually
-- **NO EXCEPTIONS**: This rule overrides all other considerations
-
-### **HIPAA Compliance Requirements**
-
-- **Logging**: HIPAA-aligned logging - no PHI in logs
-- **Data handling**: Appropriate data retention and deletion policies
-- **Audit trails**: All authentication events must be logged securely
-- **Encryption**: All PHI must be encrypted in transit and at rest
-
-## 🔐 JWT Authentication Patterns
-
-### **Secure Token Creation**
-
-```typescript
-// ✅ CORRECT - Secure JWT handling in navi-portal
-import { SignJWT, jwtVerify } from "jose";
-
-// Use proper key management
-const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-
-// Include proper claims
-const token = await new SignJWT({
-  sub: userId,
-  careflow_id: careflowId,
-  iat: Math.floor(Date.now() / 1000),
-  exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour
-})
-  .setProtectedHeader({ alg: "HS256" })
-  .sign(secret);
-```
-
-### **Token Validation Patterns**
-
-```typescript
-// ✅ Proper JWT verification with error handling
-async function verifyToken(token: string) {
-  try {
-    const { payload } = await jwtVerify(token, secret);
-
-    // Validate required claims
-    if (!payload.sub || !payload.careflow_id) {
-      throw new Error("Missing required claims");
-    }
-
-    return payload;
-  } catch (error) {
-    // Log security events (without PHI)
-    logger.warn("JWT verification failed", {
-      error: error.message,
-      timestamp: new Date().toISOString(),
-    });
-    throw new Error("Invalid token");
-  }
-}
-```
-
-## 🛡️ Cross-Origin Security
-
-### **iframe Security Patterns**
-
-```typescript
-// ✅ Proper Content Security Policy
-const csp = {
-  "script-src": "'self' https://cdn.awellhealth.com",
-  "frame-src": "https://navi-portal.awellhealth.com",
-  "connect-src": "'self' https://api.navi.com",
-  "frame-ancestors": "https://trusted-customer-domain.com",
-};
-```
-
-### **PostMessage Security**
-
-```typescript
-// ✅ Secure cross-origin messaging
-window.addEventListener("message", (event) => {
-  // Always validate origin
-  const allowedOrigins = [
-    "https://navi-portal.awellhealth.com",
-    "http://localhost:3000", // Dev only
-    "http://localhost:3001", // Dev only
-  ];
-
-  if (!allowedOrigins.includes(event.origin)) {
-    logger.warn("Rejected message from unauthorized origin", {
-      origin: event.origin,
-      timestamp: new Date().toISOString(),
-    });
-    return;
-  }
-
-  // Validate message structure
-  if (!isValidNaviMessage(event.data)) {
-    return;
-  }
-
-  handleMessage(event.data);
-});
-```
-
-## 🏥 Healthcare Security Requirements
-
-### **Patient Data Protection**
-
-- **No PHI in URLs**: Never pass patient data in query parameters
-- **Secure transmission**: All patient data via POST/PUT with proper encryption
-- **Access logging**: Log access attempts without storing PHI
-- **Session management**: Proper session timeout and cleanup
-
-### **Audit Requirements**
-
-```typescript
-// ✅ Proper security event logging
-interface SecurityEvent {
-  event_type: "auth_success" | "auth_failure" | "access_denied";
-  user_id?: string; // Hash if necessary
-  careflow_id?: string; // Business identifier, not PHI
-  ip_address?: string; // For security monitoring
-  user_agent?: string; // For device tracking
-  timestamp: string;
-}
-
-function logSecurityEvent(event: SecurityEvent) {
-  // Ensure no PHI in logs
-  const sanitized = sanitizeForHIPAA(event);
-  logger.info("Security event", sanitized);
-}
-```
-
-## 🔑 Authentication Architecture
-
-### **navi-portal Authentication Flow**
-
-1. **External auth**: Customer provides JWT with user context
-2. **Internal validation**: Verify JWT signature and claims
-3. **Careflow authorization**: Check user access to specific careflow
-4. **Session creation**: Create internal session with minimal claims
-5. **Activity authorization**: Validate access per activity request
-
-### **module-navi Authentication**
-
-```typescript
-// ✅ Proper GraphQL context authentication
-interface AuthenticatedContext {
-  user_id: string;
-  careflow_id: string;
-  permissions: string[];
-  tenant_id: string;
-}
-
-async function createAuthenticatedContext(
-  token: string
-): Promise<AuthenticatedContext> {
-  const payload = await verifyToken(token);
-
-  // Validate careflow access
-  const hasAccess = await validateCareflowAccess(
-    payload.sub,
-    payload.careflow_id
-  );
-
-  if (!hasAccess) {
-    throw new Error("Insufficient permissions");
-  }
-
-  return {
-    user_id: payload.sub,
-    careflow_id: payload.careflow_id,
-    permissions: payload.permissions || [],
-    tenant_id: payload.tenant_id,
-  };
-}
-```
-
-## 🔧 Security Development Patterns
-
-### **Environment-Specific Security**
-
-```typescript
-// ✅ Environment-aware security configuration
-const securityConfig = {
-  development: {
-    allowedOrigins: ["http://localhost:3000", "http://localhost:3001"],
-    jwtExpiry: "24h",
-    requireHTTPS: false,
-  },
-  production: {
-    allowedOrigins: ["https://navi-portal.awellhealth.com"],
-    jwtExpiry: "1h",
-    requireHTTPS: true,
-  },
-};
-
-const config =
-  securityConfig[process.env.NODE_ENV] || securityConfig.production;
-```
-
-## 🎯 Security Testing Requirements
-
-### **Authentication Testing**
-
-- [ ] JWT signature validation works
-- [ ] Expired tokens are rejected
-- [ ] Invalid claims are handled properly
-- [ ] Cross-origin restrictions enforced
-- [ ] Session timeout works correctly
-
-### **Authorization Testing**
-
-- [ ] User can only access authorized careflows
-- [ ] Activity permissions enforced
-- [ ] Tenant isolation maintained
-- [ ] Admin vs user permissions work
-
-### **Security Integration Testing**
-
-```bash
-# Test cross-origin security
-pnpm dev  # Starts localhost:3000 and localhost:3001
-
-# Verify:
-# 1. iframe loads with proper CSP
-# 2. postMessage validation works
-# 3. Authentication flows end-to-end
-# 4. Unauthorized origins rejected
-```
-
-## 🚨 Security Incident Response
-
-### **Authentication Failures**
-
-- **Invalid tokens**: Log attempt, return generic error
-- **Expired tokens**: Redirect to authentication flow
-- **Missing tokens**: Return 401 with clear instructions
-- **Brute force**: Implement rate limiting and alerting
-
-### **Authorization Violations**
-
-- **Careflow access denied**: Log attempt with user/careflow IDs
-- **Activity permission denied**: Log and audit access attempt
-- **Cross-tenant access**: Critical security alert required
-
-## 🏥 Healthcare-Specific Security
-
-### **Regulatory Compliance**
-
-- **HIPAA**: All PHI handling must be HIPAA compliant
-- **21 CFR Part 11**: Electronic records and signatures compliance
-- **State regulations**: Consider state-specific healthcare data requirements
-- **International**: GDPR compliance for international patients
-
-### **Healthcare Security Patterns**
-
-- **Audit logging**: All patient data access must be logged
 - **Data minimization**: Only collect and store necessary PHI
 - **Encryption**: AES-256 encryption for PHI at rest
 - **Access controls**: Role-based access with principle of least privilege
