@@ -13,7 +13,7 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "minor",
-  "ignore": ["navi-portal", "@awell-health/navi-dot-js"],
+  "ignore": ["navi-portal", "navi-simple-embed", "navi-sdk-test-app"],
   "bumpVersionsWithWorkspaceProtocolOnly": true,
   "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
     "onlyUpdatePeerDependentsWhenOutOfRange": true
