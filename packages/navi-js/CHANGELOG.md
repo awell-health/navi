@@ -1,5 +1,13 @@
 # @awell-health/navi-js
 
+## 0.0.1-alpha.2
+
+### Patch Changes
+
+- 4762e9f: Initial deployment
+- Updated dependencies [4762e9f]
+  - @awell-health/navi-core@0.0.1-alpha.2
+
 ## 0.0.1-alpha.1
 
 ### Patch Changes
