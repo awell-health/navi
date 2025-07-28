@@ -8,8 +8,10 @@ const getNaviPromise = (
   options?: NaviLoadOptions
 ): Promise<NaviConstructor | null> => {
   if (naviPromise) {
+    console.log("🔍 navi-js: Navi already loaded");
     return naviPromise;
   }
+  console.log("🔍 navi-js: loading Navi...");
 
   naviPromise = loadScript(options).catch((error) => {
     // clear cache on error
@@ -34,9 +36,10 @@ export const loadNavi: LoadNavi = (publishableKey, options) => {
   const startTime = Date.now();
 
   // if previous attempts are unsuccessful, will re-load script
-  return getNaviPromise(options).then((maybeNavi) =>
-    initNavi(maybeNavi, [publishableKey], startTime, options)
-  );
+  return getNaviPromise(options).then((maybeNavi) => {
+    console.log("🔍 navi-js: loading Navi...");
+    return initNavi(maybeNavi, [publishableKey], startTime, options);
+  });
 };
 
 // Export types for use in other packages

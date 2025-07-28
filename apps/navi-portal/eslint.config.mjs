@@ -18,6 +18,8 @@ const eslintConfig = [
       "stories/**/*",
       "storybook-static/**/*",
       "**/*.fixture.tsx",
+      "**/*.test.ts",
+      "**/*.test.tsx",
     ],
   },
 ];

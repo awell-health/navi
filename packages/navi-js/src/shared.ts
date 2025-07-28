@@ -15,12 +15,9 @@ const getCDNConfig = (options?: NaviLoadOptions) => {
   let embedOrigin = "https://navi-portal.awellhealth.com";
 
   // Check for local option first
-  if (options?.local) {
-    origin = "http://localhost:3000";
-    embedOrigin = "http://localhost:3000";
-  } else if (
-    typeof process !== "undefined" &&
-    process.env.NODE_ENV === "local"
+  if (
+    options?.local ||
+    (process.env.NODE_ENV === "local" && typeof process !== "undefined")
   ) {
     origin = "http://localhost:3000";
     embedOrigin = "http://localhost:3000";
@@ -109,18 +106,6 @@ const injectScript = (options?: NaviLoadOptions): HTMLScriptElement => {
   headOrBody.appendChild(script);
 
   return script;
-};
-
-const registerWrapper = (navi: any, startTime: number): void => {
-  if (!navi || !navi._registerWrapper) {
-    return;
-  }
-
-  navi._registerWrapper({
-    name: "navi-js",
-    version: _VERSION,
-    startTime,
-  });
 };
 
 let naviPromise: Promise<NaviConstructor | null> | null = null;
@@ -234,6 +219,5 @@ export const initNavi = (
     : undefined;
 
   const navi = maybeNavi(publishableKey, naviJsOptions);
-  registerWrapper(navi, startTime);
   return navi;
 };

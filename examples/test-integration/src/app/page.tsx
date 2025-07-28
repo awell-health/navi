@@ -91,7 +91,6 @@ export default function HomePage() {
 
     eventTypes.forEach((eventType) => {
       instance.on(eventType, (data: any) => {
-        console.log(`🎯  ${eventType}:`, data);
         setEvents((prev) => [
           ...prev,
           {

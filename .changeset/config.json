@@ -6,7 +6,6 @@
   "linked": [
     [
       "@awell-health/navi-core",
-      "@awell-health/navi-dot-js",
       "@awell-health/navi-js",
       "@awell-health/navi-js-react"
     ]
@@ -14,7 +13,7 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "minor",
-  "ignore": ["navi-portal"],
+  "ignore": ["navi-portal", "navi-simple-embed", "navi-sdk-test-app"],
   "bumpVersionsWithWorkspaceProtocolOnly": true,
   "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
     "onlyUpdatePeerDependentsWhenOutOfRange": true

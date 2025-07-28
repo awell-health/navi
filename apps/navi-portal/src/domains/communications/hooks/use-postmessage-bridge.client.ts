@@ -31,8 +31,6 @@ export function usePostMessageBridge({
         );
         return;
       }
-
-      console.log("📤 Sending postMessage:", event);
       window.parent.postMessage(event, "*");
     },
     [instanceId]

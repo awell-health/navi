@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import type { ActivityEvent } from "@awell-health/navi-core";
 
 import type { UnifiedFormRendererProps } from "./types";
 import { QuestionRenderer } from "./question-renderer";
 import { useFormSetup } from "./hooks/use-form-setup";
 import { useFormNavigation } from "./hooks/use-form-navigation";
 import { useFormEvents } from "./hooks/use-form-events";
+import { useQuestionVisibility } from "./hooks/use-question-visibility";
+import { RuleService } from "./services/rule-service";
 import { FormProgress } from "./components/form-progress";
 import { FormNavigation } from "./components/form-navigation";
 
@@ -29,6 +30,28 @@ export function UnifiedFormRenderer({
 
   const { control, handleSubmit, formState, trigger, watch } = formMethods;
 
+  // Initialize rule service
+  const ruleService = useMemo(() => new RuleService(), []);
+
+  // Question visibility management
+  const { isQuestionVisible, visibilityState } = useQuestionVisibility({
+    questions: allQuestions,
+    fieldErrors: formState.errors,
+    ruleService,
+    watch,
+  });
+
+  const visiblePages = useMemo(() => {
+    return pages
+      .map((page) => ({
+        ...page,
+        questions: page.questions.filter((question) =>
+          isQuestionVisible(question.id)
+        ),
+      }))
+      .filter((page) => page.questions.length > 0); // Remove empty pages
+  }, [pages, visibilityState]);
+
   // Navigation state and handlers
   const {
     currentPage,
@@ -38,7 +61,7 @@ export function UnifiedFormRenderer({
     getProgressText,
     progressPercentage,
   } = useFormNavigation({
-    pages, // UFR: what will happen if pages change due to question visibility changes?
+    pages: visiblePages,
     trigger,
   });
 
@@ -47,9 +70,7 @@ export function UnifiedFormRenderer({
     activityId: activity.id,
     allQuestions,
     watch,
-    eventHandlers: eventHandlers as
-      | Record<string, (event: ActivityEvent) => void>
-      | undefined,
+    eventHandlers,
   });
 
   // Form submission handler
@@ -58,6 +79,12 @@ export function UnifiedFormRenderer({
     if (!navigationState.isLastPage) {
       return;
     }
+
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([questionId]) =>
+        isQuestionVisible(questionId)
+      )
+    );
 
     const wrappedOnSubmit = onSubmit
       ? async (id: string, data: Record<string, unknown>) => {
@@ -68,7 +95,7 @@ export function UnifiedFormRenderer({
         }
       : undefined;
 
-    await handleFormSubmit(activity.id, data, wrappedOnSubmit);
+    await handleFormSubmit(activity.id, filteredData, wrappedOnSubmit);
   };
 
   return (
@@ -78,7 +105,7 @@ export function UnifiedFormRenderer({
         progressPercentage={progressPercentage}
         progressText={getProgressText(config.mode)}
         showProgress={config.showProgress}
-        totalPages={pages.length}
+        totalPages={visiblePages.length}
       />
 
       {/* Form content */}
@@ -97,6 +124,7 @@ export function UnifiedFormRenderer({
                 control={control}
                 errors={formState.errors}
                 disabled={disabled}
+                isVisible={isQuestionVisible(question.id)}
               />
             </div>
           ))}
@@ -105,7 +133,7 @@ export function UnifiedFormRenderer({
         {/* Navigation */}
         <FormNavigation
           navigationState={navigationState}
-          totalPages={pages.length}
+          totalPages={visiblePages.length}
           disabled={disabled}
           isSubmitting={formState.isSubmitting}
           navigationText={config.navigationText}
