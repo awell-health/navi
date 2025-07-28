@@ -1,0 +1,95 @@
+name: Release & Publish to NPM
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize]
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release:
+    name: Release & Publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build:packages
+
+      - name: Setup .npmrc for publishing
+        run: |
+          cat << EOF > "$HOME/.npmrc"
+          //registry.npmjs.org/:_authToken=\$NPM_AUTH_TOKEN
+          registry=https://registry.npmjs.org/
+          access=public
+          EOF
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
+      - name: Create Release Pull Request or Publish to NPM
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          # This expects you to have a script called release which does a build and npm publish
+          publish: pnpm changeset:publish
+          title: "Release: New Navi Package Versions"
+          commit: "Release new versions"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
+      - name: Create GitHub Release
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          # Extract version from the published packages
+          PACKAGES_PUBLISHED='${{ steps.changesets.outputs.publishedPackages }}'
+
+          # Get the main version (they're linked, so should be the same)
+          VERSION=$(echo "$PACKAGES_PUBLISHED" | jq -r '.[0].version')
+
+          # Create release notes from changeset
+          RELEASE_NOTES="## 📦 Published Packages\n\n"
+          echo "$PACKAGES_PUBLISHED" | jq -r '.[] | "- **\(.name)** v\(.version)"' | while read line; do
+            RELEASE_NOTES="${RELEASE_NOTES}${line}\n"
+          done
+
+          # Create GitHub release
+          gh release create "v${VERSION}" \
+            --title "Release v${VERSION}" \
+            --notes "${RELEASE_NOTES}" \
+            --latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

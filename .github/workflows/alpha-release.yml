@@ -1,0 +1,119 @@
+name: Alpha Release & Publish to NPM
+
+on:
+  workflow_dispatch:
+    inputs:
+      alpha_identifier:
+        description: 'Alpha identifier (e.g., "alpha.1", "alpha.2")'
+        required: true
+        default: "alpha.1"
+        type: string
+
+concurrency: alpha-release
+
+jobs:
+  alpha-release:
+    name: Alpha Release & Publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build:packages
+
+      - name: Setup .npmrc for publishing
+        run: |
+          cat << EOF > "$HOME/.npmrc"
+          //registry.npmjs.org/:_authToken=\$NPM_AUTH_TOKEN
+          registry=https://registry.npmjs.org/
+          access=public
+          EOF
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
+      - name: Enter alpha prerelease mode
+        run: pnpm changeset pre enter alpha
+
+      - name: Create alpha changeset
+        run: |
+          cat << EOF > .changeset/alpha-release.md
+          ---
+          "@awell-health/navi-core": patch
+          "@awell-health/navi-js": patch
+          "@awell-health/navi-js-react": patch
+          ---
+
+          Alpha release ${{ inputs.alpha_identifier }}
+          EOF
+
+      - name: Version packages for alpha
+        run: pnpm changeset:version
+
+      - name: Publish alpha packages
+        run: pnpm changeset:publish --tag alpha
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
+      - name: Exit prerelease mode (cleanup)
+        run: pnpm changeset pre exit
+
+      - name: Get published version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./packages/navi-core/package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Pre-release
+        run: |
+          gh release create "v${{ steps.version.outputs.version }}" \
+            --title "Alpha Release v${{ steps.version.outputs.version }}" \
+            --notes "🧪 **Alpha Release** - ${{ inputs.alpha_identifier }}
+
+          ## 📦 Published Packages (Alpha)
+
+          - **@awell-health/navi-core** v${{ steps.version.outputs.version }}
+          - **@awell-health/navi-js** v${{ steps.version.outputs.version }}
+          - **@awell-health/navi-js-react** v${{ steps.version.outputs.version }}
+
+          ## 🚀 Installation
+
+          \`\`\`bash
+          npm install @awell-health/navi-core@alpha
+          npm install @awell-health/navi-js@alpha
+          npm install @awell-health/navi-js-react@alpha
+          \`\`\`
+
+          ⚠️ **This is an alpha release** - Use with caution in production environments." \
+            --prerelease
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
