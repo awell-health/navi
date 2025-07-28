@@ -11,6 +11,7 @@
     "@awell-health/navi-dot-js": "0.0.1-alpha.1"
   },
   "changesets": [
+    "bumpy-cycles-leave",
     "cool-berries-throw",
     "curly-days-jump"
   ]

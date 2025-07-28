@@ -1,5 +1,14 @@
 # @awell-health/navi-js-react
 
+## 0.0.1-alpha.3
+
+### Patch Changes
+
+- 7f14f6e: Update AuthService and JWTPayload in navi-core
+- Updated dependencies [7f14f6e]
+  - @awell-health/navi-core@0.0.1-alpha.3
+  - @awell-health/navi-js@0.0.1-alpha.3
+
 ## 0.0.1-alpha.2
 
 ### Patch Changes
