@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { decryptSessionToken } from "@/lib/auth/internal/session";
-import { createJWT } from "@/lib/auth/external/jwt";
+import { AuthService } from "@awell-health/navi-core";
 import { getBrandingByOrgId } from "@/lib/edge-config";
 import {
   generateInlineThemeStyle,
   generateFaviconHTML,
 } from "@/lib/branding/theme/generator";
 import { kv } from "@vercel/kv";
+import { env } from "@/env";
 
 export const runtime = "edge";
 
@@ -23,14 +24,7 @@ export async function GET(
   const trackId = request.nextUrl.searchParams.get("track_id");
   const activityId = request.nextUrl.searchParams.get("activity_id");
   const stakeholderId = request.nextUrl.searchParams.get("stakeholder_id");
-  console.log("GET /embed/[careflow_id]", {
-    searchParams: request.nextUrl.searchParams,
-    careflow_id,
-    token,
-    trackId,
-    activityId,
-    stakeholderId,
-  });
+  console.log("GET /embed/[careflow_id]");
   if (!token) {
     return new NextResponse("No token provided", {
       status: 400,
@@ -38,7 +32,7 @@ export async function GET(
     });
   }
 
-  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
 
   // Decrypt the token using AES-GCM
   const tokenData = await decryptSessionToken(token);
@@ -98,8 +92,14 @@ export async function GET(
     console.warn("⚠️ Branding fetch failed, using defaults:", error);
   }
 
-  // Generate JWT for API authentication
-  const jwt = await createJWT(tokenData);
+  // Generate JWT for API authentication using AuthService
+  const authService = new AuthService();
+  await authService.initialize(env.JWT_SIGNING_KEY);
+  const jwt = await authService.createJWTFromSession(
+    tokenData,
+    sessionId,
+    env.JWT_KEY_ID
+  );
 
   // Generate theme CSS inline with fallback
   try {
@@ -259,7 +259,7 @@ export async function GET(
 
   const renderBody = () => `
     <div class="embed-container">
-      <div class="activity-container">
+      <div class="activity-container" style="margin: auto;">
         <div class="welcome-message">
           <h1 class="welcome-title">${
             branding?.welcomeTitle || "Welcome Back"
@@ -292,270 +292,20 @@ export async function GET(
     </div>`;
 
   const renderScript = () => `
+    <!-- Embed Configuration -->
     <script>
-    // Lightweight embed portal application for existing care flows with SSE
-    class ExistingCareFlowEmbed {
-      constructor() {
-        this.retryCount = 0;
-        this.maxRetries = 3;
-        this.eventSource = null;
-        this.init();
-      }
-      
-      async init() {
-        console.log('🚀 Existing care flow embed initialized');
-        console.log('📍 Navigation context:', {
-          careflowId: '${careflow_id}',
-          trackId: '${trackId || "none"}',
-          activityId: '${activityId || "none"}',
-          stakeholderId: '${stakeholderId || "none"}'
-        });
-        
-        // Set up button click handler
-        const continueButton = document.getElementById('continue-button');
-        if (continueButton) {
-          continueButton.addEventListener('click', () => {
-            this.startCareFlow();
-          });
-        }
-      }
-      
-      startCareFlow() {
-        console.log('🎯 Continuing care flow...');
-        
-        // Hide welcome state, show loading state
-        const welcomeState = document.getElementById('welcome-state');
-        const loadingState = document.getElementById('loading-state');
-        
-        if (welcomeState) welcomeState.style.display = 'none';
-        if (loadingState) loadingState.style.display = 'flex';
-        
-        // Start SSE connection for real-time progress
-        this.connectSSE();
-      }
-      
-      connectSSE() {
-        const careflowId = '${careflow_id}';
-        const sessionId = '${sessionId}';
-        
-        // Include instance_id in SSE URL if available
-        const currentUrlParams = new URLSearchParams(window.location.search);
-        const instanceId = currentUrlParams.get('instance_id');
-        
-        let sseUrl = \`/api/careflow-status?careflow_id=\${careflowId}&session_id=\${sessionId}\`;
-        if (instanceId) {
-          sseUrl += \`&instance_id=\${instanceId}\`;
-        }
-        
-        console.log('📡 Connecting to SSE:', sseUrl);
-        
-        this.eventSource = new EventSource(sseUrl);
-        
-        this.eventSource.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            console.log('📨 SSE message:', data);
-            
-            switch (data.type) {
-              case 'connection':
-                this.updateLoadingMessage('Connected! Preparing your care flow...');
-                break;
-                
-              case 'progress':
-                this.updateProgress(data.progress, data.message);
-                break;
-                
-              case 'ready':
-                this.onCareFlowReady(data.redirectUrl);
-                break;
-                
-              default:
-                console.log('📝 Unknown SSE message type:', data.type);
-            }
-          } catch (error) {
-            console.error('❌ Error parsing SSE message:', error);
-          }
-        };
-        
-        this.eventSource.onerror = (error) => {
-          console.error('❌ SSE connection error:', error);
-          this.eventSource.close();
-          
-          // Fallback to timeout-based loading
-          setTimeout(() => {
-            this.showContinueButton();
-          }, 1500);
-        };
-      }
-      
-      updateLoadingMessage(message) {
-        const loadingMessage = document.getElementById('loading-message');
-        if (loadingMessage) {
-          loadingMessage.textContent = message;
-        }
-      }
-      
-      updateProgress(progress, message) {
-        const progressFill = document.getElementById('progress-fill');
-        const progressText = document.getElementById('progress-text');
-        const loadingMessage = document.getElementById('loading-message');
-        
-        if (progressFill) {
-          progressFill.style.width = \`\${progress}%\`;
-        }
-        
-        if (progressText) {
-          progressText.textContent = \`\${progress}%\`;
-        }
-        
-        if (loadingMessage && message) {
-          loadingMessage.textContent = message;
-        }
-      }
-      
-      onCareFlowReady(redirectUrl) {
-        console.log('✅ Care flow ready, closing SSE and showing continue button');
-        
-        if (this.eventSource) {
-          this.eventSource.close();
-        }
-        
-        // Show 100% completion briefly before showing button
-        this.updateProgress(100, 'Ready! Your care flow is prepared.');
-        
-        setTimeout(() => {
-          this.showContinueButton();
-        }, 800);
-      }
-      
-      showContinueButton() {
-        document.getElementById('loading-state').style.display = 'none';
-        document.getElementById('welcome-state').style.display = 'block';
-        
-        document.getElementById('continue-button').addEventListener('click', () => {
-          this.continueCareFlow();
-        });
-      }
-      
-      async continueCareFlow() {
-        console.log('🎯 Continuing existing care flow');
-        
-        try {
-          // Disable button to prevent double-clicks
-          const button = document.getElementById('continue-button');
-          button.disabled = true;
-          button.textContent = 'Loading...';
-          
-          // Navigate to care flow activities with navigation parameters
-          const careflowId = '${careflow_id}';
-          const stakeholderId = '${stakeholderId || tokenData.patientId}';
-          // Build URL with navigation parameters
-          let redirectUrl = \`/careflows/\${careflowId}/stakeholders/\${stakeholderId}\`;
-          // Add navigation parameters
-          const urlParams = new URLSearchParams();
-          
-          // Preserve instance_id parameter if it exists
-          const currentUrlParams = new URLSearchParams(window.location.search);
-          const instanceId = currentUrlParams.get('instance_id');
-          if (instanceId) {
-            urlParams.set('instance_id', instanceId);
-          }
-          
-          // Add navigation context
-          ${trackId ? `urlParams.set('track_id', '${trackId}');` : ""}
-          ${activityId ? `urlParams.set('activity_id', '${activityId}');` : ""}
-          console.log('🔄 URL params:', urlParams);
-          if (urlParams.toString()) {
-            redirectUrl += \`?\${urlParams.toString()}\`;
-          }
-          
-          console.log('🔄 Redirecting to:', redirectUrl);
-          window.location.href = redirectUrl;
-          
-        } catch (error) {
-          console.error('❌ Failed to continue care flow:', error);
-          this.showError();
-        }
-      }
-      
-      onCareFlowReady(redirectUrl) {
-        console.log('✅ Existing care flow ready, redirecting to:', redirectUrl);
-        
-        if (this.eventSource) {
-          this.eventSource.close();
-        }
-        
-        // Show 100% completion briefly before redirect
-        this.updateProgress(100, 'Complete! Redirecting to your care flow...');
-        
-        setTimeout(() => {
-          // Preserve instance_id parameter when redirecting
-          const currentUrlParams = new URLSearchParams(window.location.search);
-          const instanceId = currentUrlParams.get('instance_id');
-          
-          let finalRedirectUrl = redirectUrl;
-          if (instanceId) {
-            const separator = redirectUrl.includes('?') ? '&' : '?';
-            finalRedirectUrl += \`\${separator}instance_id=\${instanceId}\`;
-          }
-          
-          console.log('🔄 Redirecting to care flow with instanceId preserved:', finalRedirectUrl);
-          window.location.href = finalRedirectUrl;
-        }, 800);
-      }
-      
-      updateProgress(progress, message) {
-        const progressFill = document.getElementById('progress-fill');
-        const progressText = document.getElementById('progress-text');
-        const loadingMessage = document.getElementById('loading-message');
-        
-        if (progressFill) {
-          progressFill.style.width = \`\${progress}%\`;
-        }
-        
-        if (progressText) {
-          progressText.textContent = \`\${progress}%\`;
-        }
-        
-        if (loadingMessage && message) {
-          loadingMessage.textContent = message;
-        }
-      }
-      
-      showError() {
-        // Clean up SSE connection
-        if (this.eventSource) {
-          this.eventSource.close();
-          this.eventSource = null;
-        }
-        
-        document.getElementById('loading-state').style.display = 'none';
-        document.getElementById('welcome-state').style.display = 'none';
-        document.getElementById('error-state').style.display = 'block';
-      }
-      
-      // Clean up on page unload
-      cleanup() {
-        if (this.eventSource) {
-          this.eventSource.close();
-          this.eventSource = null;
-        }
-      }
-    }
+      window.embedConfig = {
+        careflowId: '${careflow_id}',
+        sessionId: '${sessionId}',
+        trackId: '${trackId || ""}',
+        activityId: '${activityId || ""}',
+        stakeholderId: '${stakeholderId || ""}',
+        patientId: '${tokenData.patientId}'
+      };
+    </script>
     
-    // Initialize when page loads
-    let embedApp;
-    document.addEventListener('DOMContentLoaded', () => {
-      embedApp = new ExistingCareFlowEmbed();
-    });
-    
-    // Clean up SSE connection on page unload
-    window.addEventListener('beforeunload', () => {
-      if (embedApp) {
-        embedApp.cleanup();
-      }
-    });
-    </script>`;
+    <!-- External Embed Script -->
+    <script src="/scripts/existing-careflow-embed.js"></script>`;
 
   // Compose the final HTML document
   const html = `<!DOCTYPE html>
@@ -592,7 +342,7 @@ export async function GET(
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 15 * 60, // 15 minutes
     path: "/api/graphql",
   });
 

@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { decryptSessionToken } from "@/lib/auth/internal/session";
-import { createJWT } from "@/lib/auth/external/jwt";
+import { AuthService } from "@awell-health/navi-core";
 import { getBrandingByOrgId } from "@/lib/edge-config";
 import {
   generateInlineThemeStyle,
   generateFaviconHTML,
 } from "@/lib/branding/theme/generator";
 import { kv } from "@vercel/kv";
+import { env } from "@/env";
 
 export const runtime = "edge";
 
@@ -76,8 +77,14 @@ export async function GET(request: NextRequest) {
     branding = { ...branding, ...JSON.parse(suppliedBranding) };
   }
 
-  // Generate JWT for API authentication
-  const jwt = await createJWT(tokenData);
+  // Generate JWT for API authentication using AuthService
+  const authService = new AuthService();
+  await authService.initialize(env.JWT_SIGNING_KEY);
+  const jwt = await authService.createJWTFromSession(
+    tokenData,
+    sessionId,
+    env.JWT_KEY_ID
+  );
 
   // Generate theme CSS inline with fallback
   try {

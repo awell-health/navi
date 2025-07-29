@@ -11,7 +11,7 @@ export const runtime = "edge";
 export async function POST(request: NextRequest) {
   try {
     const body: CreateCareFlowSessionRequest = await request.json();
-
+    console.log("🔍 POST /api/create-careflow-session", body);
     // Validate required fields
     if (!body.publishableKey || !body.careflowId) {
       return NextResponse.json(
@@ -53,33 +53,16 @@ export async function POST(request: NextRequest) {
         }
       );
     }
-
-    console.log("🔄 Creating session for existing care flow:", {
-      careflowId: body.careflowId,
-      trackId: body.trackId,
-      activityId: body.activityId,
-      stakeholderId: body.stakeholderId,
-      orgId: keyValidation.orgId,
-      tenantId: keyValidation.tenantId,
-    });
-
-    // TODO: Validate care flow exists and is accessible
-    // TODO: Validate trackId and activityId if provided
-
-    // For now, create mock response until validation is ready
-    const mockPatientId = `patient_from_careflow_${body.careflowId}`;
-    const stakeholderId = body.stakeholderId || mockPatientId;
-
     // Create session token for the existing care flow
     const sessionTokenData = {
-      patientId: mockPatientId,
+      patientId: body.stakeholderId!,
       careflowId: body.careflowId,
-      stakeholderId: stakeholderId, // Include the stakeholder for activity filtering
+      stakeholderId: body.stakeholderId!,
       orgId: keyValidation.orgId,
       tenantId: keyValidation.tenantId,
       environment: keyValidation.environment,
-      authenticationState: "unauthenticated" as const, // Anonymous request
-      exp: Math.floor(Date.now() / 1000) + 15 * 60, // 15 minutes
+      authenticationState: "unauthenticated" as const,
+      exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60, // 30 days
     };
 
     const sessionToken = await createSessionToken(sessionTokenData);
@@ -102,17 +85,11 @@ export async function POST(request: NextRequest) {
     const response: CreateCareFlowSessionResponse = {
       success: true,
       careflowId: body.careflowId,
-      patientId: mockPatientId,
+      patientId: body.stakeholderId!,
       sessionToken,
       redirectUrl,
-      stakeholderId,
+      stakeholderId: body.stakeholderId!,
     };
-
-    console.log("✅ Care flow session created successfully:", {
-      careflowId: body.careflowId,
-      patientId: mockPatientId,
-      redirectUrl,
-    });
 
     return NextResponse.json(response, {
       headers: {

@@ -32,6 +32,18 @@ export const env = createEnv({
       .url()
       .default("https://api.development.awellhealth.com/orchestration/graphql")
       .describe("URL for the orchestration service"),
+    STYTCH_PROJECT_ID: z
+      .string()
+      .min(1)
+      .describe("Stytch project ID for B2B authentication"),
+    STYTCH_M2M_CLIENT_ID: z
+      .string()
+      .min(1)
+      .describe("Stytch machine-to-machine client ID"),
+    STYTCH_M2M_CLIENT_SECRET: z
+      .string()
+      .min(1)
+      .describe("Stytch machine-to-machine client secret"),
   },
   client: {
     NEXT_PUBLIC_GRAPHQL_ENDPOINT: z

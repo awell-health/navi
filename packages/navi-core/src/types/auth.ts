@@ -46,9 +46,9 @@ export type AuthenticationState =
  * ```
  */
 export interface SessionTokenData {
-  patientId: string;
-  careflowId: string;
-  stakeholderId: string;
+  patientId?: string;
+  careflowId?: string;
+  stakeholderId?: string;
   orgId: string;
   tenantId: string;
   environment: TokenEnvironment;
@@ -95,9 +95,9 @@ export interface SessionData extends Omit<SessionTokenData, "exp"> {
  */
 export interface JWTPayload {
   sub: string; // session_id
-  careflow_id: string; // unique identifier for the careflow
-  stakeholder_id: string; // stakeholder performing actions (patient, care coordinator, etc.)
-  patient_id: string; // patient the care flow belongs to
+  careflow_id?: string; // unique identifier for the careflow
+  stakeholder_id?: string; // stakeholder performing actions (patient, care coordinator, etc.)
+  patient_id?: string; // patient the care flow belongs to
   tenant_id: string;
   org_id: string;
   environment: TokenEnvironment;

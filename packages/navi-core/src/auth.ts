@@ -1,21 +1,14 @@
 import { jwtVerify, SignJWT } from "jose";
 import { z } from "zod/v4";
-import {
-  NaviAuthError,
-  AuthErrorType,
-  JWTPayload,
-  SessionTokenData,
-  TokenEnvironment,
-  AuthenticationState,
-} from "./types";
+import { NaviAuthError, JWTPayload, SessionTokenData } from "./types";
 
 /**
  * Zod schema for validating SessionTokenData structure at runtime
  */
 const SessionTokenDataSchema = z.object({
-  patientId: z.string().min(1, "Patient ID is required"),
-  careflowId: z.string().min(1, "Careflow ID is required"),
-  stakeholderId: z.string().min(1, "Stakeholder ID is required"),
+  patientId: z.string().min(1, "Patient ID is required").optional(),
+  careflowId: z.string().min(1, "Careflow ID is required").optional(),
+  stakeholderId: z.string().min(1, "Stakeholder ID is required").optional(),
   orgId: z.string().min(1, "Organization ID is required"),
   tenantId: z.string().min(1, "Tenant ID is required"),
   environment: z.enum([
@@ -37,9 +30,9 @@ const SessionTokenDataSchema = z.object({
  */
 const JWTPayloadSchema = z.object({
   sub: z.string().min(1, "Session ID is required"),
-  careflow_id: z.string().min(1, "Careflow ID is required"),
-  stakeholder_id: z.string().min(1, "Stakeholder ID is required"),
-  patient_id: z.string().min(1, "Patient ID is required"),
+  careflow_id: z.string().min(1, "Careflow ID is required").optional(),
+  stakeholder_id: z.string().min(1, "Stakeholder ID is required").optional(),
+  patient_id: z.string().min(1, "Patient ID is required").optional(),
   tenant_id: z.string().min(1, "Tenant ID is required"),
   org_id: z.string().min(1, "Organization ID is required"),
   environment: z.enum([

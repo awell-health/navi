@@ -3,6 +3,7 @@ import {
   NaviLoadOptions,
   NaviInstance,
   RenderOptions,
+  NaviActivityEvent,
 } from "./types";
 
 // Main loader class
@@ -37,6 +38,22 @@ export class NaviLoader {
       throw new Error(`Container ${containerId} not found`);
     }
 
+    const existingIframe = container.querySelector(
+      "iframe[data-navi-instance]"
+    ) as HTMLIFrameElement;
+
+    if (existingIframe) {
+      console.log("🔍 Navi instance already exists, skipping creation");
+      return {
+        instanceId: existingIframe.id,
+        iframe: existingIframe,
+        destroy: () => this.destroyInstance(existingIframe.id),
+        on: (event: NaviActivityEvent, callback: (data: any) => void) => {
+          this.addEventListener(existingIframe.id, event, callback);
+        },
+      };
+    }
+
     // Generate unique instance ID
     const instanceId = `navi-${Math.random().toString(36).slice(2, 9)}`;
 
@@ -51,7 +68,7 @@ export class NaviLoader {
       instanceId,
       iframe,
       destroy: () => this.destroyInstance(instanceId),
-      on: (event: string, callback: (data: any) => void) => {
+      on: (event: NaviActivityEvent, callback: (data: any) => void) => {
         this.addEventListener(instanceId, event, callback);
       },
     };
@@ -85,39 +102,7 @@ export class NaviLoader {
   ): Promise<{ redirectUrl: string; careflowId: string; patientId: string }> {
     const baseUrl = this.getEmbedOrigin();
 
-    // Use Case 1: Start new care flow
-    if (options.careflowDefinitionId) {
-      const response = await fetch(`${baseUrl}/api/start-careflow`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          publishableKey,
-          careflowDefinitionId: options.careflowDefinitionId,
-          awellPatientId: options.awellPatientId,
-          patientIdentifier: options.patientIdentifier,
-          stakeholderId: options.stakeholderId,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to start care flow: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(`Failed to start care flow: ${data.error}`);
-      }
-
-      return {
-        redirectUrl: data.redirectUrl,
-        careflowId: data.careflowId,
-        patientId: data.patientId,
-      };
-    }
-
-    // Use Case 2: Resume existing care flow
+    // Use Case 1: Resume existing care flow
     const careflowId = options.careflowId;
     if (careflowId) {
       const response = await fetch(`${baseUrl}/api/create-careflow-session`, {
@@ -143,6 +128,38 @@ export class NaviLoader {
       const data = await response.json();
       if (!data.success) {
         throw new Error(`Failed to create care flow session: ${data.error}`);
+      }
+
+      return {
+        redirectUrl: data.redirectUrl,
+        careflowId: data.careflowId,
+        patientId: data.patientId,
+      };
+    }
+
+    // Use Case 2: Start new care flow
+    if (options.careflowDefinitionId) {
+      const response = await fetch(`${baseUrl}/api/start-careflow`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          publishableKey,
+          careflowDefinitionId: options.careflowDefinitionId,
+          awellPatientId: options.awellPatientId,
+          patientIdentifier: options.patientIdentifier,
+          stakeholderId: options.stakeholderId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to start care flow: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(`Failed to start care flow: ${data.error}`);
       }
 
       return {
@@ -389,7 +406,7 @@ export class NaviLoader {
   } {
     return {
       width: options.width || "100%",
-      height: "100px", // Minimal initial height, gets dynamically updated
+      height: "500px", // Minimal initial height, gets dynamically updated
     };
   }
 

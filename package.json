@@ -14,7 +14,7 @@
     "test": "turbo test",
     "clean": "turbo clean",
     "dev:portal": "turbo dev --filter=navi-portal",
-    "dev:test-app": "turbo dev --filter=navi-sdk-test-app",
+    "dev:test-app": "turbo dev --filter=navi-simple-embed",
     "build:packages": "turbo build --filter='./packages/*'",
     "build:portal": "turbo build --filter=navi-portal",
     "changeset": "changeset",

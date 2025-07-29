@@ -26,7 +26,7 @@ export function usePostMessageBridge({
   const sendMessage = useCallback(
     (event: AllPostMessageEvents) => {
       if (!instanceId) {
-        console.warn(
+        console.debug(
           "⚠️ Not sending postMessage - instanceId is null/undefined"
         );
         return;

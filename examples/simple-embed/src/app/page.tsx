@@ -13,13 +13,13 @@ export default function Home() {
       >
         <NaviEmbed
           careflowDefinitionId="1CnTTHNYM1Q3"
+          careflowId="Tjsko1X8exEh"
+          stakeholderId="Eh4UQbKZKBk6hKd0M7wKk"
           /* A patient identifier is optional -- you can also use an Awell patient ID. */
           patientIdentifier={{
             system: "https://www.medplum.com/docs/api/fhir/resources/patient",
             value: "fake_medplum_jb",
           }}
-          stakeholderId="optional_stakeholder_id" // optional -- defaults to 'patient'
-          careflowId={undefined} // you have the ability to pass in a care flow id to continue an existing care flow
           onReady={() => {
             console.log("✅ Navi embed is ready");
           }}

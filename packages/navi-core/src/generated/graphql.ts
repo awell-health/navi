@@ -198,6 +198,11 @@ export type CalculationField = {
   value: Scalars['JSON']['output'];
 };
 
+export type CareFlow = {
+  id: Scalars['String']['output'];
+  release_id: Scalars['String']['output'];
+};
+
 export type Checklist = {
   items: Array<Scalars['String']['output']>;
   title: Scalars['String']['output'];
@@ -320,14 +325,9 @@ export type ConditionOperator =
   | 'IS_TODAY'
   | 'IS_TRUE';
 
-export type CreateActivityInput = {
-  careflow_id: Scalars['String']['input'];
-  input_data?: InputMaybe<Scalars['String']['input']>;
-  input_type?: InputMaybe<ActivityInputType>;
-  pathway_definition_id: Scalars['String']['input'];
-  reference_id: Scalars['String']['input'];
-  session_id?: InputMaybe<Scalars['String']['input']>;
-  tenant_id: Scalars['String']['input'];
+export type DataPointInputGraphQl = {
+  data_point_definition_id: Scalars['String']['input'];
+  value: Scalars['String']['input'];
 };
 
 export type DataPointValueType =
@@ -477,10 +477,14 @@ export type MultipleSelectConfig = {
 };
 
 export type Mutation = {
+  /** Complete an activity with form responses, checklist items, or other input data. Handles different activity types including forms, checklists, clinical notes, and calculations. */
   completeActivity: CompleteActivityPayload;
-  createActivity: ActivityPayload;
+  /** Evaluate form rules against question responses to determine which rules are satisfied. Returns an array of boolean results indicating rule satisfaction status. */
   evaluateFormRules: EvaluateFormRulesPayload;
-  updateActivity: ActivityPayload;
+  /** Find an existing patient by ID or identifier, or create a new patient if none exists. Uses the same patient finding logic as enrollment triggers. */
+  patientMatch: PatientMatchPayload;
+  /** Start a new care flow for a patient with optional baseline data points. Creates a new care flow instance and returns the care flow details and stakeholders. */
+  startCareFlow: StartCareFlowPayload;
 };
 
 
@@ -489,18 +493,18 @@ export type MutationCompleteActivityArgs = {
 };
 
 
-export type MutationCreateActivityArgs = {
-  input: CreateActivityInput;
-};
-
-
 export type MutationEvaluateFormRulesArgs = {
   input: EvaluateFormRulesInput;
 };
 
 
-export type MutationUpdateActivityArgs = {
-  input: UpdateActivityInput;
+export type MutationPatientMatchArgs = {
+  input: PatientMatchInput;
+};
+
+
+export type MutationStartCareFlowArgs = {
+  input: StartCareFlowInput;
 };
 
 export type NumberConfig = {
@@ -512,14 +516,41 @@ export type PaginationInput = {
   offset?: Scalars['Float']['input'];
 };
 
+export type PatientIdentifier = {
+  system: Scalars['String']['output'];
+  value: Scalars['String']['output'];
+};
+
+export type PatientIdentifierInput = {
+  system: Scalars['String']['input'];
+  value: Scalars['String']['input'];
+};
+
+export type PatientMatchInput = {
+  allow_anonymous_creation?: InputMaybe<Scalars['Boolean']['input']>;
+  patient_id?: InputMaybe<Scalars['String']['input']>;
+  patient_identifier?: InputMaybe<PatientIdentifierInput>;
+};
+
+export type PatientMatchPayload = {
+  code: Scalars['String']['output'];
+  message?: Maybe<Scalars['String']['output']>;
+  patient_id?: Maybe<Scalars['String']['output']>;
+  patient_identifier?: Maybe<PatientIdentifier>;
+  success: Scalars['Boolean']['output'];
+};
+
 export type PhoneConfig = {
   available_countries?: Maybe<Array<Scalars['String']['output']>>;
   default_country?: Maybe<Scalars['String']['output']>;
 };
 
 export type Query = {
+  /** Retrieve activities with filtering, pagination, and sorting from the local navi database. Supports filtering by pathway_id, track_id, and includes total count for pagination. */
   activities: ActivitiesPayload;
+  /** Retrieve a single activity by its ID from the local navi database. Returns activity details including inputs, outputs, and metadata. */
   activity: ActivityPayload;
+  /** Retrieve all activities for a specific pathway from the local navi database. Includes pagination and sorting capabilities, focused on pathway-specific activity retrieval. */
   pathwayActivities: ActivitiesPayload;
 };
 
@@ -624,6 +655,40 @@ export type SortingInput = {
   field?: Scalars['String']['input'];
 };
 
+export type Stakeholder = {
+  clinical_app_role: StakeholderClinicalAppRole;
+  definition_id: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  label: StakeholderLabel;
+  release_id: Scalars['String']['output'];
+  version: Scalars['Float']['output'];
+};
+
+export type StakeholderClinicalAppRole =
+  | 'CAREGIVER'
+  | 'PATIENT'
+  | 'PHYSICIAN';
+
+export type StakeholderLabel = {
+  en: Scalars['String']['output'];
+};
+
+export type StartCareFlowInput = {
+  careflow_definition_id: Scalars['String']['input'];
+  data_points?: InputMaybe<Array<DataPointInputGraphQl>>;
+  patient_id: Scalars['String']['input'];
+  release_id?: InputMaybe<Scalars['String']['input']>;
+  session_id?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type StartCareFlowPayload = {
+  careflow: CareFlow;
+  code: Scalars['String']['output'];
+  message?: Maybe<Scalars['String']['output']>;
+  stakeholders: Array<Stakeholder>;
+  success: Scalars['Boolean']['output'];
+};
+
 export type SubActivity = {
   action: ActivityAction;
   id: Scalars['ID']['output'];
@@ -683,13 +748,6 @@ export type SubscriptionSessionActivityExpiredArgs = {
 
 export type SubscriptionSessionActivityUpdatedArgs = {
   only_stakeholder_activities?: InputMaybe<Scalars['Boolean']['input']>;
-};
-
-export type UpdateActivityInput = {
-  id: Scalars['ID']['input'];
-  input_data?: InputMaybe<Scalars['String']['input']>;
-  input_type?: InputMaybe<ActivityInputType>;
-  output_data?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UserQuestionType =

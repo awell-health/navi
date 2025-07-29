@@ -1,6 +1,7 @@
 import { sessionStore } from "@/lib/session-store";
 import { SessionData } from "@awell-health/navi-core";
 import { NextRequest } from "next/server";
+import { patientMatch, startCareflow } from "@/lib/api/mutations";
 
 export const runtime = "edge";
 
@@ -12,10 +13,12 @@ export async function GET(request: NextRequest) {
   if (!careflowId || !sessionId) {
     return new Response("Missing careflow_id or session_id", { status: 400 });
   }
+
   const sessionData = await sessionStore.get(sessionId);
   if (!sessionData) {
     return new Response("Session not found", { status: 404 });
   }
+
   console.log("GET /api/careflow-status", {
     careflowId,
     sessionId,
@@ -28,7 +31,7 @@ export async function GET(request: NextRequest) {
       const encoder = new TextEncoder();
 
       // Send initial connection confirmation
-      const send = (data: Record<string, string | number | SessionData>) => {
+      const send = (data: Record<string, any>) => {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
       };
 
@@ -40,32 +43,76 @@ export async function GET(request: NextRequest) {
         timestamp: Date.now(),
       });
 
-      // Simulate care flow preparation progress
-      let progress = 0;
-      const progressSteps = [
-        { progress: 20, message: "Validating care flow access..." },
-        { progress: 40, message: "Loading patient context..." },
-        { progress: 60, message: "Preparing activities..." },
-        { progress: 80, message: "Applying branding..." },
-        { progress: 100, message: "Ready! Redirecting..." },
-      ];
-
-      const sendProgress = () => {
-        if (progress < progressSteps.length) {
-          const step = progressSteps[progress];
+      // Execute real care flow operations
+      const executeOperations = async () => {
+        try {
+          // Step 1: Patient matching
           send({
             type: "progress",
-            progress: step.progress,
-            message: step.message,
+            progress: 20,
+            message: "Matching patient identity...",
             careflowId,
             sessionData,
             timestamp: Date.now(),
           });
-          progress++;
 
-          if (progress < progressSteps.length) {
-            setTimeout(sendProgress, 200 + Math.random() * 300); // 200-500ms intervals
-          } else {
+          const patientResult = await patientMatch(
+            {
+              patient_id: sessionData.patientId,
+              allow_anonymous_creation: true,
+            },
+            sessionData
+          );
+
+          send({
+            type: "progress",
+            progress: 40,
+            message: "Patient matched successfully",
+            careflowId,
+            sessionData,
+            timestamp: Date.now(),
+          });
+
+          // Step 2: Start care flow
+          send({
+            type: "progress",
+            progress: 60,
+            message: "Starting care flow...",
+            careflowId,
+            sessionData,
+            timestamp: Date.now(),
+          });
+
+          const careflowResult = await startCareflow(
+            {
+              patient_id: patientResult.patient_id!,
+              careflow_definition_id: careflowId,
+              stakeholder_id: sessionData.stakeholderId,
+              session_id: sessionId,
+            },
+            sessionData
+          );
+
+          send({
+            type: "progress",
+            progress: 80,
+            message: "Care flow started, preparing interface...",
+            careflowId,
+            sessionData,
+            timestamp: Date.now(),
+          });
+
+          // Step 3: Final preparation
+          setTimeout(() => {
+            send({
+              type: "progress",
+              progress: 100,
+              message: "Ready! Redirecting...",
+              careflowId,
+              sessionData,
+              timestamp: Date.now(),
+            });
+
             // Send completion event
             setTimeout(() => {
               // Build redirectUrl with instanceId if available
@@ -80,15 +127,30 @@ export async function GET(request: NextRequest) {
                 careflowId,
                 redirectUrl,
                 sessionData,
+                careflowData: {
+                  id: careflowResult.careflow.id,
+                  release_id: careflowResult.careflow.release_id,
+                  stakeholder_count: careflowResult.stakeholders?.length || 0,
+                },
                 timestamp: Date.now(),
               });
             }, 300);
-          }
+          }, 500);
+        } catch (error) {
+          console.error("❌ Care flow operation failed:", error);
+          send({
+            type: "error",
+            message:
+              error instanceof Error ? error.message : "Unknown error occurred",
+            careflowId,
+            sessionData,
+            timestamp: Date.now(),
+          });
         }
       };
 
-      // Start progress simulation after brief delay
-      setTimeout(sendProgress, 100);
+      // Start operations
+      executeOperations();
 
       // Clean up on client disconnect
       request.signal.addEventListener("abort", () => {

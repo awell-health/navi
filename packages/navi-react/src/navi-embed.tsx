@@ -84,7 +84,11 @@ export function NaviEmbed({
   const [isEmbedLoading, setIsEmbedLoading] = useState(false);
 
   useEffect(() => {
-    if (isRenderingRef.current) {
+    if (
+      isRenderingRef.current ||
+      typeof window.Navi !== "function" ||
+      !containerRef.current
+    ) {
       console.log("🔍 Iframe creation already in progress, skipping duplicate");
       return;
     }
@@ -117,42 +121,6 @@ export function NaviEmbed({
         // If we already have an instance, don't create another
         if (instance) {
           console.log("🔍 Instance already exists, skipping creation");
-          return;
-        }
-
-        // Check if an iframe already exists in this container
-        const existingIframe = containerRef.current.querySelector(
-          "iframe[data-navi-instance]"
-        ) as HTMLIFrameElement;
-        if (existingIframe) {
-          console.log("🔍 Iframe already exists, getting instance");
-
-          // Extract instance ID from iframe
-          const existingInstanceId =
-            existingIframe.getAttribute("data-navi-instance");
-          if (existingInstanceId) {
-            // Create a minimal instance object for state management
-            const existingInstance: NaviEmbedInstance = {
-              instanceId: existingInstanceId,
-              iframe: existingIframe,
-              destroy: () => {
-                console.log(
-                  "🧹 Destroying existing instance:",
-                  existingInstanceId
-                );
-                existingIframe.remove();
-              },
-              on: (event: string, callback: (data: any) => void) => {
-                // Event handling would need to be re-established
-                console.warn(
-                  "Event listeners may need to be re-established for existing iframe"
-                );
-              },
-            };
-
-            setInstance(existingInstance);
-            console.log("✅ Retrieved existing instance:", existingInstanceId);
-          }
           return;
         }
 
@@ -213,7 +181,7 @@ export function NaviEmbed({
       }
     }
 
-    renderEmbed();
+    void renderEmbed();
 
     // Cleanup function
     return () => {
@@ -282,14 +250,12 @@ export function NaviEmbed({
     );
   }
 
-  console.log("🔍 NaviEmbed container ref id", containerRef.current?.id);
-
   return (
     <div
       id="navi-embed-container"
       ref={containerRef}
       className={className}
-      style={style}
+      style={{ ...style, minHeight: "500px" }}
     />
   );
 }

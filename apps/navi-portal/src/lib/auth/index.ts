@@ -5,9 +5,6 @@ export {
   isValidSessionToken,
 } from "./internal/session";
 
-// JWT management
-export { createJWT, verifyJWT } from "./external/jwt";
-
 // Types (re-exported from navi-core)
 export type {
   SessionTokenData,

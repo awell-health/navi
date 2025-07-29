@@ -66,6 +66,71 @@ const jwtPayload = await authService.verifyToken(jwt);
 - **`SessionTokenData`**: camelCase (`patientId`, `careflowId`) - Internal KV storage
 - **`JWTPayload`**: snake_case (`patient_id`, `careflow_id`) - External GraphQL API
 
+## 🤖 Machine-to-Machine (M2M) Authentication
+
+### **Stytch B2B M2M Authentication**
+
+For server-side operations where navi-portal backend needs to call module-navi directly, we use Stytch B2B machine-to-machine authentication:
+
+**📋 Purpose**: Backend API calls for care flow orchestration, patient matching, and activity validation
+
+**🔧 Implementation**: See `apps/navi-portal/src/lib/api/stytch-client.ts` for the `StytchApiClient` class
+
+#### **Environment Configuration**
+
+```bash
+# Required environment variables
+STYTCH_PROJECT_ID=project_test_xxxxxxxxxxxx
+STYTCH_M2M_CLIENT_ID=project_test_client_xxxxxxxxxxxx
+STYTCH_M2M_CLIENT_SECRET=secret_test_xxxxxxxxxxxx
+```
+
+#### **Authentication Flow**
+
+1. **Token Acquisition**: StytchApiClient requests OAuth2 client credentials token
+2. **Token Caching**: Access tokens cached with 5-minute buffer before expiry
+3. **API Requests**: All GraphQL requests include `Authorization: Bearer {token}` header
+4. **Automatic Renewal**: Tokens refreshed automatically when expired
+
+#### **Usage Example**
+
+```typescript
+// ✅ CORRECT - Use StytchApiClient for M2M operations
+import { moduleNaviClient } from "@/lib/api/stytch-client";
+import { findOrCreatePatient, startCareflow } from "@/lib/api/mutations";
+
+// Patient matching for new care flows
+const patient = await findOrCreatePatient({
+  externalId: "patient_123",
+  tenantId: "tenant_456",
+  profile: {
+    firstName: "John",
+    lastName: "Doe",
+    email: "john@example.com",
+  },
+});
+
+// Care flow creation
+const careflow = await startCareflow({
+  pathwayId: "diabetes_management_v2",
+  patientId: patient.id,
+  tenantId: "tenant_456",
+});
+```
+
+#### **Supported Operations**
+
+- **`findOrCreatePatient`**: Patient matching and creation for new care flows
+- **`startCareflow`**: Care flow instantiation with pathway assignment
+- **`getPathwayActivities`**: Activity validation for existing care flows
+
+#### **Security Considerations**
+
+- **Token Scope**: Limited to necessary GraphQL operations only
+- **Edge Compatible**: Lightweight implementation for Vercel Edge Runtime
+- **Error Handling**: Proper error boundaries with sanitized error messages
+- **Token Rotation**: Automatic token refresh prevents authentication failures
+
 ## 🔐 JWT Security Patterns
 
 ### **Secure Implementation with AuthService**

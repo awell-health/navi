@@ -1,0 +1,12 @@
+mutation PatientMatch($input: PatientMatchInput!) {
+  patientMatch(input: $input) {
+    success
+    code
+    message
+    patient_id
+    patient_identifier {
+      system
+      value
+    }
+  }
+}

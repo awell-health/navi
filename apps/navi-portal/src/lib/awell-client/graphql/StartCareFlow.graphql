@@ -1,0 +1,19 @@
+mutation StartCareFlow($input: StartCareFlowInput!) {
+  startCareFlow(input: $input) {
+    success
+    code
+    message
+    careflow {
+      id
+      release_id
+    }
+    stakeholders {
+      id
+      definition_id
+      label {
+        en
+      }
+      clinical_app_role
+    }
+  }
+}

@@ -56,7 +56,7 @@ export function useHeightManager({
       if (!instanceId) return;
 
       const currentHeight = calculateHeight();
-      console.log(`📏 ${source} height:`, currentHeight);
+      console.debug(`📏 ${source} height:`, currentHeight);
 
       onHeightChange(currentHeight, source, activityId);
     },
