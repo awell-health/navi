@@ -12,6 +12,7 @@
   },
   "changesets": [
     "bumpy-cycles-leave",
+    "clean-rules-allow",
     "cool-berries-throw",
     "curly-days-jump"
   ]
