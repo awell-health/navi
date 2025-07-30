@@ -47,13 +47,10 @@ jobs:
       - name: Build packages
         run: pnpm build:packages
 
-      - name: Setup .npmrc for publishing
+      - name: Setup NPM for scoped packages
         run: |
-          cat << EOF > "$HOME/.npmrc"
-          //registry.npmjs.org/:_authToken=\$NPM_AUTH_TOKEN
-          registry=https://registry.npmjs.org/
-          access=public
-          EOF
+          npm config set @awell-health:registry https://registry.npmjs.org/
+          npm config set //registry.npmjs.org/:_authToken $NPM_AUTH_TOKEN
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 

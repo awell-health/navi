@@ -1,5 +1,13 @@
 # @awell-health/navi-dot-js
 
+## 0.0.3
+
+### Patch Changes
+
+- Support for CJS as well as ESM
+- Updated dependencies
+  - @awell-health/navi-core@0.0.3
+
 ## 0.0.2
 
 ### Patch Changes
