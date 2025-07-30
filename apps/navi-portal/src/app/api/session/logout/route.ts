@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     // Clear both JWT and session cookies
     response.cookies.set("awell.jwt", "", {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       secure: process.env.NODE_ENV === "production",
       maxAge: 0, // Expire immediately
       path: "/api/graphql",
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     response.cookies.set("awell.sid", "", {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       secure: process.env.NODE_ENV === "production",
       maxAge: 0, // Expire immediately
       path: "/",

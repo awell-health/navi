@@ -353,7 +353,7 @@ Branding: ${branding ? "Custom" : "Default (Awell)"}
   // Set cookies as per requirements
   response.cookies.set("awell.sid", sessionId, {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     secure: process.env.NODE_ENV === "production",
     maxAge: 30 * 24 * 60 * 60, // 30 days
     path: "/",
@@ -361,7 +361,7 @@ Branding: ${branding ? "Custom" : "Default (Awell)"}
 
   response.cookies.set("awell.jwt", jwt, {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     secure: process.env.NODE_ENV === "production",
     maxAge: 30 * 24 * 60 * 60, // 30 days
     path: "/api/graphql",
