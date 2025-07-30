@@ -7,8 +7,6 @@ import {
   SessionData,
 } from "@awell-health/navi-core";
 
-export const runtime = "edge";
-
 interface ProgressMessage {
   type: "progress" | "ready" | "connection";
   progress?: number;
