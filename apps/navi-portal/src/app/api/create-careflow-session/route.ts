@@ -3,41 +3,35 @@ import { validatePublishableKey } from "@/lib/auth/publishable-keys";
 import { getBrandingByOrgId } from "@/lib/edge-config";
 import { sessionStore } from "@/lib/session-store";
 import type {
+  BrandingConfig,
   CreateCareFlowSessionRequest,
   CreateCareFlowSessionResponse,
   EmbedSessionData,
 } from "@awell-health/navi-core";
+import { cookies } from "next/headers";
 
 export const runtime = "edge";
+
+// Helper function to get branding configuration
+async function getBranding(orgId: string, branding?: BrandingConfig) {
+  try {
+    const storedBranding = await getBrandingByOrgId(orgId);
+    return {
+      ...storedBranding,
+      ...branding,
+    };
+  } catch (error) {
+    console.warn("⚠️ Branding fetch failed, using defaults:", error);
+    return branding ?? {};
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body: CreateCareFlowSessionRequest = await request.json();
     console.log("🔍 POST /api/create-careflow-session", body);
 
-    // Validate required fields
-    if (
-      !body.publishableKey ||
-      (!body.careflowId && !body.careflowDefinitionId && !body.sessionId)
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            "Missing required fields: publishableKey and (careflowId or careflowDefinitionId or sessionId)",
-        },
-        {
-          status: 400,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, Authorization",
-          },
-        }
-      );
-    }
-
-    // Validate publishable key against organization
+    // Always validate the publishable key first for security
     const origin = request.headers.get("origin");
     const keyValidation = validatePublishableKey(
       body.publishableKey,
@@ -61,18 +55,68 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch organization branding
-    let branding = {};
-    try {
-      branding = await getBrandingByOrgId(keyValidation.orgId);
-    } catch (error) {
-      console.warn("⚠️ Branding fetch failed, using defaults:", error);
+    // Check for existing session in cookies
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get("awell.sid")?.value;
+
+    if (sessionCookie) {
+      const session = await sessionStore.get(sessionCookie);
+      if (session) {
+        // Validate session is not expired
+        const now = Math.floor(Date.now() / 1000);
+        if (session.exp && session.exp > now) {
+          // Validate session belongs to the same organization as the publishable key
+          if (session.orgId === keyValidation.orgId) {
+            console.log("🔄 Reusing existing session:", session.sessionId);
+            const branding = await getBranding(session.orgId, body.branding);
+            return NextResponse.json(
+              {
+                success: true,
+                embedUrl: `/embed/${session.sessionId}`,
+                branding,
+              },
+              {
+                headers: {
+                  "Access-Control-Allow-Origin": "*",
+                  "Access-Control-Allow-Methods": "POST, OPTIONS",
+                  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+                },
+              }
+            );
+          } else {
+            console.warn(
+              "⚠️ Session organization mismatch - creating new session"
+            );
+          }
+        } else {
+          console.log("⏰ Session expired - creating new session");
+        }
+      }
     }
 
-    // Override with any provided branding
-    if (body.branding) {
-      branding = { ...branding, ...body.branding };
+    // Validate required fields
+    if (
+      !body.publishableKey ||
+      (!body.careflowId && !body.careflowDefinitionId && !body.sessionId)
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Missing required fields: publishableKey and (careflowId or careflowDefinitionId or sessionId)",
+        },
+        {
+          status: 400,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+          },
+        }
+      );
     }
+
+    const branding = await getBranding(keyValidation.orgId, body.branding);
 
     if (body.sessionId) {
       return NextResponse.json(
