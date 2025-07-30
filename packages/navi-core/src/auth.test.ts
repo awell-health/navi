@@ -82,12 +82,14 @@ describe("AuthService", () => {
       }
     });
 
-    it("should throw INITIALIZATION_FAILED error on crypto failure", async () => {
-      // Mock crypto.subtle.importKey to fail
-      const originalImportKey = crypto.subtle.importKey;
-      crypto.subtle.importKey = vi
-        .fn()
-        .mockRejectedValue(new Error("Crypto error"));
+    it("should throw INITIALIZATION_FAILED error on TextEncoder failure", async () => {
+      // Mock TextEncoder to fail
+      const originalTextEncoder = global.TextEncoder;
+      global.TextEncoder = class {
+        encode() {
+          throw new Error("TextEncoder error");
+        }
+      } as any;
 
       try {
         await expect(authService.initialize(TEST_SECRET)).rejects.toThrow(
@@ -103,8 +105,8 @@ describe("AuthService", () => {
           );
         }
       } finally {
-        // Restore original implementation
-        crypto.subtle.importKey = originalImportKey;
+        // Restore original TextEncoder
+        global.TextEncoder = originalTextEncoder;
       }
     });
   });
@@ -317,7 +319,7 @@ describe("AuthService", () => {
     it("should throw INVALID_SESSION_DATA for missing required fields", async () => {
       const invalidSessionData = {
         ...VALID_SESSION_DATA,
-        stakeholderId: undefined as any,
+        orgId: undefined as any, // orgId is required, not optional
       };
 
       await expect(

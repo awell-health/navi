@@ -1,5 +1,13 @@
 # @awell-health/navi-dot-js
 
+## 0.0.2
+
+### Patch Changes
+
+- Updated auth service to use int array instead of crypto
+- Updated dependencies
+  - @awell-health/navi-core@0.0.2
+
 ## 0.0.1
 
 ### Patch Changes

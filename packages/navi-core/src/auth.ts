@@ -138,7 +138,7 @@ const JWTPayloadSchema = z.object({
  * ```
  */
 export class AuthService {
-  private secretKey: CryptoKey | null = null;
+  private secretKey: Uint8Array | null = null;
 
   constructor(private readonly secret?: string) {}
 
@@ -155,13 +155,8 @@ export class AuthService {
     }
 
     try {
-      this.secretKey = await crypto.subtle.importKey(
-        "raw",
-        new TextEncoder().encode(secretToUse),
-        { name: "HMAC", hash: "SHA-256" },
-        false,
-        ["sign", "verify"]
-      );
+      // Use Uint8Array directly for better Edge Runtime compatibility
+      this.secretKey = new TextEncoder().encode(secretToUse);
     } catch (error) {
       throw NaviAuthError.initializationFailed(error);
     }
