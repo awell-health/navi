@@ -1,5 +1,11 @@
 # @awell-health/navi-core
 
+## 0.0.1-alpha.5
+
+### Patch Changes
+
+- c6eca86: working e2e with patient intake
+
 ## 0.0.1-alpha.4
 
 ### Patch Changes

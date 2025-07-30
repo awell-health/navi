@@ -1,5 +1,14 @@
 # @awell-health/navi-js-react
 
+## 0.0.1-alpha.5
+
+### Patch Changes
+
+- c6eca86: working e2e with patient intake
+- Updated dependencies [c6eca86]
+  - @awell-health/navi-core@0.0.1-alpha.5
+  - @awell-health/navi-js@0.0.1-alpha.5
+
 ## 0.0.1-alpha.4
 
 ### Patch Changes
