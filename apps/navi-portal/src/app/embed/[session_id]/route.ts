@@ -11,7 +11,7 @@ import {
   generateFaviconHTML,
 } from "@/lib/branding/theme/generator";
 import { env } from "@/env";
-import { BrandingConfig } from "@awell-health/navi-core/src/types";
+import { BrandingConfig } from "@awell-health/navi-core";
 
 export const runtime = "edge";
 

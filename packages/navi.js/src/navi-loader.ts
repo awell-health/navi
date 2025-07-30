@@ -65,7 +65,12 @@ export class NaviLoader {
     const sessionInfo = await this.createSession(publishableKey, options);
 
     // Create iframe with the redirect URL from session creation
-    const iframe = this.createIframe(instanceId, sessionInfo, options);
+    const iframe = this.createIframe(
+      instanceId,
+      sessionInfo,
+      options,
+      container
+    );
 
     // Create embed instance
     const instance: NaviEmbedInstance = {
@@ -147,7 +152,8 @@ export class NaviLoader {
   private createIframe(
     instanceId: string,
     sessionInfo: CreateCareFlowSessionResponse,
-    options: RenderOptions
+    options: RenderOptions,
+    container: Element
   ): HTMLIFrameElement {
     const iframe = document.createElement("iframe");
 
@@ -172,22 +178,29 @@ export class NaviLoader {
     // Add instance_id parameter for iframe communication
     embedUrl.searchParams.set("instance_id", instanceId);
 
+    // No background URL params needed - iframe will be transparent
+
     // Configure iframe with session-based URL
     iframe.src = embedUrl.toString();
     iframe.id = instanceId;
     iframe.setAttribute("data-navi-instance", instanceId);
 
-    // Apply sizing based on options
-    const { width, height } = this.getIframeDimensions(options);
+    // Apply sizing based on options and container
+    const { width, height, minHeight } = this.getIframeDimensions(
+      options,
+      container
+    );
 
     iframe.style.cssText = `
       width: ${width};
       height: ${height};
+      min-height: ${minHeight};
       border: none;
       border-radius: 8px;
       transition: height 0.3s ease;
-      background: #ffffff;
+      background: transparent;
       display: block;
+      box-sizing: border-box;
     `;
     iframe.setAttribute("frameborder", "0");
     // iframe.setAttribute("scrolling", "no");
@@ -378,13 +391,27 @@ export class NaviLoader {
     }
   }
 
-  private getIframeDimensions(options: RenderOptions): {
+  private getIframeDimensions(
+    options: RenderOptions,
+    container: Element
+  ): {
     width: string;
     height: string;
+    minHeight: string;
   } {
+    // Get container's actual dimensions
+    const containerRect = container.getBoundingClientRect();
+    const containerHeight = containerRect.height;
+
+    // Smart defaults: fill container immediately, never shrink below it
+    const baseHeight = containerHeight > 50 ? `${containerHeight}px` : "400px";
+    const initialHeight = options.height || baseHeight;
+    const minimumHeight = options.minHeight || baseHeight;
+
     return {
       width: options.width || "100%",
-      height: "100px", // Minimal initial height, gets dynamically updated
+      height: initialHeight, // Fill container immediately
+      minHeight: minimumHeight, // Never shrink below container
     };
   }
 

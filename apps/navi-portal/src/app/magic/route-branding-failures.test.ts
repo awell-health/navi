@@ -7,7 +7,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "./route";
 import { NextRequest } from "next/server";
 import { createSessionToken } from "@/lib/auth/internal/session";
-import type { SessionTokenData } from "@awell-health/navi-core/src/types";
+import type { SessionTokenData } from "@awell-health/navi-core";
 
 // Mock the edge-config import to test failure scenarios
 vi.mock("@/lib/edge-config", () => ({

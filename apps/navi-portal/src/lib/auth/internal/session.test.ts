@@ -4,7 +4,7 @@ import {
   decryptSessionToken,
   isValidSessionToken,
 } from "./session";
-import type { SessionTokenData } from "@awell-health/navi-core/src/types";
+import type { SessionTokenData } from "@awell-health/navi-core";
 
 describe("Session Token Encryption/Decryption", () => {
   const testSessionTokenData: SessionTokenData = {

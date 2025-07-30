@@ -6,7 +6,7 @@ import type {
   CreateCareFlowSessionRequest,
   CreateCareFlowSessionResponse,
   EmbedSessionData,
-} from "@awell-health/navi-core/src/types";
+} from "@awell-health/navi-core";
 
 export const runtime = "edge";
 

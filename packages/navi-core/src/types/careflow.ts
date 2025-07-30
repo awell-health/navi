@@ -29,6 +29,8 @@ export interface RenderOptions {
 
   // Iframe styling
   width?: string;
+  height?: string;
+  minHeight?: string;
 
   /**
    * Custom embed URL override (for testing)

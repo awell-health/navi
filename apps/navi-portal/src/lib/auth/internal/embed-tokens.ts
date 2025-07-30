@@ -1,7 +1,7 @@
 import type {
   SessionTokenData,
   PatientIdentifier,
-} from "@awell-health/navi-core/src/types";
+} from "@awell-health/navi-core";
 import { env } from "@/env";
 
 /**

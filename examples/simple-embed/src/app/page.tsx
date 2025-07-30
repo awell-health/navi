@@ -2,11 +2,17 @@
 
 import { NaviEmbed, NaviProvider } from "@awell-health/navi-js-react";
 
-export default function Home() {
+export default function PatientIntakePage() {
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Simple Navi Embed Example</h1>
-      <NaviProvider publishableKey="pk_test_awell_dev">
+    <div className="flex flex-col items-center justify-center h-screen">
+      <NaviProvider
+        publishableKey="pk_test_awell_dev"
+        config={{
+          origin: "http://localhost:3000",
+          embedOrigin: "http://localhost:3000",
+          verbose: true,
+        }}
+      >
         <NaviEmbed
           sessionId="e05e7a4b-e51c-4368-a8f7-38d0f0845b0c"
           careflowDefinitionId="1CnTTHNYM1Q3"
@@ -15,7 +21,6 @@ export default function Home() {
             system: "https://www.medplum.com/docs/api/fhir/resources/patient",
             value: "fake_medplum_jb",
           }}
-          stakeholderId="zJ_wFE9MiVjy"
           onReady={() => {
             console.log("✅ Navi embed is ready");
           }}

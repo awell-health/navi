@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { GET } from "./route";
 import { NextRequest } from "next/server";
 import { createSessionToken } from "@/lib/auth/internal/session";
-import type { SessionTokenData } from "@awell-health/navi-core/src/types";
+import type { SessionTokenData } from "@awell-health/navi-core";
 
 describe("Magic Link Authentication", () => {
   beforeEach(() => {

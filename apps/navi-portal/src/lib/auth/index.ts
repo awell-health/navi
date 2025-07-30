@@ -19,4 +19,4 @@ export type {
   TokenEnvironment,
   AuthenticationState,
   JWTPayload,
-} from "@awell-health/navi-core/src/types";
+} from "@awell-health/navi-core";
