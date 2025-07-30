@@ -31,8 +31,8 @@ export default [
       resolve(),
       typescript({
         tsconfig: "./tsconfig.build.json",
-        declaration: true,
-        declarationDir: "dist",
+        declaration: false, // Only generate declarations once
+        declarationDir: undefined, // Don't specify declarationDir when declaration is false
       }),
     ],
     external: ["graphql", "jose", "zod"],
