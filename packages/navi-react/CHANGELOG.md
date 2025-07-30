@@ -1,5 +1,22 @@
 # @awell-health/navi-js-react
 
+## 0.0.1
+
+### Patch Changes
+
+- 7f14f6e: Update AuthService and JWTPayload in navi-core
+- 982062e: Updated navi-core session data and JWT payload so some fields are optional
+- 4762e9f: Initial deployment
+- 0cd17b6: Updated CDN and embed portal addresses
+- c6eca86: working e2e with patient intake
+- Updated dependencies [7f14f6e]
+- Updated dependencies [982062e]
+- Updated dependencies [4762e9f]
+- Updated dependencies [0cd17b6]
+- Updated dependencies [c6eca86]
+  - @awell-health/navi-core@0.0.1
+  - @awell-health/navi-js@0.0.1
+
 ## 0.0.1-alpha.5
 
 ### Patch Changes

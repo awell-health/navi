@@ -1,17 +1,12 @@
 "use client";
 
 import { NaviEmbed, NaviProvider } from "@awell-health/navi-js-react";
-import { techCorpBranding } from "./test_config";
 
 export default function Home() {
   return (
     <div style={{ padding: "20px" }}>
       <h1>Simple Navi Embed Example</h1>
-      <NaviProvider
-        publishableKey="pk_test_awell_dev"
-        verbose
-        // branding={techCorpBranding} // full branding object
-      >
+      <NaviProvider publishableKey="pk_test_awell_dev">
         <NaviEmbed
           sessionId="e05e7a4b-e51c-4368-a8f7-38d0f0845b0c"
           careflowDefinitionId="1CnTTHNYM1Q3"

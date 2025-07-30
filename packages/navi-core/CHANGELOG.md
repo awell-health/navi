@@ -1,5 +1,14 @@
 # @awell-health/navi-core
 
+## 0.0.1
+
+### Patch Changes
+
+- 7f14f6e: Update AuthService and JWTPayload in navi-core
+- 982062e: Updated navi-core session data and JWT payload so some fields are optional
+- 4762e9f: Initial deployment
+- c6eca86: working e2e with patient intake
+
 ## 0.0.1-alpha.5
 
 ### Patch Changes

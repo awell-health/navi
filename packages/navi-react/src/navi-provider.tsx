@@ -7,7 +7,9 @@ import React, {
 } from "react";
 import type { BrandingConfig } from "@awell-health/navi-core";
 import { loadNavi } from "@awell-health/navi-js";
-import { Navi } from "@awell-health/navi-js/dist/types";
+import { NaviLoadOptions } from "@awell-health/navi-js";
+
+type Navi = Awaited<ReturnType<typeof loadNavi>>;
 
 export interface NaviContextType {
   branding: BrandingConfig;
@@ -24,14 +26,14 @@ export interface NaviProviderProps {
   publishableKey: string;
   branding?: BrandingConfig;
   children: ReactNode;
-  verbose?: boolean;
+  config?: NaviLoadOptions;
 }
 
 export function NaviProvider({
   publishableKey,
   branding = {},
   children,
-  verbose = false,
+  config = {},
 }: NaviProviderProps) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -40,11 +42,7 @@ export function NaviProvider({
 
   useEffect(() => {
     setIsLoading(true);
-    loadNavi(publishableKey, {
-      origin: "https://cdn.awellhealth.com",
-      embedOrigin: "http://localhost:3000",
-      verbose,
-    })
+    loadNavi(publishableKey, config)
       .then((navi) => {
         setNavi(navi);
         console.log("✅ Navi SDK loaded successfully");

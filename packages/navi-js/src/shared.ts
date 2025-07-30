@@ -14,16 +14,6 @@ const getCDNConfig = (options?: NaviLoadOptions) => {
   let origin = "https://cdn.awellhealth.com";
   let embedOrigin = "https://navi-portal.awellhealth.com";
 
-  // Check for local option first
-  if (
-    options?.local ||
-    process.env.NODE_ENV === "local" ||
-    process.env.NODE_ENV === "development"
-  ) {
-    origin = "http://localhost:3000";
-    embedOrigin = "http://localhost:3000";
-  }
-
   // Apply environment variables
   if (
     typeof process !== "undefined" &&
