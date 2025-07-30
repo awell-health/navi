@@ -1,8 +1,15 @@
 import { kv } from "@vercel/kv";
-import type { SessionData } from "@awell-health/navi-core";
+import type {
+  SessionData,
+  EmbedSessionData,
+  ActiveSessionTokenData,
+} from "@awell-health/navi-core";
 
 export class SessionStore {
-  async set(sessionId: string, sessionData: SessionData): Promise<void> {
+  async set(
+    sessionId: string,
+    sessionData: SessionData | EmbedSessionData | ActiveSessionTokenData
+  ): Promise<void> {
     try {
       await kv.set(`session:${sessionId}`, sessionData, { ex: 86400 }); // 24h TTL
       console.log("💾 Session stored (KV):", sessionId);
@@ -12,11 +19,15 @@ export class SessionStore {
     }
   }
 
-  async get(sessionId: string): Promise<SessionData | null> {
+  async get(
+    sessionId: string
+  ): Promise<SessionData | EmbedSessionData | ActiveSessionTokenData | null> {
     try {
-      const sessionData = (await kv.get(
-        `session:${sessionId}`
-      )) as SessionData | null;
+      const sessionData = (await kv.get(`session:${sessionId}`)) as
+        | SessionData
+        | EmbedSessionData
+        | ActiveSessionTokenData
+        | null;
 
       if (!sessionData) {
         console.log("🔍 Session not found (KV):", sessionId);
@@ -24,13 +35,13 @@ export class SessionStore {
       }
 
       // Optional backup check for expiration (KV TTL should handle this)
-      if (new Date(sessionData.expiresAt).getTime() < Date.now()) {
+      if (sessionData.exp * 1000 < Date.now()) {
         console.log("⏰ Session expired (KV):", sessionId);
         await this.delete(sessionId);
         return null;
       }
 
-      console.log("✅ Session retrieved (KV):", sessionId);
+      console.log("✅ Session retrieved (KV):", sessionId, sessionData);
       return sessionData;
     } catch (error) {
       console.error("❌ Failed to retrieve session from KV:", error);
@@ -48,7 +59,9 @@ export class SessionStore {
   }
 
   // Get all active sessions (for debugging - simplified for development)
-  async getAllSessions(): Promise<Record<string, SessionData>> {
+  async getAllSessions(): Promise<
+    Record<string, SessionData | EmbedSessionData | ActiveSessionTokenData>
+  > {
     console.warn(
       "⚠️  getAllSessions is limited in KV store - use for debugging only"
     );
@@ -66,8 +79,10 @@ export const sessionStore = new SessionStore();
 
 // For backward compatibility with the Map interface
 export const sessions = {
-  set: (sessionId: string, sessionData: SessionData) =>
-    sessionStore.set(sessionId, sessionData),
+  set: (
+    sessionId: string,
+    sessionData: SessionData | EmbedSessionData | ActiveSessionTokenData
+  ) => sessionStore.set(sessionId, sessionData),
   get: (sessionId: string) => sessionStore.get(sessionId),
   delete: (sessionId: string) => sessionStore.delete(sessionId),
   has: async (sessionId: string) =>

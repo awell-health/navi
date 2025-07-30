@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSessionToken } from "@/lib/auth/internal/session";
 import { validatePublishableKey } from "@/lib/auth/publishable-keys";
+import { getBrandingByOrgId } from "@/lib/edge-config";
+import { sessionStore } from "@/lib/session-store";
 import type {
   CreateCareFlowSessionRequest,
   CreateCareFlowSessionResponse,
+  EmbedSessionData,
 } from "@awell-health/navi-core/src/types";
 
 export const runtime = "edge";
@@ -12,12 +14,17 @@ export async function POST(request: NextRequest) {
   try {
     const body: CreateCareFlowSessionRequest = await request.json();
     console.log("🔍 POST /api/create-careflow-session", body);
+
     // Validate required fields
-    if (!body.publishableKey || !body.careflowId) {
+    if (
+      !body.publishableKey ||
+      (!body.careflowId && !body.careflowDefinitionId && !body.sessionId)
+    ) {
       return NextResponse.json(
         {
           success: false,
-          error: "Missing required fields: publishableKey and careflowId",
+          error:
+            "Missing required fields: publishableKey and (careflowId or careflowDefinitionId or sessionId)",
         },
         {
           status: 400,
@@ -53,42 +60,69 @@ export async function POST(request: NextRequest) {
         }
       );
     }
-    // Create session token for the existing care flow
-    const sessionTokenData = {
-      patientId: body.stakeholderId!,
-      careflowId: body.careflowId,
-      stakeholderId: body.stakeholderId!,
+
+    // Fetch organization branding
+    let branding = {};
+    try {
+      branding = await getBrandingByOrgId(keyValidation.orgId);
+    } catch (error) {
+      console.warn("⚠️ Branding fetch failed, using defaults:", error);
+    }
+
+    // Override with any provided branding
+    if (body.branding) {
+      branding = { ...branding, ...body.branding };
+    }
+
+    if (body.sessionId) {
+      return NextResponse.json(
+        {
+          success: true,
+          embedUrl: `/embed/${body.sessionId}`,
+          branding,
+        },
+        {
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+          },
+        }
+      );
+    }
+
+    // Generate session ID
+    const sessionId = crypto.randomUUID();
+
+    // Create embed session data (supports both existing and new careflows)
+    const embedSessionData: EmbedSessionData = {
+      sessionId,
+      patientId: body.awellPatientId, // May be undefined
+      careflowId: body.careflowId, // May be undefined for new careflows
+      careflowDefinitionId: body.careflowDefinitionId, // May be undefined for existing careflows
       orgId: keyValidation.orgId,
       tenantId: keyValidation.tenantId,
       environment: keyValidation.environment,
       authenticationState: "unauthenticated" as const,
-      exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60, // 30 days
+      exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60, // 30 days in seconds
+      state: "created" as const,
+      // Include additional fields for new careflow creation
+      patientIdentifier: body.patientIdentifier,
+      track_id: body.trackId,
+      activity_id: body.activityId,
+      stakeholder_id: body.stakeholderId, // If undefined, default to patient.
     };
 
-    const sessionToken = await createSessionToken(sessionTokenData);
+    // Store the session data in KV
+    await sessionStore.set(sessionId, embedSessionData);
 
-    // Generate redirect URL for the embed route with optional navigation parameters
-    let redirectUrl = `/embed/${body.careflowId}?token=${sessionToken}`;
-
-    if (body.trackId) {
-      redirectUrl += `&track_id=${body.trackId}`;
-    }
-
-    if (body.activityId) {
-      redirectUrl += `&activity_id=${body.activityId}`;
-    }
-
-    if (body.stakeholderId) {
-      redirectUrl += `&stakeholder_id=${body.stakeholderId}`;
-    }
+    // Generate embedUrl using session-based approach
+    const embedUrl = `/embed/${sessionId}`;
 
     const response: CreateCareFlowSessionResponse = {
       success: true,
-      careflowId: body.careflowId,
-      patientId: body.stakeholderId!,
-      sessionToken,
-      redirectUrl,
-      stakeholderId: body.stakeholderId!,
+      embedUrl,
+      branding,
     };
 
     return NextResponse.json(response, {

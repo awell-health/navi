@@ -36,10 +36,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Extend session expiry (30 days from now)
-    const newExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    const newExp = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
     const updatedSessionData = {
       ...sessionData,
-      expiresAt: newExpiresAt.toISOString(),
+      exp: newExp,
     };
 
     // Update session in KV store
@@ -60,14 +60,14 @@ export async function POST(request: NextRequest) {
     console.log("🔄 Session refreshed:", {
       sessionId,
       careflowId: updatedSessionData.careflowId,
-      newExpiresAt: newExpiresAt.toISOString(),
+      newExpiresAt: new Date(newExp * 1000).toISOString(),
     });
 
     // Return new JWT and update cookies
     const response = NextResponse.json({
       jwt,
       expiresAt: Math.floor(Date.now() / 1000) + 15 * 60, // 15 minutes from now
-      sessionExpiresAt: newExpiresAt.toISOString(),
+      sessionExpiresAt: new Date(newExp * 1000).toISOString(),
     });
 
     // Refresh session cookie (30 days)

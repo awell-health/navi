@@ -1,4 +1,11 @@
-// Session management
+// Modern embed tokens (for internal route communication)
+export {
+  createEmbedToken,
+  decryptEmbedToken,
+  type EmbedTokenData,
+} from "./internal/embed-tokens";
+
+// Legacy session management (for GraphQL API compatibility)
 export {
   createSessionToken,
   decryptSessionToken,

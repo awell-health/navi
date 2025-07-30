@@ -1,21 +1,96 @@
-// Lightweight embed portal application for new care flows with SSE
-class NewCareFlowEmbed {
+// New care flow embed application with SSE
+class NewCareflowEmbedApp {
   constructor() {
     this.retryCount = 0;
     this.maxRetries = 3;
     this.eventSource = null;
     this.config = window.embedConfig || {};
+    this.instanceId = this.getInstanceId();
     this.init();
+  }
+
+  getInstanceId() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get("instance_id") || `navi-${Date.now()}`;
+  }
+
+  sendHeightUpdate() {
+    if (!window.parent || window.parent === window) {
+      return; // Not in an iframe
+    }
+
+    try {
+      // Get the full document height
+      const height = Math.max(
+        document.body.offsetHeight,
+        document.documentElement.offsetHeight
+      );
+
+      window.parent.postMessage(
+        {
+          source: "navi",
+          type: "navi.height.changed",
+          instance_id: this.instanceId,
+          height,
+        },
+        "*"
+      );
+    } catch (error) {
+      console.error("❌ Failed to send height update:", error);
+    }
   }
 
   async init() {
     console.log("🚀 New care flow embed initialized");
+    console.log("📍 Navigation context:", {
+      careflowDefinitionId: this.config.careflowDefinitionId,
+      instanceId: this.instanceId,
+    });
+
+    // Send initial height update
+    this.sendHeightUpdate();
 
     // Set up button click handler
     const startButton = document.getElementById("start-button");
     if (startButton) {
       startButton.addEventListener("click", () => {
         this.startCareFlow();
+      });
+    }
+
+    // Watch for height changes
+    this.observeHeightChanges();
+  }
+
+  observeHeightChanges() {
+    // Use ResizeObserver if available for better performance
+    if (window.ResizeObserver) {
+      const resizeObserver = new ResizeObserver(() => {
+        this.sendHeightUpdate();
+      });
+      resizeObserver.observe(document.body);
+    } else {
+      // Fallback: watch for window resize events
+      window.addEventListener("resize", () => {
+        this.sendHeightUpdate();
+      });
+    }
+
+    // Also watch for DOM mutations that might change height
+    if (window.MutationObserver) {
+      const mutationObserver = new MutationObserver(() => {
+        // Debounce height updates
+        clearTimeout(this.heightUpdateTimeout);
+        this.heightUpdateTimeout = setTimeout(() => {
+          this.sendHeightUpdate();
+        }, 100);
+      });
+
+      mutationObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["style", "class"],
       });
     }
   }
@@ -30,19 +105,22 @@ class NewCareFlowEmbed {
     if (welcomeState) welcomeState.style.display = "none";
     if (loadingState) loadingState.style.display = "flex";
 
+    // Send height update after state change
+    setTimeout(() => this.sendHeightUpdate(), 50);
+
     // Start SSE connection for real-time progress
     this.connectSSE();
   }
 
   connectSSE() {
-    const careflowId = this.config.careflowId;
+    const careflowDefinitionId = this.config.careflowDefinitionId;
     const sessionId = this.config.sessionId;
 
     // Include instance_id in SSE URL if available
     const currentUrlParams = new URLSearchParams(window.location.search);
     const instanceId = currentUrlParams.get("instance_id");
 
-    let sseUrl = `/api/careflow-status?careflow_id=${careflowId}&session_id=${sessionId}`;
+    let sseUrl = `/api/careflow-status?careflow_definition_id=${careflowDefinitionId}&session_id=${sessionId}`;
     if (instanceId) {
       sseUrl += `&instance_id=${instanceId}`;
     }
@@ -85,7 +163,7 @@ class NewCareFlowEmbed {
 
       // Fallback to timeout-based loading
       setTimeout(() => {
-        this.showStartButton();
+        this.showError();
       }, 1500);
     };
   }
@@ -94,6 +172,8 @@ class NewCareFlowEmbed {
     const loadingMessage = document.getElementById("loading-message");
     if (loadingMessage) {
       loadingMessage.textContent = message;
+      // Send height update in case message length changes layout
+      setTimeout(() => this.sendHeightUpdate(), 50);
     }
   }
 
@@ -113,6 +193,9 @@ class NewCareFlowEmbed {
     if (loadingMessage && message) {
       loadingMessage.textContent = message;
     }
+
+    // Send height update after progress change
+    setTimeout(() => this.sendHeightUpdate(), 50);
   }
 
   onCareFlowReady(redirectUrl) {
@@ -144,54 +227,13 @@ class NewCareFlowEmbed {
     }, 800);
   }
 
-  showStartButton() {
-    document.getElementById("loading-state").style.display = "none";
-    document.getElementById("welcome-state").style.display = "block";
-
-    document.getElementById("start-button").addEventListener("click", () => {
-      this.startCareFlow();
-    });
-  }
-
-  async startCareFlow() {
-    console.log("🎯 Starting care flow activities");
-
-    try {
-      // Disable button to prevent double-clicks
-      const button = document.getElementById("start-button");
-      button.disabled = true;
-      button.textContent = "Loading...";
-
-      // Navigate to care flow activities
-      const careflowId = this.config.careflowId;
-      const stakeholderId = this.config.patientId;
-
-      // Preserve instance_id parameter if it exists
-      const urlParams = new URLSearchParams(window.location.search);
-      const instanceId = urlParams.get("instance_id");
-
-      let redirectUrl = `/careflows/${careflowId}/stakeholders/${stakeholderId}`;
-      if (instanceId) {
-        redirectUrl += `?instance_id=${instanceId}`;
-      }
-
-      window.location.href = redirectUrl;
-    } catch (error) {
-      console.error("❌ Failed to start care flow:", error);
-      this.showError();
-    }
-  }
-
   showError() {
-    // Clean up SSE connection
-    if (this.eventSource) {
-      this.eventSource.close();
-      this.eventSource = null;
-    }
-
     document.getElementById("loading-state").style.display = "none";
     document.getElementById("welcome-state").style.display = "none";
     document.getElementById("error-state").style.display = "block";
+
+    // Send height update after showing error state
+    setTimeout(() => this.sendHeightUpdate(), 50);
   }
 
   // Clean up on page unload
@@ -200,13 +242,18 @@ class NewCareFlowEmbed {
       this.eventSource.close();
       this.eventSource = null;
     }
+
+    // Clear any pending height update timeouts
+    if (this.heightUpdateTimeout) {
+      clearTimeout(this.heightUpdateTimeout);
+    }
   }
 }
 
 // Initialize when page loads
 let embedApp;
 document.addEventListener("DOMContentLoaded", () => {
-  embedApp = new NewCareFlowEmbed();
+  embedApp = new NewCareflowEmbedApp();
 });
 
 // Clean up SSE connection on page unload

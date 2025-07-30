@@ -17,7 +17,8 @@ const getCDNConfig = (options?: NaviLoadOptions) => {
   // Check for local option first
   if (
     options?.local ||
-    (process.env.NODE_ENV === "local" && typeof process !== "undefined")
+    process.env.NODE_ENV === "local" ||
+    process.env.NODE_ENV === "development"
   ) {
     origin = "http://localhost:3000";
     embedOrigin = "http://localhost:3000";

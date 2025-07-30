@@ -182,9 +182,10 @@ export const bakerProBranding: OrgBranding["branding"] = {
  * Map of sample organizations for development
  */
 export const sampleBrandingData: Record<string, OrgBranding["branding"]> = {
-  "sunrise-health": sunriseHealthBranding,
+  "organization-test-9dc35114-e414-4f27-8530-58eff7ed042c":
+    sunriseHealthBranding,
   techcorp: techCorpBranding,
-  "baker-pro-local": bakerProBranding,
+  "organization-test-8e708b30-8414-4cc2-a20b-b6a0c0b98ad4": bakerProBranding,
 };
 
 /**

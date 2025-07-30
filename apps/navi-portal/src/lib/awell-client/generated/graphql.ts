@@ -269,6 +269,7 @@ export type CompleteActivityPayload = {
 export type CompletionContextGraphQl = {
   __typename?: 'CompletionContextGraphQL';
   completed_at: Scalars['String']['output'];
+  navi_session_id?: Maybe<Scalars['String']['output']>;
   user_email?: Maybe<Scalars['String']['output']>;
   user_id?: Maybe<Scalars['String']['output']>;
   user_name?: Maybe<Scalars['String']['output']>;
@@ -277,6 +278,7 @@ export type CompletionContextGraphQl = {
 
 export type CompletionContextInput = {
   completed_at: Scalars['String']['input'];
+  navi_session_id: Scalars['String']['input'];
   user_email?: InputMaybe<Scalars['String']['input']>;
   user_id?: InputMaybe<Scalars['String']['input']>;
   user_name?: InputMaybe<Scalars['String']['input']>;
@@ -605,8 +607,8 @@ export type Query = {
 
 
 export type QueryActivitiesArgs = {
+  careflow_id: Scalars['String']['input'];
   pagination?: InputMaybe<PaginationInput>;
-  pathway_id?: InputMaybe<Scalars['String']['input']>;
   sorting?: InputMaybe<SortingInput>;
   track_id?: InputMaybe<Scalars['String']['input']>;
 };
@@ -618,8 +620,8 @@ export type QueryActivityArgs = {
 
 
 export type QueryPathwayActivitiesArgs = {
+  careflow_id: Scalars['String']['input'];
   pagination?: InputMaybe<PaginationInput>;
-  pathway_id?: InputMaybe<Scalars['String']['input']>;
   sorting?: InputMaybe<SortingInput>;
   track_id?: InputMaybe<Scalars['String']['input']>;
 };
@@ -878,7 +880,7 @@ export type OnActivityUpdatedSubscriptionVariables = Exact<{
 export type OnActivityUpdatedSubscription = { __typename?: 'Subscription', activityUpdated: { __typename?: 'Activity', id: string, action: ActivityAction, careflow_id: string, container_name?: string | null, date: string, pathway_definition_id: string, reference_id: string, reference_type: ActivityReferenceType, resolution?: ActivityResolution | null, session_id?: string | null, status: ActivityStatus, tenant_id: string, is_user_activity: boolean, indirect_object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null, object: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null }, sub_activities: Array<{ __typename?: 'SubActivity', id: string, action: ActivityAction, object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null }>, inputs?: { __typename: 'CalculationActivityInput', type: ActivityInputType, calculationFields?: Array<{ __typename?: 'CalculationField', id: string, key: string, label: string, value: unknown }> | null } | { __typename: 'ChecklistActivityInput', type: ActivityInputType, checklist?: { __typename?: 'Checklist', title: string, items: Array<string> } | null } | { __typename: 'ClinicalNoteActivityInput', type: ActivityInputType, clinicalNote?: { __typename?: 'ClinicalNote', id: string, narratives: Array<{ __typename?: 'GeneratedClinicalNoteNarrative', id: string, key: string, title: string, body: string }>, context: Array<{ __typename?: 'GeneratedClinicalNoteContextField', key: string, value: string }> } | null } | { __typename: 'DynamicFormActivityInput', type: ActivityInputType, dynamic_form?: { __typename?: 'DynamicForm', key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'DynamicQuestion', id: string, key: string, title: string, question_type: QuestionType, user_question_type?: UserQuestionType | null, data_point_value_type?: DataPointValueType | null, is_required: boolean, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value?: string | null }> | null, config?: { __typename?: 'QuestionConfig', recode_enabled?: boolean | null, use_select?: boolean | null, mandatory: boolean, slider?: { __typename?: 'SliderConfig', min: number, max: number, step_value: number, min_label: string, max_label: string, is_value_tooltip_on: boolean, display_marks: boolean, show_min_max_values: boolean } | null, phone?: { __typename?: 'PhoneConfig', default_country?: string | null, available_countries?: Array<string> | null } | null, number?: { __typename?: 'NumberConfig', range?: { __typename?: 'RangeConfig', enabled?: boolean | null, min?: number | null, max?: number | null } | null } | null, multiple_select?: { __typename?: 'MultipleSelectConfig', range?: { __typename?: 'ChoiceRangeConfig', enabled?: boolean | null, min?: number | null, max?: number | null } | null, exclusive_option?: { __typename?: 'ExclusiveOptionConfig', enabled?: boolean | null, option_id?: string | null } | null } | null, date_validation?: { __typename?: 'DateConfig', allowed_dates?: AllowedDatesOptions | null, include_date_of_response?: boolean | null } | null, file_storage?: { __typename?: 'FileStorageQuestionConfig', file_storage_config_slug?: string | null, accepted_file_types?: Array<string> | null } | null, input_validation?: { __typename?: 'InputValidationConfig', mode?: string | null, pattern?: string | null, helper_text?: string | null, simpleConfig?: { __typename?: 'InputValidationSimpleConfig', exactLength?: number | null, allowed?: { __typename?: 'InputValidationAllowed', letters?: boolean | null, numbers?: boolean | null, whitespace?: boolean | null, special?: boolean | null } | null } | null } | null } | null }> } | null } | { __typename: 'ExtensionActivityInput', type: ActivityInputType, extensionFields?: unknown | null } | { __typename: 'FormActivityInput', type: ActivityInputType, form?: { __typename?: 'ActivityForm', id: string, key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'Question', id: string, key: string, title: string, definition_id: string, question_type?: QuestionType | null, user_question_type: UserQuestionType, data_point_value_type?: DataPointValueType | null, is_required: boolean, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value?: string | null }> | null, config?: { __typename?: 'QuestionConfig', recode_enabled?: boolean | null, use_select?: boolean | null, mandatory: boolean, slider?: { __typename?: 'SliderConfig', min: number, max: number, step_value: number, min_label: string, max_label: string, is_value_tooltip_on: boolean, display_marks: boolean, show_min_max_values: boolean } | null, phone?: { __typename?: 'PhoneConfig', default_country?: string | null, available_countries?: Array<string> | null } | null, number?: { __typename?: 'NumberConfig', range?: { __typename?: 'RangeConfig', enabled?: boolean | null, min?: number | null, max?: number | null } | null } | null, multiple_select?: { __typename?: 'MultipleSelectConfig', range?: { __typename?: 'ChoiceRangeConfig', enabled?: boolean | null, min?: number | null, max?: number | null } | null, exclusive_option?: { __typename?: 'ExclusiveOptionConfig', enabled?: boolean | null, option_id?: string | null } | null } | null, date_validation?: { __typename?: 'DateConfig', allowed_dates?: AllowedDatesOptions | null, include_date_of_response?: boolean | null } | null, file_storage?: { __typename?: 'FileStorageQuestionConfig', file_storage_config_slug?: string | null, accepted_file_types?: Array<string> | null } | null, input_validation?: { __typename?: 'InputValidationConfig', mode?: string | null, pattern?: string | null, helper_text?: string | null, simpleConfig?: { __typename?: 'InputValidationSimpleConfig', exactLength?: number | null, allowed?: { __typename?: 'InputValidationAllowed', letters?: boolean | null, numbers?: boolean | null, whitespace?: boolean | null, special?: boolean | null } | null } | null } | null } | null, rule?: { __typename?: 'Rule', id: string, boolean_operator: BooleanOperator, conditions: Array<{ __typename?: 'Condition', id: string, reference: string, reference_key?: string | null, operator: ConditionOperator, operand: { __typename?: 'ConditionOperand', value: string, type: ConditionOperandType } }> } | null }> } | null } | { __typename: 'MessageActivityInput', type: ActivityInputType, message?: { __typename?: 'ActivityMessage', id: string, subject: string, body: string, format?: MessageFormat | null, attachments?: Array<{ __typename?: 'MessageAttachment', id: string, name: string, type: string, url: string }> | null } | null } | null, outputs?: { __typename: 'CalculationActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'DynamicFormActivityOutput', type: ActivityOutputType, response?: unknown | null } | { __typename: 'ExtensionActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'FormActivityOutput', type: ActivityOutputType, response?: unknown | null } | null } };
 
 export type PathwayActivitiesQueryVariables = Exact<{
-  pathway_id: Scalars['String']['input'];
+  careflow_id: Scalars['String']['input'];
 }>;
 
 
@@ -1449,9 +1451,9 @@ export function useOnActivityUpdatedSubscription(baseOptions: ApolloReactHooks.S
 export type OnActivityUpdatedSubscriptionHookResult = ReturnType<typeof useOnActivityUpdatedSubscription>;
 export type OnActivityUpdatedSubscriptionResult = ApolloReactCommon.SubscriptionResult<OnActivityUpdatedSubscription>;
 export const PathwayActivitiesDocument = gql`
-    query PathwayActivities($pathway_id: String!) {
+    query PathwayActivities($careflow_id: String!) {
   pathwayActivities(
-    pathway_id: $pathway_id
+    careflow_id: $careflow_id
     sorting: {field: "date", direction: "DESC"}
   ) {
     success
@@ -1475,7 +1477,7 @@ export const PathwayActivitiesDocument = gql`
  * @example
  * const { data, loading, error } = usePathwayActivitiesQuery({
  *   variables: {
- *      pathway_id: // value for 'pathway_id'
+ *      careflow_id: // value for 'careflow_id'
  *   },
  * });
  */

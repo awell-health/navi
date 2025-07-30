@@ -134,8 +134,7 @@ export function useQuestionVisibility({
 
   // Watch for changes in referenced fields and refresh visibility with a debounce
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const subscription = watch((value, { name }) => {
+    const subscription = watch((_value, { name }) => {
       const questionDefinitionId = questions.find(
         (q) => q.id === name
       )?.definition_id;

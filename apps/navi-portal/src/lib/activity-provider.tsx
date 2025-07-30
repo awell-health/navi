@@ -7,6 +7,7 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
+import { useSessionId } from "@/hooks/use-session-id";
 import {
   ActivityFragment,
   usePathwayActivitiesQuery,
@@ -219,6 +220,8 @@ export function ActivityProvider({
 }: ActivityProviderProps) {
   // Create service instance only once
   const [service] = useState(() => injectedService || new ActivityService());
+  const sessionId = useSessionId();
+
   // State
   const [activities, setActivities] = useState<ActivityFragment[]>([]);
   const [activeActivity, setActiveActivityState] =
@@ -236,7 +239,7 @@ export function ActivityProvider({
     refetch,
   } = usePathwayActivitiesQuery({
     variables: {
-      pathway_id: careflowId,
+      careflow_id: careflowId,
     },
   });
 
@@ -251,22 +254,17 @@ export function ActivityProvider({
     onData: ({ data }) => {
       if (data.data?.activityCreated) {
         const newActivity = data.data.activityCreated;
-        console.log("🆕 New activity created:", newActivity.id);
-
-        // Update service cache
-        // service.updateCache(newActivity); // No longer needed
-
-        // Emit event for other services
-        service.emit("activity.created", { activity: newActivity });
-
-        setActivities((prev) => {
-          if (prev.find((a) => a.id === newActivity.id)) {
-            return prev;
-          }
-          return [newActivity, ...prev];
-        });
-
-        setNewActivities((prev) => new Set([...prev, newActivity.id]));
+        console.debug("🆕 New activity created:", newActivity.id);
+        if (newActivity.is_user_activity) {
+          service.emit("activity.created", { activity: newActivity });
+          setActivities((prev) => {
+            if (prev.find((a) => a.id === newActivity.id)) {
+              return prev;
+            }
+            return [newActivity, ...prev];
+          });
+          setNewActivities((prev) => new Set([...prev, newActivity.id]));
+        }
       }
     },
   });
@@ -448,6 +446,12 @@ export function ActivityProvider({
           return;
         }
 
+        // Ensure we have a session ID for completion tracking
+        if (!sessionId) {
+          console.error("❌ No session ID available for activity completion");
+          return;
+        }
+
         const type = activityType || activity.object.type;
 
         // Prepare completion context
@@ -455,6 +459,7 @@ export function ActivityProvider({
           completed_at: new Date().toISOString(),
           user_type: "PATIENT" as const, // Use string literal instead of enum
           user_id: stakeholderId,
+          navi_session_id: sessionId,
         };
 
         let input;

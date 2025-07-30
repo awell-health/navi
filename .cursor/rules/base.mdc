@@ -1,107 +1,111 @@
----
-description: Navi Monorepo Base Rules - Critical foundation information for all agents
-alwaysApply: true
----
-
 # Navi Monorepo Base Rules
 
-## 🚧 Development Phase: v0.x.x
+## 🎯 What This System Does
 
-- **Breaking changes are ACCEPTABLE** - Focus on getting architecture right
-- **API can evolve** - Don't be paralyzed by backward compatibility
-- **Coordinate changes** - Update all dependent packages together
-- **Test thoroughly** - Cross-origin integration is critical
+**Navi** is a healthcare SDK that embeds care activities (forms, checklists, messages) into customer websites via secure iframes. Think Stripe for healthcare workflows.
 
-## 📦 Package Dependency Flow (CRITICAL)
+## 👤 User Journey
+
+### **Customer Integration**:
+
+1. **Developer** adds Navi script to their healthcare website or internal site
+2. **Developer** calls `navi.render()` to embed a care flow
+3. **Patient or stakeholder** sees activities appear in an iframe on the customer site
+4. **Patient or stakeholder** completes activities (forms, checklists, etc.)
+5. **Customer** receives real-time events about patient progress
+
+### **Two Use Cases**:
+
+- **Resume existing care flow**: Patient returns to continue where they left off
+- **Start new care flow**: Create new care plan for patient from scratch
+
+## 🏗️ System Architecture (High Level)
 
 ```
-navi-core (foundation) → navi-portal (embed API) → navi.js (CDN SDK) → navi-js (NPM wrapper)
+Customer Website → navi.js SDK → navi-portal (iframe) → module-navi (GraphQL API)
 ```
 
-### Package Locations & Purposes:
+### **Package Purposes**:
 
 - `packages/navi-core/` - Foundation types, event definitions (source of truth)
-- `apps/navi-portal/` - Embed application, React components, JWT auth
 - `packages/navi.js/` - CDN JavaScript SDK (customer-facing, 15KB max)
-- `packages/navi-js/` - NPM wrapper (NOT IMPLEMENTED)
-- `packages/navi-react/` - React components (NOT IMPLEMENTED)
+- `packages/navi-js/` - NPM wrapper for navi.js, version-pinned
+- `packages/navi-react/` - React components
+- `apps/navi-portal/` - Embed application, React components, JWT auth
+- `examples/*` - example implementations
 
-## 🚨 File Protection Rules (ABSOLUTE)
+## 🔄 Simplified Flow (NEW)
 
-- **NEVER modify .env files** - Only user can change these
-- **NEVER bypass file editing restrictions** - No shell command workarounds
-- **ALWAYS ask user** for environment file modifications
+### **What Happens When User Calls `navi.render()`**:
+
+1. **Session Creation**: SDK posts to `/api/create-careflow-session` with either:
+
+   - `careflowId` (resume existing) OR
+   - `careflowDefinitionId` (start new)
+
+2. **Token Generation**: Server creates encrypted token with all needed data and returns `embedUrl`
+
+3. **Iframe Creation**: SDK creates iframe pointing to embed URL
+
+4. **Single Route Handling**: `/embed/[careflow_id]` handles both cases:
+   - Real careflow ID → shows existing activities
+   - Special "new" ID → shows creation flow
+
+### **Key Insight**:
+
+- **One API endpoint** handles both use cases
+- **One embed route** handles both use cases
+- **Different token types** for internal vs external communication
+
+## 🔐 Security & Authentication
+
+### **Two-Phase Authentication**:
 
 ## 🧪 Testing Requirements (MANDATORY)
 
-### Cross-Origin Testing:
+## 🧪 Testing Strategy
 
-```bash
-# ALWAYS test the full integration flow
-cd apps/navi-portal && pnpm dev      # localhost:3000
-cd examples/test-integration && pnpm dev  # localhost:3001
-# Visit: http://localhost:3001 - should see event stream
-```
+### **Developers Should Always Test Cross-Origin**:
 
-### Testing Checklist:
+- Start navi-portal on localhost:3000
+- Start test app on localhost:3001
+- Verify iframe communication works
+- Test both existing and new care flow paths
 
-- [ ] Cross-origin messaging (3001 → 3000)
-- [ ] Event data structures correct
-- [ ] Memory cleanup on instance destruction
-- [ ] Error handling for invalid events
+### **Critical Test Cases**:
 
-## ⚠️ Known Issues (CRITICAL)
+- Event messaging between iframe and parent
+- Memory cleanup when destroying instances
+- Both careflowId and careflowDefinitionId flows
+- Token validation and expiration
 
-1. **Event naming inconsistency**: `data-change` vs `dataChange`
-2. **Environment hardcoded**: localhost URLs need production config
-3. **Auth not integrated**: JWT exists but not connected
-4. **Missing packages**: navi-js (NPM wrapper) not implemented
+### **File Protection**:
 
-## 🔧 Common Development Patterns
+- NEVER modify .env files - only user can change these
+- NEVER bypass file editing restrictions
+- ALWAYS ask user for environment modifications
 
-### Memory Management:
+### **Development Phase (v0.x.x)**:
 
-```typescript
-// ALWAYS clean up properly
-destroyInstance(instanceId: string) {
-  this.instances.delete(instanceId);
-  this.eventHandlers.delete(instanceId);  // ← Don't forget this
-}
-```
+- Breaking changes are acceptable
+- Focus on getting architecture right first
+- Always coordinate changes across packages
+- Test thoroughly before releasing
 
-### Environment Detection:
+## 🎯 Success Metrics
 
-```typescript
-// Current pattern (needs production config)
-const embedUrl =
-  process.env.NODE_ENV === "production"
-    ? new URL(`https://navi-portal.awellhealth.com/embed/${pathwayId}`)
-    : new URL(`http://localhost:3000/embed/${pathwayId}`);
-```
-
-## 📋 Integration Status Summary
-
-- ✅ **Event system**: 8 event types working
-- ✅ **Cross-origin messaging**: localhost:3001 ↔ localhost:3000
-- ✅ **navi.js SDK**: Global API functional
-- 🟡 **Authentication**: JWT present but not integrated
-- 🟡 **Environment detection**: Hardcoded localhost URLs
-- 🔴 **NPM wrapper**: Not implemented
-
-## 🎯 Success Criteria
-
-- [ ] Cross-origin messaging working
-- [ ] Security validation in place
-- [ ] Bundle sizes within limits (15KB for navi.js)
-- [ ] Integration tests passing
-- [ ] Documentation updated
+- Cross-origin messaging works reliably
+- Both use cases (existing/new) work end-to-end
+- Bundle sizes stay under limits (15KB for navi.js)
+- Security validation passes
+- Healthcare compliance maintained
 
 ## 📞 When to Ask User
 
 - Major architectural changes
-- Removing security features
-- Breaking bundle size budget significantly
-- Environment/deployment configuration
-- Authentication integration decisions
+- Security-related modifications
+- Environment/deployment decisions
+- Breaking changes that affect customer integration
+- Authentication flow modifications
 
-**Remember: This is a healthcare SDK. Quality and security are paramount.**
+**Remember**: This is a healthcare SDK where patient data security and regulatory compliance are paramount.

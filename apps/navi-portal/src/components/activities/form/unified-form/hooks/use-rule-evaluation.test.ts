@@ -93,13 +93,13 @@ describe("useRuleEvaluation", () => {
           rules: [
             {
               id: "rule1",
-              boolean_operator: "AND",
+              boolean_operator: "and",
               conditions: [
                 {
                   id: "cond1",
                   reference: "q1",
                   operator: "IS_EQUAL_TO",
-                  operand: { value: "yes", type: "STRING" },
+                  operand: { value: "yes", type: "string" },
                 },
               ],
             },

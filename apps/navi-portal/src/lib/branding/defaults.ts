@@ -38,7 +38,7 @@ export const awellDefaultTheme: ThemeTokens = {
   "--radius": "0.5rem",
 
   // Custom tokens
-  "--primary-hover": "#1e40af",
+  "--primary-dark": "#1e40af",
   "--shadow-sm": "0 1px 2px rgba(0,0,0,0.04)",
   "--shadow-md": "0 4px 6px rgba(0,0,0,0.08)",
   "--nav-height": "56px",
@@ -73,7 +73,7 @@ export const awellDefaultBranding: OrgBranding = {
     fontFamilyBody: "system-ui, sans-serif",
     fontFamilyHeading: "system-ui, sans-serif",
     fontFamilyMono: "ui-monospace, monospace",
-    
+
     // Typography - Font sizes
     fontSizeXs: "0.75rem",
     fontSizeSm: "0.875rem",
@@ -83,12 +83,12 @@ export const awellDefaultBranding: OrgBranding = {
     fontSize2xl: "1.5rem",
     fontSize3xl: "1.875rem",
     fontSize4xl: "2.25rem",
-    
+
     // Typography - Line heights
     lineHeightTight: "1.25",
     lineHeightNormal: "1.5",
     lineHeightRelaxed: "1.625",
-    
+
     // Typography - Font weights
     fontWeightNormal: "400",
     fontWeightMedium: "500",

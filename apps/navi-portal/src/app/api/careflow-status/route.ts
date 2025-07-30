@@ -1,171 +1,237 @@
 import { sessionStore } from "@/lib/session-store";
-import { SessionData } from "@awell-health/navi-core";
 import { NextRequest } from "next/server";
 import { patientMatch, startCareflow } from "@/lib/api/mutations";
+import {
+  EmbedSessionData,
+  ActiveSessionTokenData,
+  SessionData,
+} from "@awell-health/navi-core";
 
 export const runtime = "edge";
 
+interface ProgressMessage {
+  type: "progress" | "ready" | "connection";
+  progress?: number;
+  message?: string;
+  redirectUrl?: string;
+  timestamp: number;
+}
+
 export async function GET(request: NextRequest) {
-  const careflowId = request.nextUrl.searchParams.get("careflow_id");
   const sessionId = request.nextUrl.searchParams.get("session_id");
+  const careflowDefinitionId = request.nextUrl.searchParams.get(
+    "careflow_definition_id"
+  );
   const instanceId = request.nextUrl.searchParams.get("instance_id");
 
-  if (!careflowId || !sessionId) {
-    return new Response("Missing careflow_id or session_id", { status: 400 });
+  if (!sessionId) {
+    return new Response("Missing session_id", { status: 400 });
   }
 
-  const sessionData = await sessionStore.get(sessionId);
-  if (!sessionData) {
+  const originalSession = await sessionStore.get(sessionId);
+  if (!originalSession) {
     return new Response("Session not found", { status: 404 });
   }
-
-  console.log("GET /api/careflow-status", {
-    careflowId,
-    sessionId,
-    sessionData,
-  });
 
   // Create SSE response
   const stream = new ReadableStream({
     start(controller) {
       const encoder = new TextEncoder();
 
-      // Send initial connection confirmation
-      const send = (data: Record<string, any>) => {
+      const send = (data: ProgressMessage) => {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
       };
 
       send({
         type: "connection",
-        message: "Connected to care flow status stream",
-        careflowId,
-        sessionData,
+        message: "Connected to care flow status",
         timestamp: Date.now(),
       });
 
-      // Execute real care flow operations
-      const executeOperations = async () => {
-        try {
-          // Step 1: Patient matching
+      if (careflowDefinitionId) {
+        createNewCareflow({
+          sessionId,
+          careflowDefinitionId,
+          instanceId,
+          originalSession,
+          send,
+          controller,
+        });
+      } else {
+        // Existing careflow - just redirect
+        setTimeout(() => {
+          let redirectUrl = `/careflows/${originalSession.careflowId}/stakeholders/${originalSession.stakeholderId}`;
+          if (instanceId) {
+            redirectUrl += `?instance_id=${instanceId}`;
+          }
           send({
-            type: "progress",
-            progress: 20,
-            message: "Matching patient identity...",
-            careflowId,
-            sessionData,
+            type: "ready",
+            redirectUrl,
             timestamp: Date.now(),
           });
-
-          const patientResult = await patientMatch(
-            {
-              patient_id: sessionData.patientId,
-              allow_anonymous_creation: true,
-            },
-            sessionData
-          );
-
-          send({
-            type: "progress",
-            progress: 40,
-            message: "Patient matched successfully",
-            careflowId,
-            sessionData,
-            timestamp: Date.now(),
-          });
-
-          // Step 2: Start care flow
-          send({
-            type: "progress",
-            progress: 60,
-            message: "Starting care flow...",
-            careflowId,
-            sessionData,
-            timestamp: Date.now(),
-          });
-
-          const careflowResult = await startCareflow(
-            {
-              patient_id: patientResult.patient_id!,
-              careflow_definition_id: careflowId,
-              stakeholder_id: sessionData.stakeholderId,
-              session_id: sessionId,
-            },
-            sessionData
-          );
-
-          send({
-            type: "progress",
-            progress: 80,
-            message: "Care flow started, preparing interface...",
-            careflowId,
-            sessionData,
-            timestamp: Date.now(),
-          });
-
-          // Step 3: Final preparation
-          setTimeout(() => {
-            send({
-              type: "progress",
-              progress: 100,
-              message: "Ready! Redirecting...",
-              careflowId,
-              sessionData,
-              timestamp: Date.now(),
-            });
-
-            // Send completion event
-            setTimeout(() => {
-              // Build redirectUrl with instanceId if available
-              let redirectUrl = `/careflows/${careflowId}/stakeholders/${sessionData.stakeholderId}`;
-              if (instanceId) {
-                redirectUrl += `?instance_id=${instanceId}`;
-              }
-
-              send({
-                type: "ready",
-                message: "Care flow ready for navigation",
-                careflowId,
-                redirectUrl,
-                sessionData,
-                careflowData: {
-                  id: careflowResult.careflow.id,
-                  release_id: careflowResult.careflow.release_id,
-                  stakeholder_count: careflowResult.stakeholders?.length || 0,
-                },
-                timestamp: Date.now(),
-              });
-            }, 300);
-          }, 500);
-        } catch (error) {
-          console.error("❌ Care flow operation failed:", error);
-          send({
-            type: "error",
-            message:
-              error instanceof Error ? error.message : "Unknown error occurred",
-            careflowId,
-            sessionData,
-            timestamp: Date.now(),
-          });
-        }
-      };
-
-      // Start operations
-      executeOperations();
-
-      // Clean up on client disconnect
-      request.signal.addEventListener("abort", () => {
-        controller.close();
-      });
+          controller.close();
+        }, 500);
+      }
     },
   });
 
   return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache, no-transform",
+      "Cache-Control": "no-cache",
       Connection: "keep-alive",
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Cache-Control",
     },
   });
+}
+
+async function createNewCareflow({
+  sessionId,
+  careflowDefinitionId,
+  instanceId,
+  originalSession,
+  send,
+  controller,
+}: {
+  sessionId: string;
+  careflowDefinitionId: string;
+  instanceId: string | null;
+  originalSession: SessionData | EmbedSessionData | ActiveSessionTokenData;
+  send: (data: ProgressMessage) => void;
+  controller: ReadableStreamDefaultController;
+}) {
+  try {
+    // Step 1: Patient matching
+    send({
+      type: "progress",
+      progress: 20,
+      message: "Matching patient identity...",
+      timestamp: Date.now(),
+    });
+
+    const embedFields = "state" in originalSession ? originalSession : null;
+    const patientResult = await patientMatch(
+      {
+        patient_id: originalSession.patientId,
+        patient_identifier: embedFields?.patientIdentifier,
+        allow_anonymous_creation: true,
+      },
+      originalSession as SessionData
+    );
+
+    send({
+      type: "progress",
+      progress: 40,
+      message: "Patient matched successfully",
+      timestamp: Date.now(),
+    });
+
+    // Step 2: Start careflow
+    send({
+      type: "progress",
+      progress: 60,
+      message: "Starting care flow...",
+      timestamp: Date.now(),
+    });
+
+    const patientId = patientResult.patient_id;
+    if (!patientId) {
+      throw new Error("Patient matching failed");
+    }
+
+    const stakeholderId = originalSession.stakeholderId || patientId;
+    const careflowResult = await startCareflow(
+      {
+        patient_id: patientId,
+        careflow_definition_id: careflowDefinitionId,
+        stakeholder_id: stakeholderId,
+        session_id: sessionId,
+      },
+      originalSession as SessionData
+    );
+
+    send({
+      type: "progress",
+      progress: 80,
+      message: "Care flow started, preparing interface...",
+      timestamp: Date.now(),
+    });
+
+    // Step 3: Update session to active state
+    const careflowId = careflowResult.careflow.id;
+    const activeSession: ActiveSessionTokenData = {
+      sessionId,
+      orgId: originalSession.orgId,
+      tenantId: originalSession.tenantId,
+      environment: originalSession.environment,
+      authenticationState: originalSession.authenticationState,
+      exp: originalSession.exp,
+      state: "active",
+      patientId,
+      careflowId,
+      stakeholderId,
+      careflowData: {
+        id: careflowId,
+        release_id: careflowResult.careflow.release_id,
+      },
+      // Include embed-specific fields if they exist
+      careflowDefinitionId: embedFields?.careflowDefinitionId,
+      patientIdentifier: embedFields?.patientIdentifier,
+      track_id: embedFields?.track_id,
+      activity_id: embedFields?.activity_id,
+      stakeholder_id: embedFields?.stakeholder_id,
+    };
+
+    await sessionStore.set(sessionId, activeSession);
+
+    // Step 4: Complete
+    setTimeout(() => {
+      send({
+        type: "progress",
+        progress: 100,
+        message: "Ready! Redirecting...",
+        timestamp: Date.now(),
+      });
+
+      setTimeout(() => {
+        let redirectUrl = `/careflows/${careflowId}/stakeholders/${stakeholderId}`;
+        if (instanceId) {
+          redirectUrl += `?instance_id=${instanceId}`;
+        }
+        send({
+          type: "ready",
+          redirectUrl,
+          timestamp: Date.now(),
+        });
+        controller.close();
+      }, 500);
+    }, 1000);
+
+    console.log("✅ Careflow created successfully", {
+      sessionId,
+      patientId,
+      careflowId,
+      stakeholderId,
+    });
+  } catch (error) {
+    console.error("❌ Error creating careflow:", error);
+
+    // Set session to error state
+    const errorSession: EmbedSessionData = {
+      sessionId,
+      orgId: originalSession.orgId,
+      tenantId: originalSession.tenantId,
+      environment: originalSession.environment,
+      authenticationState: originalSession.authenticationState,
+      exp: originalSession.exp,
+      state: "error",
+      errorMessage: error instanceof Error ? error.message : "Unknown error",
+      patientId: originalSession.patientId,
+      careflowId: originalSession.careflowId,
+      stakeholderId: originalSession.stakeholderId,
+    };
+
+    await sessionStore.set(sessionId, errorSession);
+    controller.close();
+  }
 }

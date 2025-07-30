@@ -248,6 +248,7 @@ export type CompleteActivityPayload = {
 
 export type CompletionContextGraphQl = {
   completed_at: Scalars['String']['output'];
+  navi_session_id?: Maybe<Scalars['String']['output']>;
   user_email?: Maybe<Scalars['String']['output']>;
   user_id?: Maybe<Scalars['String']['output']>;
   user_name?: Maybe<Scalars['String']['output']>;
@@ -256,6 +257,7 @@ export type CompletionContextGraphQl = {
 
 export type CompletionContextInput = {
   completed_at: Scalars['String']['input'];
+  navi_session_id: Scalars['String']['input'];
   user_email?: InputMaybe<Scalars['String']['input']>;
   user_id?: InputMaybe<Scalars['String']['input']>;
   user_name?: InputMaybe<Scalars['String']['input']>;
@@ -556,8 +558,8 @@ export type Query = {
 
 
 export type QueryActivitiesArgs = {
+  careflow_id: Scalars['String']['input'];
   pagination?: InputMaybe<PaginationInput>;
-  pathway_id?: InputMaybe<Scalars['String']['input']>;
   sorting?: InputMaybe<SortingInput>;
   track_id?: InputMaybe<Scalars['String']['input']>;
 };
@@ -569,8 +571,8 @@ export type QueryActivityArgs = {
 
 
 export type QueryPathwayActivitiesArgs = {
+  careflow_id: Scalars['String']['input'];
   pagination?: InputMaybe<PaginationInput>;
-  pathway_id?: InputMaybe<Scalars['String']['input']>;
   sorting?: InputMaybe<SortingInput>;
   track_id?: InputMaybe<Scalars['String']['input']>;
 };

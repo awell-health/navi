@@ -1,36 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavi } from "./navi-provider";
-import type { BrandingConfig } from "@awell-health/navi-core";
+import type { RenderOptions } from "@awell-health/navi-core";
 
 // Import interfaces for the unified API
 interface PatientIdentifier {
   system: string;
   value: string;
-}
-
-interface RenderOptions {
-  // Use Case 1: Start new careflow
-  careflowDefinitionId?: string;
-  patientIdentifier?: PatientIdentifier;
-  awellPatientId?: string;
-
-  // Use Case 2: Resume existing careflow
-  careflowId?: string;
-  careflowToken?: string;
-  trackId?: string;
-  activityId?: string;
-
-  // Legacy support
-  pathwayId?: string;
-
-  // Common options
-  stakeholderId?: string;
-  branding?: BrandingConfig;
-
-  // Iframe sizing
-  size?: "compact" | "standard" | "full" | "custom";
-  height?: number;
-  width?: string;
 }
 
 interface NaviEmbedInstance {
@@ -77,6 +52,7 @@ export function NaviEmbed({
     loading,
     initialized,
     error: providerError,
+    navi,
   } = useNavi();
   const containerRef = useRef<HTMLDivElement>(null);
   const [instance, setInstance] = useState<NaviEmbedInstance | null>(null);
@@ -84,11 +60,7 @@ export function NaviEmbed({
   const [isEmbedLoading, setIsEmbedLoading] = useState(false);
 
   useEffect(() => {
-    if (
-      isRenderingRef.current ||
-      typeof window.Navi !== "function" ||
-      !containerRef.current
-    ) {
+    if (isRenderingRef.current || !navi || !containerRef.current) {
       console.log("🔍 Iframe creation already in progress, skipping duplicate");
       return;
     }
@@ -108,7 +80,7 @@ export function NaviEmbed({
         setEmbedError(null);
 
         // Check if Navi is already loaded (should be loaded via loadNavi at app level)
-        if (typeof window.Navi !== "function") {
+        if (!navi) {
           throw new Error(
             "Navi SDK not loaded. Please call loadNavi() at your app root before using NaviEmbed components."
           );
@@ -139,8 +111,6 @@ export function NaviEmbed({
           primaryColor: mergedBranding.primary,
         });
 
-        // Create Navi instance and render
-        const navi = window.Navi(publishableKey);
         const embedInstance = await navi.render(`#navi-embed-container`, {
           ...renderOptions,
           branding: mergedBranding,
@@ -200,7 +170,6 @@ export function NaviEmbed({
     // Simplified dependencies - only track essential changes
     renderOptions.careflowDefinitionId,
     renderOptions.careflowId,
-    renderOptions.pathwayId,
     renderOptions.stakeholderId,
     // Don't stringify branding - causes unnecessary re-renders
   ]);

@@ -1,4 +1,4 @@
-import { BrandingConfig } from "@awell-health/navi-core";
+import type { RenderOptions } from "@awell-health/navi-core";
 
 export type NaviActivityEvent =
   | "activity-ready" // Activity is mounted and ready for interaction
@@ -31,30 +31,4 @@ export interface NaviInstance {
     containerId: string,
     options: RenderOptions
   ) => Promise<NaviEmbedInstance>;
-}
-
-export interface RenderOptions {
-  // Use Case 1: Start new careflow
-  careflowDefinitionId?: string;
-  patientIdentifier?: {
-    system: string;
-    value: string;
-  };
-  awellPatientId?: string;
-
-  // Use Case 2: Resume existing careflow
-  careflowId?: string;
-  careflowToken?: string; // Alternative to session creation
-  trackId?: string;
-  activityId?: string;
-
-  // Common options
-  stakeholderId?: string;
-  branding?: BrandingConfig;
-
-  // Iframe styling
-  width?: string;
-
-  // Custom embed URL override (for testing)
-  embedUrl?: string;
 }

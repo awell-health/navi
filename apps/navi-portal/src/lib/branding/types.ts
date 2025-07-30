@@ -121,7 +121,8 @@ export interface ThemeTokens {
   "--radius": string;
 
   // Custom tokens
-  "--primary-hover"?: string;
+  "--primary-dark"?: string;
+  "--primary-disabled"?: string;
   "--shadow-sm"?: string;
   "--shadow-md"?: string;
   "--nav-height"?: string;

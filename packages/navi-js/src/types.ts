@@ -7,6 +7,9 @@ export interface NaviLoadOptions {
   origin?: string;
   /** Override the embed origin for iframe destinations */
   embedOrigin?: string;
+
+  /** Enable verbose logging */
+  verbose?: boolean;
 }
 
 export interface NaviInstance {
@@ -24,6 +27,7 @@ export interface RenderOptions {
     value: string;
   };
   awellPatientId?: string;
+  sessionId?: string;
 
   // Use Case 2: Resume existing careflow
   careflowId?: string;

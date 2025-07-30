@@ -7,7 +7,7 @@ export async function GET() {
     // Serve the built navi.js file with versioned CDN headers
     const loaderPath = path.join(
       process.cwd(),
-      "../../../packages/navi.js/dist/navi.js"
+      "../../packages/navi.js/dist/navi.js"
     );
 
     if (!fs.existsSync(loaderPath)) {

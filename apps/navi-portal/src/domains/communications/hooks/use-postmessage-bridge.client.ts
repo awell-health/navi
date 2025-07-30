@@ -25,6 +25,7 @@ export function usePostMessageBridge({
 }: UsePostMessageBridgeProps) {
   const sendMessage = useCallback(
     (event: AllPostMessageEvents) => {
+      console.log(`🔗 Sending postMessage to instanceId: ${instanceId}`, event);
       if (!instanceId) {
         console.debug(
           "⚠️ Not sending postMessage - instanceId is null/undefined"
@@ -65,7 +66,7 @@ export function usePostMessageBridge({
         "activity-activate": "navi.activity.activate",
         "activity-progress": "navi.activity.progress",
         "activity-data-change": "navi.activity.data-change",
-        "activity-complete": "navi.activity.completed", // ✅ Fix: complete → completed
+        "activity-complete": "navi.activity.completed",
         "activity-error": "navi.activity.error",
         "activity-focus": "navi.activity.focus",
         "activity-blur": "navi.activity.blur",

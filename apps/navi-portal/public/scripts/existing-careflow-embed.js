@@ -10,8 +10,7 @@ class ExistingCareFlowEmbed {
   }
 
   getInstanceId() {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get("instance_id") || `navi-${Date.now()}`;
+    return this.config.instanceId;
   }
 
   sendHeightUpdate() {
@@ -31,7 +30,7 @@ class ExistingCareFlowEmbed {
           source: "navi",
           type: "navi.height.changed",
           instance_id: this.instanceId,
-          data: { height },
+          height,
         },
         "*"
       );
@@ -116,16 +115,11 @@ class ExistingCareFlowEmbed {
   }
 
   connectSSE() {
-    const careflowId = this.config.careflowId;
     const sessionId = this.config.sessionId;
 
-    // Include instance_id in SSE URL if available
-    const currentUrlParams = new URLSearchParams(window.location.search);
-    const instanceId = currentUrlParams.get("instance_id");
-
-    let sseUrl = `/api/careflow-status?careflow_id=${careflowId}&session_id=${sessionId}`;
-    if (instanceId) {
-      sseUrl += `&instance_id=${instanceId}`;
+    let sseUrl = `/api/careflow-status?session_id=${sessionId}`;
+    if (this.instanceId) {
+      sseUrl += `&instance_id=${this.instanceId}`;
     }
 
     console.log("📡 Connecting to SSE:", sseUrl);
@@ -210,16 +204,6 @@ class ExistingCareFlowEmbed {
     this.updateProgress(100, "Complete! Redirecting to your care flow...");
 
     setTimeout(() => {
-      // Preserve instance_id parameter when redirecting
-      // const currentUrlParams = new URLSearchParams(window.location.search);
-      // const instanceId = currentUrlParams.get("instance_id");
-
-      // let finalRedirectUrl = redirectUrl;
-      // if (instanceId) {
-      //   const separator = redirectUrl.includes("?") ? "&" : "?";
-      //   finalRedirectUrl += `${separator}instance_id=${instanceId}`;
-      // }
-
       console.log(
         "🔄 Redirecting to care flow with instanceId preserved:",
         redirectUrl
@@ -260,8 +244,8 @@ class ExistingCareFlowEmbed {
       const urlParams = new URLSearchParams();
 
       // Preserve instance_id parameter if it exists
-      const currentUrlParams = new URLSearchParams(window.location.search);
-      const instanceId = currentUrlParams.get("instance_id");
+      const instanceId = this.getInstanceId();
+      console.log("🔄 Instance ID:", instanceId);
       if (instanceId) {
         urlParams.set("instance_id", instanceId);
       }

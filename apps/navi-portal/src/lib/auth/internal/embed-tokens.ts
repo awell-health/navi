@@ -1,30 +1,24 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import type { SessionTokenData } from "@awell-health/navi-core/src/types";
-import {
-  decryptEmbedToken,
-  EmbedTokenData,
-  createEmbedToken,
-} from "./embed-tokens";
+import type {
+  SessionTokenData,
+  PatientIdentifier,
+} from "@awell-health/navi-core/src/types";
 import { env } from "@/env";
 
 /**
- * LEGACY Session Token Functions
+ * Modern Embed Token Data Structure
  *
- * These functions are for backward compatibility with our test suite.
- * For new internal route communication, use {@link EmbedTokenData } instead.
+ * Used internally by navi-portal for route-to-route communication.
+ * Supports both existing and new careflow creation workflows.
+ *
+ * This is the NEW approach - clean separation from legacy session tokens.
  */
-
-export function isValidSessionToken(obj: unknown): obj is SessionTokenData {
-  return (
-    typeof obj === "object" &&
-    obj !== null &&
-    typeof (obj as any).orgId === "string" &&
-    typeof (obj as any).tenantId === "string" &&
-    typeof (obj as any).environment === "string" &&
-    typeof (obj as any).authenticationState === "string" &&
-    typeof (obj as any).exp === "number"
-  );
+export interface EmbedTokenData extends SessionTokenData {
+  // Additional fields for new careflow creation
+  careflowDefinitionId?: string;
+  patientIdentifier?: PatientIdentifier;
+  track_id?: string;
+  activity_id?: string;
+  stakeholder_id?: string;
 }
 
 // Utility functions for base64url encoding (AES-GCM compatible)
@@ -58,11 +52,11 @@ async function getEncryptionKey(): Promise<CryptoKey> {
 }
 
 /**
- * Creates an encrypted session token from session data (LEGACY - for GraphQL API)
- * @deprecated Use {@link createEmbedToken} instead.
+ * Creates an encrypted embed token from embed data (modern approach)
+ * Supports both existing and new careflow workflows
  */
-export async function createLegacySessionToken(
-  payload: SessionTokenData
+export async function createEmbedToken(
+  payload: EmbedTokenData
 ): Promise<string> {
   try {
     const key = await getEncryptionKey();
@@ -86,18 +80,18 @@ export async function createLegacySessionToken(
 
     return uint8ArrayToBase64Url(combined);
   } catch (error) {
-    console.error("Legacy session token encryption failed:", error);
-    throw new Error("Failed to create legacy session token");
+    console.error("Embed token encryption failed:", error);
+    throw new Error("Failed to create embed token");
   }
 }
 
 /**
- * Decrypts a session token and returns the session data (LEGACY - for GraphQL API)
- * @deprecated Use {@link decryptEmbedToken} instead.
+ * Decrypts an embed token and returns the embed data (modern approach)
+ * Supports both existing and new careflow workflows
  */
-export async function decryptLegacySessionToken(
+export async function decryptEmbedToken(
   token: string
-): Promise<SessionTokenData | null> {
+): Promise<EmbedTokenData | null> {
   try {
     const key = await getEncryptionKey();
     const combined = base64UrlToUint8Array(token);
@@ -117,18 +111,15 @@ export async function decryptLegacySessionToken(
     const decryptedText = new TextDecoder().decode(plaintext);
     const payload = JSON.parse(decryptedText);
 
-    // Validate required fields
-    if (!isValidSessionToken(payload)) {
+    // Basic validation - ensure required fields exist
+    if (!payload.orgId || !payload.tenantId || !payload.environment) {
       return null;
     }
 
-    return payload;
+    // Return as EmbedTokenData (includes optional careflowDefinitionId, etc.)
+    return payload as EmbedTokenData;
   } catch (error) {
-    console.error("Legacy session token decryption failed:", error);
+    console.error("Embed token decryption failed:", error);
     return null;
   }
 }
-
-// Legacy aliases for backward compatibility (will be removed)
-export const createSessionToken = createLegacySessionToken;
-export const decryptSessionToken = decryptLegacySessionToken;

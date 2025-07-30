@@ -2,9 +2,12 @@ import {
   NaviEmbedInstance,
   NaviLoadOptions,
   NaviInstance,
-  RenderOptions,
   NaviActivityEvent,
 } from "./types";
+import type {
+  CreateCareFlowSessionResponse,
+  RenderOptions,
+} from "@awell-health/navi-core";
 
 // Main loader class
 export class NaviLoader {
@@ -13,6 +16,7 @@ export class NaviLoader {
   private config: NaviLoadOptions = {};
 
   constructor() {
+    console.log("🔍 Navi.js: ENV", process.env.NODE_ENV);
     // Listen for messages from iframes
     window.addEventListener("message", this.handleMessage.bind(this));
   }
@@ -57,7 +61,7 @@ export class NaviLoader {
     // Generate unique instance ID
     const instanceId = `navi-${Math.random().toString(36).slice(2, 9)}`;
 
-    // Determine which use case and get session/redirect info
+    // Get session/redirect info
     const sessionInfo = await this.createSession(publishableKey, options);
 
     // Create iframe with the redirect URL from session creation
@@ -99,104 +103,74 @@ export class NaviLoader {
   private async createSession(
     publishableKey: string,
     options: RenderOptions
-  ): Promise<{ redirectUrl: string; careflowId: string; patientId: string }> {
+  ): Promise<CreateCareFlowSessionResponse> {
     const baseUrl = this.getEmbedOrigin();
+    const { __dangerouslySetEmbedUrl, width, ...sessionOptions } = options;
+    const body = {
+      publishableKey,
+      ...sessionOptions,
+    };
 
-    // Use Case 1: Resume existing care flow
-    const careflowId = options.careflowId;
-    if (careflowId) {
-      const response = await fetch(`${baseUrl}/api/create-careflow-session`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          publishableKey,
-          careflowId,
-          trackId: options.trackId,
-          activityId: options.activityId,
-          stakeholderId: options.stakeholderId,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to create care flow session: ${response.statusText}`
-        );
-      }
-
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(`Failed to create care flow session: ${data.error}`);
-      }
-
-      return {
-        redirectUrl: data.redirectUrl,
-        careflowId: data.careflowId,
-        patientId: data.patientId,
-      };
+    if (!body.careflowId && !body.careflowDefinitionId) {
+      throw new Error(
+        "Either careflowId or careflowDefinitionId must be provided"
+      );
     }
 
-    // Use Case 2: Start new care flow
-    if (options.careflowDefinitionId) {
-      const response = await fetch(`${baseUrl}/api/start-careflow`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          publishableKey,
-          careflowDefinitionId: options.careflowDefinitionId,
-          awellPatientId: options.awellPatientId,
-          patientIdentifier: options.patientIdentifier,
-          stakeholderId: options.stakeholderId,
-        }),
-      });
+    console.log(`🔍 Navi.js: Creating session using options with body:`, body);
+    const response = await fetch(`${baseUrl}/api/create-careflow-session`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
 
-      if (!response.ok) {
-        throw new Error(`Failed to start care flow: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(`Failed to start care flow: ${data.error}`);
-      }
-
-      return {
-        redirectUrl: data.redirectUrl,
-        careflowId: data.careflowId,
-        patientId: data.patientId,
-      };
+    if (!response.ok) {
+      throw new Error(
+        `Failed to create care flow session: ${response.statusText}`
+      );
     }
 
-    throw new Error(
-      "Either careflowDefinitionId or careflowId must be provided"
-    );
+    const data = await response.json();
+    if (!data.success) {
+      throw new Error(`Failed to create care flow session: ${data.error}`);
+    }
+
+    return {
+      success: data.success,
+      embedUrl: data.embedUrl,
+      branding: data.branding,
+    };
   }
 
   private createIframe(
     instanceId: string,
-    sessionInfo: { redirectUrl: string; careflowId: string; patientId: string },
+    sessionInfo: CreateCareFlowSessionResponse,
     options: RenderOptions
   ): HTMLIFrameElement {
     const iframe = document.createElement("iframe");
 
     // Use the redirect URL from session creation
     let embedUrl: URL;
-    if (options.embedUrl) {
-      embedUrl = new URL(options.embedUrl);
+    if (options.__dangerouslySetEmbedUrl) {
+      if (process.env.NODE_ENV === "production") {
+        throw new Error(
+          "🚫 Navi.js: __dangerouslySetEmbedUrl is not allowed in production. Please use the embedUrl parameter instead."
+        );
+      }
+      embedUrl = new URL(options.__dangerouslySetEmbedUrl);
     } else {
       const baseUrl = this.getEmbedOrigin();
-      embedUrl = new URL(sessionInfo.redirectUrl, baseUrl);
+      embedUrl = new URL(sessionInfo.embedUrl, baseUrl);
+    }
+
+    if (options.branding) {
+      embedUrl.searchParams.set("branding", JSON.stringify(options.branding));
     }
 
     // Add instance_id parameter for iframe communication
     embedUrl.searchParams.set("instance_id", instanceId);
-
-    // Add branding supplements if provided
-    if (options.branding) {
-      embedUrl.searchParams.set("branding", JSON.stringify(options.branding));
-    }
 
     // Configure iframe with session-based URL
     iframe.src = embedUrl.toString();
@@ -216,13 +190,13 @@ export class NaviLoader {
       display: block;
     `;
     iframe.setAttribute("frameborder", "0");
-    iframe.setAttribute("scrolling", "no");
+    // iframe.setAttribute("scrolling", "no");
 
     return iframe;
   }
 
   private handleMessage(event: MessageEvent) {
-    this.maybeLog("🔍 Navi.js handleMessage called:", {
+    console.log("🔍 Navi.js handleMessage called:", {
       origin: event.origin,
       data: event.data,
       expectedOrigin: "http://localhost:3000",
@@ -305,7 +279,11 @@ export class NaviLoader {
     const iframe = document.querySelector(
       `iframe[data-navi-instance="${instanceId}"]`
     ) as HTMLIFrameElement;
-
+    console.log("🔍 Navi.js: handleHeightChange", {
+      instanceId,
+      height,
+      iframe,
+    });
     if (iframe) {
       iframe.style.height = `${height}px`;
       console.debug(
@@ -406,7 +384,7 @@ export class NaviLoader {
   } {
     return {
       width: options.width || "100%",
-      height: "500px", // Minimal initial height, gets dynamically updated
+      height: "100px", // Minimal initial height, gets dynamically updated
     };
   }
 

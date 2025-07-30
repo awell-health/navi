@@ -8,8 +8,6 @@ import {
   PatientMatchMutationVariables,
   StartCareFlowDocument,
   PatientMatchDocument,
-  PathwayActivitiesDocument,
-  PathwayActivitiesQuery,
 } from "../awell-client/generated/graphql";
 
 /**
@@ -99,73 +97,6 @@ async function executeGraphQL<T = unknown>(
 }
 
 /**
- * GraphQL mutations for care flow operations
- * Used by embed routes to orchestrate care flow creation and management
- *
- * Uses plain fetch with JWT authentication created from SessionData
- */
-
-// Legacy types for existing functions - TODO: migrate to generated types
-interface Patient {
-  id: string;
-  externalId?: string;
-  profile?: {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    dateOfBirth?: string;
-  };
-}
-
-interface CareFlow {
-  id: string;
-  pathwayId: string;
-  patientId: string;
-  status: "active" | "completed" | "paused";
-  activities?: Array<{
-    id: string;
-    title: string;
-    status: "pending" | "active" | "completed";
-  }>;
-}
-
-interface PathwayActivities {
-  activities: Array<{
-    id: string;
-    title: string;
-    status: "pending" | "active" | "completed";
-    isRequired: boolean;
-  }>;
-  hasActivities: boolean;
-  nextActivity?: {
-    id: string;
-    title: string;
-  };
-}
-
-/**
- * @deprecated Use patientMatch() instead
- * Find or create a patient in the system
- * Used for new care flows to ensure patient exists before starting
- */
-export async function findOrCreatePatient(input: {
-  externalId: string;
-  tenantId: string;
-  profile?: {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    dateOfBirth?: string;
-  };
-}): Promise<Patient> {
-  // Note: This function is deprecated and should be replaced with patientMatch
-  // For now, throw an error to force migration to the new approach
-  throw new Error(
-    "findOrCreatePatient is deprecated. Use patientMatch() instead."
-  );
-}
-
-/**
  * Start a new care flow for a patient using the new startCareFlow mutation
  * Creates a care flow instance and returns success status with care flow details
  */
@@ -182,14 +113,18 @@ export async function startCareflow(
       stakeholder_id: input.stakeholder_id,
     });
 
-    // Prepare mutation input (exclude stakeholder_id as it's only for validation)
-    const { stakeholder_id, ...mutationInput } = input;
-
     const response: GraphQLResponse<StartCareFlowMutation> =
       await executeGraphQL(
         {
           query: print(StartCareFlowDocument),
-          variables: { input: mutationInput },
+          variables: {
+            input: {
+              careflow_definition_id: input.careflow_definition_id,
+              patient_id: input.patient_id,
+              data_points: input.data_points,
+              session_id: input.session_id,
+            },
+          },
         },
         sessionData
       );
@@ -201,27 +136,6 @@ export async function startCareflow(
     if (!response.data.startCareFlow.success) {
       throw new Error(
         `Care flow creation failed: ${response.data.startCareFlow.code}`
-      );
-    }
-
-    // Validate stakeholder authorization if stakeholder_id is provided
-    if (stakeholder_id && response.data.startCareFlow.stakeholders) {
-      const authorizedStakeholder =
-        response.data.startCareFlow.stakeholders.find(
-          (stakeholder: any) => stakeholder.id === stakeholder_id
-        );
-
-      if (!authorizedStakeholder) {
-        console.warn(
-          `❌ Stakeholder ${stakeholder_id} not authorized for care flow ${response.data.startCareFlow.careflow.id}`
-        );
-        throw new Error(
-          `Stakeholder ${stakeholder_id} is not authorized to access this care flow`
-        );
-      }
-
-      console.debug(
-        `✅ Stakeholder validation passed: ${authorizedStakeholder.label.en} (${authorizedStakeholder.clinical_app_role})`
       );
     }
 
@@ -280,80 +194,6 @@ export async function patientMatch(
     console.error("❌ Failed to match patient:", error);
     throw new Error(
       `Patient matching failed: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`
-    );
-  }
-}
-
-/**
- * Get pathway activities for an existing care flow
- * Used to validate that there are activities available for the stakeholder
- */
-export async function getPathwayActivities(
-  input: {
-    pathwayId: string;
-    stakeholderId: string;
-  },
-  sessionData: SessionData
-): Promise<PathwayActivities> {
-  try {
-    console.debug("📋 Getting pathway activities:", {
-      pathwayId: input.pathwayId,
-      stakeholderId: input.stakeholderId,
-    });
-
-    const response: GraphQLResponse<PathwayActivitiesQuery> =
-      await executeGraphQL(
-        {
-          query: print(PathwayActivitiesDocument),
-          variables: {
-            pathway_id: input.pathwayId,
-          },
-        },
-        sessionData
-      );
-
-    if (!response.data?.pathwayActivities) {
-      throw new Error("No pathway activities data returned");
-    }
-
-    console.debug("✅ Pathway activities retrieved:", {
-      hasActivities: response.data.pathwayActivities.activities.length > 0,
-      activityCount: response.data.pathwayActivities.activities.length,
-    });
-
-    // Transform the response to match the expected interface
-    return {
-      activities: response.data.pathwayActivities.activities.map(
-        (activity) => ({
-          id: activity.id,
-          title: "Activity", // GraphQL schema doesn't have title, using placeholder
-          status:
-            activity.status === "ACTIVE"
-              ? "active"
-              : activity.status === "DONE"
-              ? "completed"
-              : "pending",
-          isRequired: true, // Default to required
-        })
-      ),
-      hasActivities: response.data.pathwayActivities.activities.length > 0,
-      nextActivity: response.data.pathwayActivities.activities.find(
-        (a) => a.status === "ACTIVE"
-      )
-        ? {
-            id: response.data.pathwayActivities.activities.find(
-              (a) => a.status === "ACTIVE"
-            )!.id,
-            title: "Next Activity",
-          }
-        : undefined,
-    };
-  } catch (error) {
-    console.error("❌ Failed to get pathway activities:", error);
-    throw new Error(
-      `Failed to retrieve activities: ${
         error instanceof Error ? error.message : "Unknown error"
       }`
     );

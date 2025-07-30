@@ -1,7 +1,7 @@
 # import 'Activity'
-query PathwayActivities($pathway_id: String!) {
+query PathwayActivities($careflow_id: String!) {
   pathwayActivities(
-    pathway_id: $pathway_id
+    careflow_id: $careflow_id
     sorting: { field: "date", direction: "DESC" }
   ) {
     success

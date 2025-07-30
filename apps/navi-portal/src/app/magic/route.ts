@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       headers: { "Content-Type": "text/plain" },
     });
   }
-  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+  const exp = Math.floor(Date.now() / 1000) + 24 * 60 * 60; // 24 hours in seconds
 
   // Decrypt the token using AES-GCM
   const tokenData = await decryptSessionToken(token);
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
   kv.set(`session:${sessionId}`, {
     ...tokenData,
     sessionId,
-    expiresAt,
+    exp,
   });
 
   console.log("🔐 Session created:", {
@@ -212,11 +212,11 @@ export async function GET(request: NextRequest) {
     }
     
     .error-state {
-      background: #fef2f2;
-      border: 1px solid #fecaca;
+      background: var(--background);
+      border: 1px solid var(--destructive);
       border-radius: 8px;
       padding: 1rem;
-      color: #dc2626;
+      color: var(--destructive);
       text-align: center;
     }
     
@@ -273,7 +273,7 @@ Session: ${sessionId}
 Care flow ID: ${tokenData.careflowId}
 Patient ID: ${tokenData.patientId}
 Tenant ID: ${tokenData.tenantId}
-Expires: ${expiresAt.toLocaleTimeString()}
+Expires: ${new Date(exp * 1000).toLocaleTimeString()}
 Environment: ${tokenData.environment}
 Org: ${tokenData.orgId}
 Branding: ${branding ? "Custom" : "Default (Awell)"}

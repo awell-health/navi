@@ -7,8 +7,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { RuleService } from "./rule-service";
 import type { Question } from "@/lib/awell-client/generated/graphql";
-import type { EvaluateFormRulesMutation } from "@/lib/awell-client/generated/graphql";
-import type { QuestionResponse, Rule } from "../types/rule-types";
 
 // Mock fetch globally
 global.fetch = vi.fn();
@@ -67,19 +65,19 @@ describe("RuleService", () => {
       expect(responses).toHaveLength(3);
       expect(responses).toEqual([
         {
-          question_id: "q1",
+          question_id: "def1",
           value: "Valid answer",
-          value_type: "STRING",
+          value_type: "string",
         },
         {
-          question_id: "q2",
+          question_id: "def2",
           value: "1234567890",
-          value_type: "STRING",
+          value_type: "string",
         },
         {
-          question_id: "q3",
+          question_id: "def3",
           value: "test@example.com",
-          value_type: "STRING",
+          value_type: "string",
         },
       ]);
     });
@@ -99,19 +97,19 @@ describe("RuleService", () => {
       expect(responses).toHaveLength(3);
       expect(responses).toEqual([
         {
-          question_id: "q1",
+          question_id: "def1",
           value: "Valid answer",
-          value_type: "STRING",
+          value_type: "string",
         },
         {
-          question_id: "q2",
+          question_id: "def2",
           value: "",
-          value_type: "STRING",
+          value_type: "string",
         },
         {
-          question_id: "q3",
+          question_id: "def3",
           value: "",
-          value_type: "STRING",
+          value_type: "string",
         },
       ]);
     });
@@ -137,19 +135,19 @@ describe("RuleService", () => {
       expect(responses).toHaveLength(3);
       expect(responses).toEqual([
         {
-          question_id: "q1",
+          question_id: "def1",
           value: "Valid answer",
-          value_type: "STRING",
+          value_type: "string",
         },
         {
-          question_id: "q2",
+          question_id: "def2",
           value: "", // Error case sends empty string
-          value_type: "STRING",
+          value_type: "string",
         },
         {
-          question_id: "q3",
+          question_id: "def3",
           value: "", // Error case sends empty string
-          value_type: "STRING",
+          value_type: "string",
         },
       ]);
     });
@@ -252,6 +250,7 @@ describe("RuleService", () => {
           title: "Question 2",
           definition_id: "def2",
           is_required: false,
+          user_question_type: "SHORT_TEXT",
           rule: {
             id: "rule1",
             boolean_operator: "AND",
@@ -264,6 +263,7 @@ describe("RuleService", () => {
           title: "Question 3",
           definition_id: "def3",
           is_required: false,
+          user_question_type: "LONG_TEXT",
           rule: {
             id: "rule2",
             boolean_operator: "OR",
