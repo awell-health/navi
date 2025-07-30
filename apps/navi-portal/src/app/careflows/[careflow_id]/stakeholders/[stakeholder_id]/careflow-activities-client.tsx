@@ -193,6 +193,9 @@ function CareflowActivitiesContent() {
       );
     }
 
+    // Check if activity is completed
+    const isCompleted = activeActivity.status === "DONE";
+
     switch (activeActivity.object.type) {
       case "FORM": {
         const form = getFormFromActivity(activeActivity);
@@ -203,6 +206,7 @@ function CareflowActivitiesContent() {
           return (
             <Activities.Form
               activity={formActivity}
+              disabled={isCompleted}
               eventHandlers={createActivityEventHandlers(
                 activeActivity.id,
                 activeActivity.object.type
@@ -240,6 +244,7 @@ function CareflowActivitiesContent() {
         return (
           <Activities.Checklist
             activity={checklistActivity}
+            disabled={isCompleted}
             eventHandlers={createActivityEventHandlers(
               activeActivity.id,
               activeActivity.object.type

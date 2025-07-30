@@ -3,13 +3,19 @@ import { useForm } from "react-hook-form";
 import type { FormData, UnifiedFormConfig, FormActivity } from "../types";
 import { generateFormPages, getAllQuestionsFromPages } from "../page-generator";
 import { createDefaultValues } from "../question-renderer";
+import { FormActivityOutput } from "@/lib/awell-client/generated/graphql";
 
 interface UseFormSetupProps {
   activity: FormActivity;
   config: UnifiedFormConfig;
+  disabled?: boolean;
 }
 
-export function useFormSetup({ activity, config }: UseFormSetupProps) {
+export function useFormSetup({
+  activity,
+  config,
+  disabled = false,
+}: UseFormSetupProps) {
   // Extract form data from activity (guaranteed to exist due to FormActivity type)
   const activityForm = activity.inputs.form;
 
@@ -35,10 +41,37 @@ export function useFormSetup({ activity, config }: UseFormSetupProps) {
 
   // Initialize react-hook-form with all questions
   const defaultValues = useMemo(() => {
-    const values = createDefaultValues(allQuestions);
-    console.log(
-      `🔍 Form initialized with ${allQuestions.length} questions for activity: ${activity.id}`
-    );
+    let values: Record<string, unknown>;
+
+    // For completed forms, use the response data as default values
+    if (
+      disabled &&
+      activity.outputs &&
+      (activity.outputs as FormActivityOutput).response
+    ) {
+      const response = (activity.outputs as FormActivityOutput).response;
+      const completionData = response as Record<string, unknown>;
+      values = createDefaultValues(allQuestions);
+
+      // Populate with completion data
+      Object.keys(completionData).forEach((key) => {
+        if (values.hasOwnProperty(key)) {
+          values[key] = completionData[key];
+        }
+      });
+
+      console.log(
+        `🔍 Completed form loaded with ${allQuestions.length} questions for activity: ${activity.id}`
+      );
+      console.log("📋 Completion data:", completionData);
+    } else {
+      // For active forms, use empty default values
+      values = createDefaultValues(allQuestions);
+      console.log(
+        `🔍 Active form initialized with ${allQuestions.length} questions for activity: ${activity.id}`
+      );
+    }
+
     console.log(
       "📋 Questions:",
       allQuestions.map((q) => ({
@@ -49,7 +82,7 @@ export function useFormSetup({ activity, config }: UseFormSetupProps) {
     );
     console.log("🏗️ Default values:", values);
     return values;
-  }, [allQuestions, activity.id]);
+  }, [allQuestions, activity.id, disabled, activity.outputs]);
 
   const formMethods = useForm({
     defaultValues,

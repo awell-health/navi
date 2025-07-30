@@ -34,24 +34,30 @@ export function Checklist({
     eventHandlers
   );
 
-  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
-
   const { checklist } = activity.inputs;
   const items = checklist?.items || [];
+
+  // For completed checklists, all items should be checked
+  // For active checklists, use local state to track progress
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>(
+    disabled ? items.reduce((acc, _, idx) => ({ ...acc, [idx]: true }), {}) : {}
+  );
 
   // Emit ready event when component mounts
   useEffect(() => {
     emitActivityEvent("activity-ready");
   }, [emitActivityEvent]);
 
-  // Emit progress events when items are checked/unchecked
+  // Emit progress events when items are checked/unchecked (only for active checklists)
   useEffect(() => {
-    const completedCount = Object.values(checkedItems).filter(Boolean).length;
-    emitActivityEvent("activity-progress", {
-      progress: completedCount,
-      total: items.length,
-    });
-  }, [checkedItems, items.length, emitActivityEvent]);
+    if (!disabled) {
+      const completedCount = Object.values(checkedItems).filter(Boolean).length;
+      emitActivityEvent("activity-progress", {
+        progress: completedCount,
+        total: items.length,
+      });
+    }
+  }, [checkedItems, items.length, emitActivityEvent, disabled]);
 
   const handleItemChange = (index: number, checked: boolean) => {
     setCheckedItems((prev) => {
@@ -145,6 +151,11 @@ export function Checklist({
               >
                 <Typography.H1>
                   {checklist.title || "Checklist Activity"}
+                  {disabled && (
+                    <span className="text-sm font-normal text-green-600 dark:text-green-400 ml-2">
+                      (Completed)
+                    </span>
+                  )}
                 </Typography.H1>
               </Stack>
             </div>
@@ -199,15 +210,25 @@ export function Checklist({
           </Stack>
         </div>
 
-        <div className="flex justify-end">
-          <Button
-            onClick={handleCompleteChecklist}
-            variant="default"
-            disabled={disabled || !isComplete}
-          >
-            Complete Checklist
-          </Button>
-        </div>
+        {!disabled && (
+          <div className="flex justify-end">
+            <Button
+              onClick={handleCompleteChecklist}
+              variant="default"
+              disabled={disabled || !isComplete}
+            >
+              Complete Checklist
+            </Button>
+          </div>
+        )}
+
+        {disabled && (
+          <div className="flex justify-center">
+            <div className="text-sm bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 px-4 py-2 rounded-lg border border-green-200 dark:border-green-800">
+              ✓ Checklist Completed
+            </div>
+          </div>
+        )}
       </Stack>
     </div>
   );

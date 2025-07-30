@@ -26,6 +26,7 @@ export function UnifiedFormRenderer({
   const { pages, allQuestions, formMethods } = useFormSetup({
     activity,
     config,
+    disabled,
   });
 
   const { control, handleSubmit, formState, trigger, watch } = formMethods;
@@ -130,19 +131,30 @@ export function UnifiedFormRenderer({
           ))}
         </div>
 
-        {/* Navigation */}
-        <FormNavigation
-          navigationState={navigationState}
-          totalPages={visiblePages.length}
-          disabled={disabled}
-          isSubmitting={formState.isSubmitting}
-          navigationText={config.navigationText}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          onSubmit={() => {
-            /* Submit is handled by form onSubmit */
-          }}
-        />
+        {/* Navigation - only show for active forms */}
+        {!disabled && (
+          <FormNavigation
+            navigationState={navigationState}
+            totalPages={visiblePages.length}
+            disabled={disabled}
+            isSubmitting={formState.isSubmitting}
+            navigationText={config.navigationText}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            onSubmit={() => {
+              /* Submit is handled by form onSubmit */
+            }}
+          />
+        )}
+
+        {/* Completion indicator for completed forms */}
+        {disabled && (
+          <div className="flex justify-center pt-6">
+            <div className="text-sm bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 px-4 py-2 rounded-lg border border-green-200 dark:border-green-800">
+              ✓ Form Completed
+            </div>
+          </div>
+        )}
       </form>
     </div>
   );
