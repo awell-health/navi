@@ -111,14 +111,25 @@ export class NaviLoader {
   ): Promise<CreateCareFlowSessionResponse> {
     const baseUrl = this.getEmbedOrigin();
     const { __dangerouslySetEmbedUrl, width, ...sessionOptions } = options;
+
+    let sessionId: string | undefined = undefined;
+    const maybeSessionId = document.cookie
+      .split("; ")
+      .find((cookie) => cookie.startsWith("awell.sid="));
+    if (maybeSessionId) {
+      sessionId = maybeSessionId.split("=")[1];
+      console.log("🔍 Navi.js: Found sessionId in cookie:", sessionId);
+    }
+
     const body = {
       publishableKey,
+      sessionId,
       ...sessionOptions,
     };
 
-    if (!body.careflowId && !body.careflowDefinitionId) {
+    if (!body.careflowId && !body.careflowDefinitionId && !body.sessionId) {
       throw new Error(
-        "Either careflowId or careflowDefinitionId must be provided"
+        "Either careflowId or careflowDefinitionId or sessionId must be provided"
       );
     }
 
