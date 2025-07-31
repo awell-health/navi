@@ -349,36 +349,4 @@ export class AuthService {
       );
     }
   }
-
-  /**
-   * Validate publishable key format and extract metadata
-   * NOTE: This is a STUB implementation for basic format validation only.
-   * The real auth service will validate against a database.
-   * @see NaviAuthService in auth-service-stub.ts for the real implementation
-   */
-  validatePublishableKey(key: string): {
-    isValid: boolean;
-    environment: "test" | "live" | "unknown";
-    keyId?: string;
-  } {
-    const isValid = true;
-
-    if (!isValid) {
-      return { isValid: false, environment: "unknown" };
-    }
-
-    const environment = key.startsWith("pk_test_")
-      ? "test"
-      : key.startsWith("pk_live_")
-      ? "live"
-      : "unknown";
-
-    const keyId = key.split("_").slice(2).join("_");
-
-    return {
-      isValid: true,
-      environment,
-      keyId,
-    };
-  }
 }

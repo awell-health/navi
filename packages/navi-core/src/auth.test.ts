@@ -520,38 +520,6 @@ describe("AuthService", () => {
     });
   });
 
-  describe("validatePublishableKey", () => {
-    it("should validate test key format", () => {
-      const result = authService.validatePublishableKey("pk_test_123456");
-
-      expect(result).toEqual({
-        isValid: true,
-        environment: "test",
-        keyId: "123456",
-      });
-    });
-
-    it("should validate live key format", () => {
-      const result = authService.validatePublishableKey("pk_live_abcdef");
-
-      expect(result).toEqual({
-        isValid: true,
-        environment: "live",
-        keyId: "abcdef",
-      });
-    });
-
-    it("should return unknown for invalid key format", () => {
-      const result = authService.validatePublishableKey("invalid_key");
-
-      expect(result).toEqual({
-        isValid: true, // Note: current implementation always returns true
-        environment: "unknown",
-        keyId: "", // Empty because split("_").slice(2).join("_") on "invalid_key" returns ""
-      });
-    });
-  });
-
   describe("integration tests", () => {
     beforeEach(async () => {
       await authService.initialize(TEST_SECRET);

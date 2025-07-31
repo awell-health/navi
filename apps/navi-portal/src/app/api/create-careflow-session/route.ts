@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validatePublishableKey } from "@/lib/auth/publishable-keys";
+import { publishableKeyStore } from "@/lib/auth/publishable-key-store";
 import { getBrandingByOrgId } from "@/lib/edge-config";
 import { sessionStore } from "@/lib/session-store";
 import type {
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     // Always validate the publishable key first for security
     const origin = request.headers.get("origin");
-    const keyValidation = validatePublishableKey(
+    const keyValidation = await publishableKeyStore.validateKey(
       body.publishableKey,
       origin || undefined
     );
