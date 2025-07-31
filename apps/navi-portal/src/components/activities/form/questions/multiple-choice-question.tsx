@@ -118,8 +118,8 @@ export function MultipleChoiceQuestion({
     const displayValue = selectedOption?.label || "";
     const placeholder = "Select an option...";
 
-    // Desktop: Use Popover + Command
-    if (isDesktop) {
+    // Desktop OR in iframe: Use Popover + Command
+    if (isDesktop || window.self !== window.top) {
       return (
         <div className={cn("space-y-2", className)}>
           <Label className="block">

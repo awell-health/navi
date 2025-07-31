@@ -17,11 +17,3 @@ export const ENDPOINTS: Record<TokenEnvironment, string> = {
 export function getEndpoint(environment: TokenEnvironment): string {
   return ENDPOINTS[environment] || ENDPOINTS.development;
 }
-
-/**
- * Get endpoint from session data
- */
-export function getEndpointFromSession(sessionData: any): string {
-  const environment = sessionData?.environment as TokenEnvironment;
-  return getEndpoint(environment);
-}
