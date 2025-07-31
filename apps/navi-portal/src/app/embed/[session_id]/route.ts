@@ -188,8 +188,7 @@ export async function GET(
         "Content-Type": "text/html",
         "Referrer-Policy": "strict-origin-when-cross-origin",
         "Cache-Control": "no-store",
-        "Content-Security-Policy":
-          "frame-ancestors https://shimmering-gingersnap-5c6f62.netlify.app",
+        "Content-Security-Policy": "frame-ancestors *",
       },
     });
 
