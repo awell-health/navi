@@ -1,4 +1,5 @@
 import {
+  from,
   ApolloClient,
   InMemoryCache,
   createHttpLink,
@@ -206,17 +207,20 @@ function createApolloClient(): ApolloClient<NormalizedCacheObject> {
     };
   });
 
-  const httpLink = setContext(async () => {
+  const uriLink = setContext(async (_, { uri, ...rest }) => {
     const result = await getJWTToken();
-    const environment = result?.environment || "development";
-    const endpoint = getEndpoint(environment);
-    return createHttpLink({
-      uri: endpoint,
-    });
+    const newEndpoint = result?.environment
+      ? getEndpoint(result.environment)
+      : uri;
+    return {
+      uri: newEndpoint,
+      ...rest,
+    };
   });
+  const httpLink = createHttpLink();
 
   return new ApolloClient({
-    link: errorLink.concat(authLink).concat(httpLink),
+    link: from([errorLink, authLink, uriLink, httpLink]),
     cache: new InMemoryCache(),
     defaultOptions: {
       watchQuery: {
