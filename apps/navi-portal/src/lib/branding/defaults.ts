@@ -27,7 +27,6 @@ export const awellDefaultTheme: ThemeTokens = {
 
   // Destructive (error)
   "--destructive": "#dc2626",
-  "--destructive-foreground": "#ffffff",
 
   // Borders & inputs
   "--border": "#cbd5e1",
@@ -97,9 +96,7 @@ export const awellDefaultBranding: OrgBranding = {
     fontWeightExtrabold: "800",
 
     // Radii
-    radiusSm: "0.5rem",
     radiusMd: "1rem",
-    radiusLg: "1.5rem",
 
     // Spacing
     stackSpacing: "sm",

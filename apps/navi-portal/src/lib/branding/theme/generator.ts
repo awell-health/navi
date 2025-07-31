@@ -89,17 +89,13 @@ export function brandingToTokens(
     tokens["--destructive"] = sanitizeCSSValue(branding.error);
   }
 
-  if (branding.onError && typeof branding.onError === "string") {
-    tokens["--destructive-foreground"] = sanitizeCSSValue(branding.onError);
-  }
-
   if (branding.border && typeof branding.border === "string") {
     const sanitizedBorder = sanitizeCSSValue(branding.border);
     tokens["--border"] = sanitizedBorder;
     tokens["--input"] = sanitizedBorder;
   }
 
-  if (branding.primary && typeof branding.primary === "string") {
+  if (branding.ring && typeof branding.ring === "string") {
     tokens["--ring"] = sanitizeCSSValue(branding.primary);
   }
 

@@ -6,7 +6,7 @@
 
 body {
   font-family: var(
-    --font-body,
+    --font-family-body,
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
@@ -14,7 +14,7 @@ body {
     sans-serif
   );
   font-size: var(--font-size-base, 1rem);
-  line-height: var(--line-height-base, 1.5);
+  line-height: var(--line-height-normal, 1.5);
   background: transparent; /* Let parent background show through */
   color: var(--foreground, #1f2937);
   min-height: 100vh;
@@ -57,7 +57,7 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 200px;
-  color: var(--onSurface, #6b7280);
+  color: var(--muted-foreground, #6b7280);
 }
 
 .loading-spinner {
@@ -85,31 +85,34 @@ body {
 }
 
 .welcome-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--foreground, #1f2937);
-  margin-bottom: 0.5rem;
+  font-size: 2rem;
+  font-weight: var(--font-weight-semibold);
+  font-family: var(--font-family-heading);
+  color: var(--foreground);
+  margin-bottom: 1rem;
 }
 
 .welcome-subtitle {
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
+  font-family: var(--font-family-body);
   font-size: 1rem;
 }
 
 .action-button {
-  background: var(--primary, #667eea);
-  color: var(--onPrimary, #fff);
+  background: var(--primary);
+  color: var(--primary-foreground);
   border: none;
   padding: 0.75rem 2rem;
-  border-radius: 8px;
+  border-radius: var(--radius);
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
+  font-family: var(--font-family-body);
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .action-button:hover {
-  background: var(--primary-dark, #5a67d8);
+  background: var(--primary-dark);
 }
 
 .action-button:disabled {
@@ -119,7 +122,7 @@ body {
 
 .error-state {
   background: var(--background);
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: 1rem;
   color: var(--destructive);
   text-align: center;
@@ -127,7 +130,8 @@ body {
 
 .navigation-info {
   font-size: 0.875rem;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
+  font-family: var(--font-family-body);
   margin-top: 0.5rem;
   font-style: italic;
 }
@@ -175,12 +179,38 @@ button {
 .multiple-choice-content {
   width: min(400px, calc(100vw - 2rem));
   max-width: calc(100vw - 2rem);
+  font-family: var(--font-family-body);
 }
 
 /* Phone input specific constraints (smaller default) */
 .phone-input-content {
   width: min(300px, calc(100vw - 2rem));
   max-width: calc(100vw - 2rem);
+  font-family: var(--font-family-body);
+}
+
+/* Calendar-specific overrides - exclude from rounded corners */
+/* Target the popover-content container that has a calendar child */
+[data-slot="popover-content"]:has([data-slot="calendar"]),
+[data-slot="popover-content"]:has(.rdp) {
+  border-radius: 0 !important;
+}
+
+/* Target the calendar itself and all children */
+[data-slot="calendar"],
+[data-slot="calendar"] *,
+.rdp,
+.rdp *,
+.rdp table,
+.rdp td,
+.rdp th,
+.rdp button,
+[data-day],
+[data-selected-single],
+[data-range-start],
+[data-range-end],
+[data-range-middle] {
+  border-radius: 0 !important;
 }
 
 /* Responsive adjustments */
@@ -204,5 +234,6 @@ button {
   .multiple-choice-content,
   .phone-input-content {
     width: calc(100vw - 1rem);
+    font-family: var(--font-family-body);
   }
 }

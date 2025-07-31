@@ -14,6 +14,8 @@ export interface OrgBranding {
     primaryHover?: string;
     primaryDisabled?: string;
 
+    ring?: string;
+
     secondary?: string;
     onSecondary?: string;
 
@@ -32,6 +34,13 @@ export interface OrgBranding {
     fontFamilyHeading?: string;
     fontFamilyMono?: string;
 
+    // Typography - Font weights
+    fontWeightNormal?: string; // 400
+    fontWeightMedium?: string; // 500
+    fontWeightSemibold?: string; // 600
+    fontWeightBold?: string; // 700
+    fontWeightExtrabold?: string; // 800
+
     // Typography - Font sizes
     fontSizeXs?: string; // 0.75rem
     fontSizeSm?: string; // 0.875rem
@@ -47,17 +56,7 @@ export interface OrgBranding {
     lineHeightNormal?: string; // 1.5
     lineHeightRelaxed?: string; // 1.625
 
-    // Typography - Font weights
-    fontWeightNormal?: string; // 400
-    fontWeightMedium?: string; // 500
-    fontWeightSemibold?: string; // 600
-    fontWeightBold?: string; // 700
-    fontWeightExtrabold?: string; // 800
-
-    // Radii
-    radiusSm?: string;
     radiusMd?: string;
-    radiusLg?: string;
 
     // Input tokens
     inputBackground?: string;
@@ -99,26 +98,25 @@ export interface OrgBranding {
 
 export interface ThemeTokens {
   // shadcn/ui compatible tokens
-  "--primary": string;
-  "--primary-foreground": string;
-  "--secondary": string;
-  "--secondary-foreground": string;
+  "--radius": string;
   "--background": string;
   "--foreground": string;
   "--card": string;
   "--card-foreground": string;
   "--popover": string;
   "--popover-foreground": string;
+  "--primary": string;
+  "--primary-foreground": string;
+  "--secondary": string;
+  "--secondary-foreground": string;
   "--muted": string;
   "--muted-foreground": string;
   "--accent": string;
   "--accent-foreground": string;
   "--destructive": string;
-  "--destructive-foreground": string;
   "--border": string;
   "--input": string;
   "--ring": string;
-  "--radius": string;
 
   // Custom tokens
   "--primary-dark"?: string;

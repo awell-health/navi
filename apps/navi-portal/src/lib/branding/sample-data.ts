@@ -31,9 +31,7 @@ export const sunriseHealthBranding: OrgBranding["branding"] = {
   fontSizeBase: "16px",
 
   // Radii
-  radiusSm: "4px",
   radiusMd: "6px",
-  radiusLg: "12px",
 
   // Input tokens
   inputBackground: "#FFFFFF",
@@ -91,9 +89,7 @@ export const techCorpBranding: OrgBranding["branding"] = {
   fontSizeBase: "14px",
 
   // Sharp, modern radii
-  radiusSm: "2px",
   radiusMd: "4px",
-  radiusLg: "8px",
 
   // Input styling
   inputBackground: "#1E293B",
@@ -148,9 +144,7 @@ export const bakerProBranding: OrgBranding["branding"] = {
   fontSizeBase: "16px",
 
   // Radii
-  radiusSm: "4px",
   radiusMd: "8px",
-  radiusLg: "12px",
 
   // Input tokens
   inputBackground: "#FFFFFF",

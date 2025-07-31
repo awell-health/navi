@@ -103,7 +103,7 @@ export function ActivityDrawer({
                   <div
                     key={activity.id}
                     onClick={() => handleActivityClick(activity.id)}
-                    className={`p-3 rounded-lg border transition-colors cursor-pointer ${
+                    className={`px-6 py-4 rounded-lg border transition-colors cursor-pointer ${
                       isActive
                         ? "border-primary bg-primary/10"
                         : "border-border hover:bg-muted/50"
