@@ -1,99 +1,14 @@
+import { BrandingConfig } from "@awell-health/navi-core";
+
 /**
  * Internal Organization Branding Interface
  *
- * Note: For external APIs and shared components, use BrandingConfig from navi-core.
- * This interface is for internal portal use and includes extended properties
- * for detailed theming that are not exposed in the public API.
+ * Uses the shared BrandingConfig from navi-core as the single source of truth.
+ * This wrapper adds the orgId for internal portal organization.
  */
 export interface OrgBranding {
   orgId: string;
-  branding: {
-    // Core palette
-    primary?: string;
-    onPrimary?: string;
-    primaryHover?: string;
-    primaryDisabled?: string;
-
-    ring?: string;
-
-    secondary?: string;
-    onSecondary?: string;
-
-    background?: string;
-    surface?: string;
-    onSurface?: string;
-    border?: string;
-
-    error?: string;
-    onError?: string;
-    success?: string;
-    onSuccess?: string;
-
-    // Typography - Font families
-    fontFamilyBody?: string;
-    fontFamilyHeading?: string;
-    fontFamilyMono?: string;
-
-    // Typography - Font weights
-    fontWeightNormal?: string; // 400
-    fontWeightMedium?: string; // 500
-    fontWeightSemibold?: string; // 600
-    fontWeightBold?: string; // 700
-    fontWeightExtrabold?: string; // 800
-
-    // Typography - Font sizes
-    fontSizeXs?: string; // 0.75rem
-    fontSizeSm?: string; // 0.875rem
-    fontSizeBase?: string; // 1rem
-    fontSizeLg?: string; // 1.125rem
-    fontSizeXl?: string; // 1.25rem
-    fontSize2xl?: string; // 1.5rem
-    fontSize3xl?: string; // 1.875rem
-    fontSize4xl?: string; // 2.25rem
-
-    // Typography - Line heights
-    lineHeightTight?: string; // 1.25
-    lineHeightNormal?: string; // 1.5
-    lineHeightRelaxed?: string; // 1.625
-
-    radiusMd?: string;
-
-    // Input tokens
-    inputBackground?: string;
-    inputText?: string;
-    inputBorder?: string;
-    inputBorderHover?: string;
-    inputBorderFocus?: string;
-    inputRadius?: string;
-
-    // Button tokens
-    buttonPaddingY?: string;
-    buttonPaddingX?: string;
-    buttonRadius?: string;
-
-    // Control tokens
-    controlBorder?: string;
-    controlCheckedBg?: string;
-    controlRadius?: string;
-
-    // Shadow tokens
-    shadowSm?: string;
-    shadowMd?: string;
-
-    // Spacing tokens
-    stackSpacing?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
-
-    // Component overrides
-    navHeight?: string;
-
-    // Welcome page customization
-    logoUrl?: string;
-    logoWidth?: string;
-    logoHeight?: string;
-    faviconUrl?: string;
-    welcomeTitle?: string;
-    welcomeSubtitle?: string;
-  };
+  branding: BrandingConfig;
 }
 
 export interface ThemeTokens {
@@ -114,6 +29,7 @@ export interface ThemeTokens {
   "--accent": string;
   "--accent-foreground": string;
   "--destructive": string;
+  "--destructive-foreground": string;
   "--border": string;
   "--input": string;
   "--ring": string;

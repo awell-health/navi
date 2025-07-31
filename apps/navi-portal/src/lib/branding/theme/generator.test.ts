@@ -21,7 +21,7 @@ describe("Theme Generator", () => {
   it("should apply custom branding over defaults", () => {
     const customBranding = {
       primary: "#FF6C4C",
-      onPrimary: "#FFFFFF",
+      primaryForeground: "#FFFFFF",
       background: "#FAFAFA",
     };
 
@@ -37,7 +37,7 @@ describe("Theme Generator", () => {
 
   it("should handle variable references in radius values", () => {
     const customBranding = {
-      radiusMd: "6px", // Simple value
+      radius: "6px", // Simple value
     };
 
     const tokens = brandingToTokens(customBranding);
@@ -47,10 +47,9 @@ describe("Theme Generator", () => {
   it("should generate sample org branding correctly", () => {
     const sampleBranding = {
       primary: "#FF6C4C",
-      onPrimary: "#FFFFFF",
+      primaryForeground: "#FFFFFF",
       background: "#FAFAFA",
-      surface: "#FFFFFF",
-      onSurface: "#1F1F1F",
+      foreground: "#1F1F1F",
       border: "#E0E0E0",
       logoUrl: "https://cdn.awellhealth.com/sunrise-health/logo.svg",
       faviconUrl: "https://cdn.awellhealth.com/sunrise-health/favicon.ico",

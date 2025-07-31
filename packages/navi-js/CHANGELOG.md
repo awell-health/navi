@@ -1,5 +1,13 @@
 # @awell-health/navi-js
 
+## 0.0.5-beta.0
+
+### Patch Changes
+
+- updates to organization branding to follow shadcn css variables
+- Updated dependencies
+  - @awell-health/navi-core@0.0.5-beta.0
+
 ## 0.0.4
 
 ### Patch Changes

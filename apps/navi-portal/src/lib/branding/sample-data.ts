@@ -7,50 +7,19 @@ import type { OrgBranding } from "./types";
 export const sunriseHealthBranding: OrgBranding["branding"] = {
   // Warm, healthcare-focused branding
   primary: "#FF6C4C",
-  onPrimary: "#FFFFFF",
-  primaryHover: "#E95A3C",
-  primaryDisabled: "#FFCFC4",
-
+  primaryForeground: "#FFFFFF",
   secondary: "#004E7C",
-  onSecondary: "#FFFFFF",
-
+  secondaryForeground: "#FFFFFF",
   background: "#FAFAFA",
-  surface: "#FFFFFF",
-  onSurface: "#1F1F1F",
+  foreground: "#1F1F1F",
   border: "#E0E0E0",
-
-  error: "#D32F2F",
-  onError: "#FFFFFF",
-  success: "#1E8E3E",
-  onSuccess: "#FFFFFF",
+  destructive: "#D32F2F",
+  destructiveForeground: "#FFFFFF",
 
   // Typography
-  fontFamilyBody: '"Inter", system-ui, sans-serif',
+  fontFamily: '"Inter", system-ui, sans-serif',
   fontFamilyHeading: '"Poppins", system-ui, sans-serif',
-  fontWeightBold: "600",
-  fontSizeBase: "16px",
-
-  // Radii
-  radiusMd: "6px",
-
-  // Input tokens
-  inputBackground: "#FFFFFF",
-  inputText: "#1F1F1F",
-  inputBorder: "#B5B5B5",
-  inputBorderHover: "#8A8A8A",
-  inputBorderFocus: "#FF6C4C",
-  inputRadius: "6px",
-
-  // Button tokens
-  buttonPaddingY: "0.75rem",
-  buttonPaddingX: "1.25rem",
-  buttonRadius: "6px",
-
-  // Shadow tokens
-  shadowSm: "0 1px 2px rgba(0,0,0,0.04)",
-  shadowMd: "0 4px 6px rgba(0,0,0,0.08)",
-
-  stackSpacing: "sm",
+  radius: "6px",
 
   // Welcome page customization
   logoUrl: "https://cdn.awellhealth.com/sunrise-health/logo.svg",
@@ -64,51 +33,19 @@ export const sunriseHealthBranding: OrgBranding["branding"] = {
 export const techCorpBranding: OrgBranding["branding"] = {
   // Dark, professional tech company theme
   primary: "#0F172A", // Dark slate primary
-  onPrimary: "#F8FAFC", // Nearly white text
-  primaryHover: "#1E293B", // Slightly lighter dark
-  primaryDisabled: "#64748B", // Muted gray
-
+  primaryForeground: "#F8FAFC", // Nearly white text
   secondary: "#6366F1", // Bright indigo secondary
-  onSecondary: "#FFFFFF", // White text
-
+  secondaryForeground: "#FFFFFF", // White text
   background: "#020617", // Very dark navy background
-  surface: "#0F172A", // Dark surface
-  onSurface: "#E2E8F0", // Light gray text
+  foreground: "#E2E8F0", // Light gray text
   border: "#334155", // Medium gray border
-
-  error: "#EF4444", // Bright red
-  onError: "#FFFFFF",
-  success: "#10B981", // Emerald green
-  onSuccess: "#FFFFFF",
+  destructive: "#EF4444", // Bright red
+  destructiveForeground: "#FFFFFF",
+  radius: "4px",
 
   // Typography - Modern tech fonts
-  fontFamilyBody:
-    '"JetBrains Mono", "SF Mono", "Monaco", "Consolas", monospace',
+  fontFamily: '"JetBrains Mono", "SF Mono", "Monaco", "Consolas", monospace',
   fontFamilyHeading: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
-  fontWeightBold: "700",
-  fontSizeBase: "14px",
-
-  // Sharp, modern radii
-  radiusMd: "4px",
-
-  // Input styling
-  inputBackground: "#1E293B",
-  inputText: "#F8FAFC",
-  inputBorder: "#475569",
-  inputBorderHover: "#6366F1",
-  inputBorderFocus: "#6366F1",
-  inputRadius: "4px",
-
-  // Button styling
-  buttonPaddingY: "0.625rem",
-  buttonPaddingX: "1rem",
-  buttonRadius: "4px",
-
-  // Subtle shadows for dark theme
-  shadowSm: "0 1px 2px rgba(0,0,0,0.3)",
-  shadowMd: "0 4px 6px rgba(0,0,0,0.4)",
-
-  stackSpacing: "xs",
 
   // Welcome page customization
   logoUrl: "https://cdn.awellhealth.com/techcorp/logo-white.svg",
@@ -120,50 +57,19 @@ export const techCorpBranding: OrgBranding["branding"] = {
 export const bakerProBranding: OrgBranding["branding"] = {
   // Baker Pro local development branding
   primary: "#2563EB", // Professional blue
-  onPrimary: "#FFFFFF",
-  primaryHover: "#1D4ED8",
-  primaryDisabled: "#93C5FD",
-
+  primaryForeground: "#FFFFFF",
   secondary: "#059669", // Healthcare green
-  onSecondary: "#FFFFFF",
-
+  secondaryForeground: "#FFFFFF",
   background: "#F8FAFC", // Light gray background
-  surface: "#FFFFFF",
-  onSurface: "#1F2937",
+  foreground: "#1F2937",
   border: "#D1D5DB",
-
-  error: "#DC2626",
-  onError: "#FFFFFF",
-  success: "#059669",
-  onSuccess: "#FFFFFF",
+  destructive: "#DC2626",
+  destructiveForeground: "#FFFFFF",
 
   // Typography
-  fontFamilyBody: '"Inter", system-ui, sans-serif',
+  fontFamily: '"Inter", system-ui, sans-serif',
   fontFamilyHeading: '"Inter", system-ui, sans-serif',
-  fontWeightBold: "600",
-  fontSizeBase: "16px",
-
-  // Radii
-  radiusMd: "8px",
-
-  // Input tokens
-  inputBackground: "#FFFFFF",
-  inputText: "#1F2937",
-  inputBorder: "#D1D5DB",
-  inputBorderHover: "#9CA3AF",
-  inputBorderFocus: "#2563EB",
-  inputRadius: "8px",
-
-  // Button tokens
-  buttonPaddingY: "0.75rem",
-  buttonPaddingX: "1.5rem",
-  buttonRadius: "8px",
-
-  // Shadow tokens
-  shadowSm: "0 1px 2px rgba(0,0,0,0.05)",
-  shadowMd: "0 4px 6px rgba(0,0,0,0.1)",
-
-  stackSpacing: "md",
+  radius: "8px",
 
   // Welcome page customization
   logoUrl: "https://cdn.awellhealth.com/baker-pro/logo.svg",

@@ -49,7 +49,7 @@ export function ActivityHeader({ onActivityListClick }: ActivityHeaderProps) {
               "https://res.cloudinary.com/da7x4rzl4/image/upload/v1678995530/DEV%20SANDBOX%20-%20Awell%20Studio%20-%20TextEditor%20-%20Image%20upload/jxv6d1qm7cwmsznj4pzc.png"
             }
             alt="Logo"
-            className="max-h-[100px] max-w-[300px] object-contain"
+            className="max-h-[100px] max-w-[240px] object-contain"
             style={{
               maxWidth: branding.logoWidth ?? "200px",
               maxHeight: branding.logoHeight ?? "80px",

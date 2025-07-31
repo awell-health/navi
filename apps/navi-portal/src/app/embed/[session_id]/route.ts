@@ -56,6 +56,13 @@ export async function GET(
               // Redirect to existing session instead
               const url = new URL(request.url);
               url.pathname = `/embed/${existingSessionCookie.value}`;
+
+              // Ensure we maintain the correct hostname for mobile devices
+              const host = request.headers.get("host");
+              if (host) {
+                url.host = host;
+              }
+
               return NextResponse.redirect(url, 302);
             } else {
               console.log(
@@ -417,7 +424,7 @@ function renderPreparationBody(branding: BrandingConfig) {
         <div id="progress-bar" style="width: 200px; height: 4px; background: #e5e7eb; border-radius: 2px; margin-top: 1rem; overflow: hidden;">
           <div id="progress-fill" style="width: 0%; height: 100%; background: var(--primary, #667eea); border-radius: 2px; transition: width 0.3s ease;"></div>
         </div>
-        <p id="progress-text" style="font-size: 0.75rem; color: var(--muted-foreground, #6b7280); margin-top: 0.5rem;">0%</p>
+        <p id="progress-text" style="font-size: 0.75rem; color: var(--muted-foreground, #6b7280); margin-top: 0.5rem; text-align: center;">0%</p>
       </div>
       
       <div id="error-state" class="error-state" style="display: none;">

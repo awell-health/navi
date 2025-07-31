@@ -1,0 +1,16 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "navi-portal": "0.0.1-alpha.0",
+    "navi-simple-embed": "1.0.0",
+    "navi-sdk-test-app": "1.0.0",
+    "@awell-health/navi-core": "0.0.4",
+    "@awell-health/navi-js": "0.0.4",
+    "@awell-health/navi-js-react": "0.0.4",
+    "@awell-health/navi-dot-js": "0.0.4"
+  },
+  "changesets": [
+    "neat-baboons-buy"
+  ]
+}

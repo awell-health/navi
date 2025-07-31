@@ -166,6 +166,12 @@ function createApolloClient(): ApolloClient<NormalizedCacheObject> {
   // Handle authentication errors by clearing token cache and retrying
   const errorLink = onError(
     ({ graphQLErrors, networkError, operation, forward }) => {
+      console.log("🔄 Error in Apollo client", {
+        graphQLErrors,
+        networkError,
+        operation,
+        forward,
+      });
       if (
         networkError &&
         "statusCode" in networkError &&

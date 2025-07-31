@@ -39,8 +39,7 @@ body {
   ); /* Semi-transparent white for readability */
   min-height: 400px;
   padding: 2rem;
-  margin: 0 auto;
-  width: 100%;
+  margin: auto;
   max-width: 800px;
   display: flex;
   flex-direction: column;
@@ -64,7 +63,7 @@ body {
   width: 40px;
   height: 40px;
   border: 3px solid #e5e7eb;
-  border-top: 3px solid var(--primary, #667eea);
+  color: var(--primary, #667eea);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
@@ -85,7 +84,7 @@ body {
 }
 
 .welcome-title {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: var(--font-weight-semibold);
   font-family: var(--font-family-heading);
   color: var(--foreground);
@@ -139,7 +138,6 @@ body {
 /* Global iframe width constraints - prevents all content from overflowing */
 * {
   /* Prevent any element from exceeding iframe width */
-  max-width: 100%;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
@@ -149,20 +147,7 @@ input,
 textarea,
 select,
 button {
-  max-width: 100%;
   box-sizing: border-box;
-}
-
-/* Popover and dropdown width constraints */
-[data-radix-popper-content-wrapper] {
-  max-width: calc(100vw - 2rem) !important;
-}
-
-/* Command components (used in selectors) */
-.command-wrapper,
-[data-radix-command] {
-  max-width: calc(100vw - 2rem);
-  min-width: 280px; /* Minimum usable width */
 }
 
 /* Ensure long text in dropdowns wraps properly */
@@ -170,22 +155,17 @@ button {
 [data-radix-command-item] {
   white-space: normal;
   word-break: break-word;
-  max-width: 100%;
 }
 
 /* Dropdown selector constraints */
 .icd-selector-content,
 .multiple-select-content,
 .multiple-choice-content {
-  width: min(400px, calc(100vw - 2rem));
-  max-width: calc(100vw - 2rem);
   font-family: var(--font-family-body);
 }
 
 /* Phone input specific constraints (smaller default) */
 .phone-input-content {
-  width: min(300px, calc(100vw - 2rem));
-  max-width: calc(100vw - 2rem);
   font-family: var(--font-family-body);
 }
 
@@ -221,19 +201,5 @@ button {
 
   .activity-container {
     padding: 1rem;
-    border-radius: 8px;
-  }
-
-  /* Further constrain dropdowns on mobile */
-  [data-radix-popper-content-wrapper] {
-    max-width: calc(100vw - 1rem) !important;
-  }
-
-  .icd-selector-content,
-  .multiple-select-content,
-  .multiple-choice-content,
-  .phone-input-content {
-    width: calc(100vw - 1rem);
-    font-family: var(--font-family-body);
   }
 }

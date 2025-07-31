@@ -21,7 +21,6 @@ interface BrandingContextType {
   getBackgroundColor: () => string | undefined;
   getLogoUrl: () => string | undefined;
   getFaviconUrl: () => string | undefined;
-  getStackSpacing: () => "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | undefined;
 }
 
 const BrandingContext = createContext<BrandingContextType | null>(null);
@@ -51,7 +50,6 @@ export function BrandingProvider({
   const getBackgroundColor = () => branding.background;
   const getLogoUrl = () => branding.logoUrl;
   const getFaviconUrl = () => branding.faviconUrl;
-  const getStackSpacing = () => branding.stackSpacing;
 
   const contextValue: BrandingContextType = {
     // Data
@@ -65,7 +63,6 @@ export function BrandingProvider({
     getBackgroundColor,
     getLogoUrl,
     getFaviconUrl,
-    getStackSpacing,
   };
 
   return (

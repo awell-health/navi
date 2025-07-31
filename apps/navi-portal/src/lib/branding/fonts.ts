@@ -33,33 +33,13 @@ function getGoogleFontsUrl(fontFamily: string): string | null {
 }
 
 /**
- * Collect unique font weights from branding properties
- * Supports both BrandingConfig (simplified) and OrgBranding (comprehensive)
+ * Collect font weights - we use a standard set of weights for all branding
  */
-function collectFontWeights(
-  branding: BrandingConfig | OrgBranding["branding"]
-): string[] {
+function collectFontWeights(): string[] {
   const weights = new Set<string>();
 
   // Add default weights
   DEFAULT_FONT_WEIGHTS.forEach((weight) => weights.add(weight));
-
-  // Add custom weights if available (OrgBranding interface)
-  if ("fontWeightNormal" in branding && branding.fontWeightNormal) {
-    weights.add(branding.fontWeightNormal);
-  }
-  if ("fontWeightMedium" in branding && branding.fontWeightMedium) {
-    weights.add(branding.fontWeightMedium);
-  }
-  if ("fontWeightSemibold" in branding && branding.fontWeightSemibold) {
-    weights.add(branding.fontWeightSemibold);
-  }
-  if ("fontWeightBold" in branding && branding.fontWeightBold) {
-    weights.add(branding.fontWeightBold);
-  }
-  if ("fontWeightExtrabold" in branding && branding.fontWeightExtrabold) {
-    weights.add(branding.fontWeightExtrabold);
-  }
 
   return Array.from(weights).sort();
 }
@@ -74,8 +54,8 @@ function collectGoogleFonts(
   const fonts = new Set<string>();
 
   // Check font family properties based on interface type
-  if ("fontFamilyBody" in branding && branding.fontFamilyBody) {
-    const googleFont = getGoogleFontsUrl(branding.fontFamilyBody);
+  if ("fontFamily" in branding && branding.fontFamily) {
+    const googleFont = getGoogleFontsUrl(branding.fontFamily);
     if (googleFont) fonts.add(googleFont);
   }
 
@@ -109,7 +89,7 @@ export function renderGoogleFontLinks(
   if (!branding) return "";
 
   const googleFonts = collectGoogleFonts(branding);
-  const fontWeights = collectFontWeights(branding);
+  const fontWeights = collectFontWeights();
 
   if (googleFonts.length === 0) {
     return "";

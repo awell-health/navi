@@ -16,14 +16,12 @@ import {
   MessageActivityInput,
 } from "@/lib/awell-client/generated/graphql";
 import { useActivity } from "@/lib/activity-provider";
-import { ActivityHeader } from "@/components/activity-header";
 import { ActivityDrawer } from "@/components/activity-drawer";
-import { cn } from "@/lib/utils";
-import { useBranding } from "@/lib/branding-provider";
 import {
   IframeCommunicator,
   useCommunications,
 } from "@/domains/communications";
+import { ActivityHeader } from "@/components/activity-header";
 
 interface CareflowActivitiesClientProps {
   careflowId: string;
@@ -106,7 +104,6 @@ function CareflowActivitiesContent() {
     markActivityAsViewed,
     completeActivity,
   } = useActivity();
-  const { getStackSpacing } = useBranding();
   const { createActivityEventHandlers } = useCommunications();
 
   // State for activity drawer
@@ -319,17 +316,7 @@ function CareflowActivitiesContent() {
 
   return (
     <div className="min-h-0 bg-background flex">
-      <main
-        className={cn("flex-1 flex flex-col", {
-          "gap-2": getStackSpacing() === "xs",
-          "gap-4": getStackSpacing() === "sm",
-          "gap-6": getStackSpacing() === "md" || !getStackSpacing(),
-          "gap-8":
-            getStackSpacing() === "lg" ||
-            getStackSpacing() === "xl" ||
-            getStackSpacing() === "2xl",
-        })}
-      >
+      <main className="flex-1 flex flex-col gap-6">
         {/* Header */}
         <ActivityHeader onActivityListClick={handleActivityListClick} />
 

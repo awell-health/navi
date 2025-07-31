@@ -9,28 +9,67 @@
  * - Customer applications
  *
  * Do not duplicate this interface - import it from navi-core instead.
+ *
+ * Aligned with shadcn/ui theme token system for maximum compatibility.
  */
 export interface BrandingConfig {
-  // Core colors
+  // === Core shadcn/ui Theme Tokens ===
+  // Base colors
+  background?: string;
+  foreground?: string;
+
+  // Card colors
+  card?: string;
+  cardForeground?: string;
+
+  // Popover colors
+  popover?: string;
+  popoverForeground?: string;
+
+  // Primary colors
   primary?: string;
+  primaryForeground?: string;
+
+  // Secondary colors
   secondary?: string;
+  secondaryForeground?: string;
 
-  // Typography
+  // Muted colors
+  muted?: string;
+  mutedForeground?: string;
+
+  // Accent colors
+  accent?: string;
+  accentForeground?: string;
+
+  // Destructive colors
+  destructive?: string;
+  destructiveForeground?: string;
+
+  // Border & input colors
+  border?: string;
+  input?: string;
+  ring?: string;
+
+  // Border radius
+  radius?: string;
+
+  // === Typography ===
+  // Font families
   fontFamily?: string;
+  fontFamilyHeading?: string;
+  fontFamilyMono?: string;
 
-  // Branding assets
+  // === Brand Assets ===
   logoUrl?: string;
   logoWidth?: string;
   logoHeight?: string;
   faviconUrl?: string;
 
-  // Welcome page customization
+  // === Welcome Page ===
   welcomeTitle?: string;
   welcomeSubtitle?: string;
 
-  // Extended colors (optional)
-  background?: string;
-  surface?: string;
-  error?: string;
-  success?: string;
+  // === Layout ===
+  navHeight?: string;
 }
