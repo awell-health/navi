@@ -8,7 +8,6 @@ import type {
   CreateCareFlowSessionResponse,
   EmbedSessionData,
 } from "@awell-health/navi-core";
-import { cookies } from "next/headers";
 
 export const runtime = "edge";
 
@@ -26,6 +25,10 @@ async function getBranding(orgId: string, branding?: BrandingConfig) {
   }
 }
 
+/**
+ * This API is used to create a careflow session.
+ * It is called by the HOST SITE (using navi.js script) when a user clicks on a careflow in the portal.
+ */
 export async function POST(request: NextRequest) {
   try {
     const body: CreateCareFlowSessionRequest = await request.json();
@@ -55,44 +58,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check for existing session in cookies
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get("awell.sid")?.value;
-
-    if (sessionCookie) {
-      const session = await sessionStore.get(sessionCookie);
-      if (session) {
-        // Validate session is not expired
-        const now = Math.floor(Date.now() / 1000);
-        if (session.exp && session.exp > now) {
-          // Validate session belongs to the same organization as the publishable key
-          if (session.orgId === keyValidation.orgId) {
-            console.log("🔄 Reusing existing session:", session.sessionId);
-            const branding = await getBranding(session.orgId, body.branding);
-            return NextResponse.json(
-              {
-                success: true,
-                embedUrl: `/embed/${session.sessionId}`,
-                branding,
-              },
-              {
-                headers: {
-                  "Access-Control-Allow-Origin": "*",
-                  "Access-Control-Allow-Methods": "POST, OPTIONS",
-                  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-                },
-              }
-            );
-          } else {
-            console.warn(
-              "⚠️ Session organization mismatch - creating new session"
-            );
-          }
-        } else {
-          console.log("⏰ Session expired - creating new session");
-        }
-      }
-    }
+    // Note: Session persistence handled in iframe route (/embed/[session_id])
+    // where cookies exist on the correct domain. This API runs cross-origin
+    // and cannot access iframe cookies due to browser security policies.
 
     // Validate required fields
     if (

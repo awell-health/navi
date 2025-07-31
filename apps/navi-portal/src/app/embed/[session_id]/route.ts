@@ -25,6 +25,51 @@ export async function GET(
     const instanceId = request.nextUrl.searchParams.get("instance_id");
     console.log("🔍 GET /embed/[session_id]", { sessionId, instanceId });
 
+    // Check for existing session cookie (same-domain persistence)
+    const existingSessionCookie = request.cookies.get("awell.sid");
+    if (existingSessionCookie && existingSessionCookie.value !== sessionId) {
+      const existingSessionData = await sessionStore.get(
+        existingSessionCookie.value
+      );
+      if (existingSessionData && "state" in existingSessionData) {
+        // Validate existing session is not expired
+        const now = Math.floor(Date.now() / 1000);
+        if (existingSessionData.exp && existingSessionData.exp > now) {
+          console.log(
+            "🔄 Found valid existing session, checking org compatibility"
+          );
+
+          // Get new session to compare organizations
+          const newSessionData = await sessionStore.get(sessionId);
+          if (
+            newSessionData &&
+            "orgId" in newSessionData &&
+            "orgId" in existingSessionData
+          ) {
+            if (existingSessionData.orgId === newSessionData.orgId) {
+              console.log(
+                "✅ Reusing existing session:",
+                existingSessionCookie.value
+              );
+              await sessionStore.delete(sessionId);
+              // Redirect to existing session instead
+              const url = new URL(request.url);
+              url.pathname = `/embed/${existingSessionCookie.value}`;
+              return NextResponse.redirect(url, 302);
+            } else {
+              console.log(
+                "⚠️ Existing session for different org, proceeding with new session"
+              );
+            }
+          }
+        } else {
+          console.log(
+            "⏰ Existing session expired, proceeding with new session"
+          );
+        }
+      }
+    }
+
     // Retrieve session data from KV store
     const sessionData = await sessionStore.get(sessionId);
 
