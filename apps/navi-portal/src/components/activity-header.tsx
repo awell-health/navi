@@ -4,7 +4,6 @@ import React from "react";
 import { ListTodo } from "lucide-react";
 import { useBranding } from "@/lib/branding-provider";
 import { useActivity } from "@/lib/activity-provider";
-import { Typography } from "@/components/ui/typography";
 
 interface ActivityHeaderProps {
   onActivityListClick?: () => void;
@@ -43,7 +42,7 @@ export function ActivityHeader({ onActivityListClick }: ActivityHeaderProps) {
 
       {/* Center - Logo */}
       <div className="flex-1 flex justify-center items-center">
-        {logoUrl ? (
+        {logoUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={
@@ -56,10 +55,6 @@ export function ActivityHeader({ onActivityListClick }: ActivityHeaderProps) {
               maxHeight: branding.logoHeight ?? "80px",
             }}
           />
-        ) : (
-          <Typography.Large className="font-semibold">
-            {branding.welcomeTitle || "Care Portal"}
-          </Typography.Large>
         )}
       </div>
 

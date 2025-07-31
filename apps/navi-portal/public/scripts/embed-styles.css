@@ -20,7 +20,8 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow-y: auto; /* Show scrollbars when content overflows */
+  overflow-y: auto; /* Show vertical scrollbars when content overflows */
+  overflow-x: hidden; /* Prevent horizontal scrollbars in iframe */
 }
 
 .embed-container {
@@ -131,6 +132,58 @@ body {
   font-style: italic;
 }
 
+/* Global iframe width constraints - prevents all content from overflowing */
+* {
+  /* Prevent any element from exceeding iframe width */
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Specific constraints for form elements and interactive components */
+input,
+textarea,
+select,
+button {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Popover and dropdown width constraints */
+[data-radix-popper-content-wrapper] {
+  max-width: calc(100vw - 2rem) !important;
+}
+
+/* Command components (used in selectors) */
+.command-wrapper,
+[data-radix-command] {
+  max-width: calc(100vw - 2rem);
+  min-width: 280px; /* Minimum usable width */
+}
+
+/* Ensure long text in dropdowns wraps properly */
+[role="option"],
+[data-radix-command-item] {
+  white-space: normal;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+/* Dropdown selector constraints */
+.icd-selector-content,
+.multiple-select-content,
+.multiple-choice-content {
+  width: min(400px, calc(100vw - 2rem));
+  max-width: calc(100vw - 2rem);
+}
+
+/* Phone input specific constraints (smaller default) */
+.phone-input-content {
+  width: min(300px, calc(100vw - 2rem));
+  max-width: calc(100vw - 2rem);
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
   .embed-container {
     padding: 0.5rem;
@@ -139,5 +192,17 @@ body {
   .activity-container {
     padding: 1rem;
     border-radius: 8px;
+  }
+
+  /* Further constrain dropdowns on mobile */
+  [data-radix-popper-content-wrapper] {
+    max-width: calc(100vw - 1rem) !important;
+  }
+
+  .icd-selector-content,
+  .multiple-select-content,
+  .multiple-choice-content,
+  .phone-input-content {
+    width: calc(100vw - 1rem);
   }
 }

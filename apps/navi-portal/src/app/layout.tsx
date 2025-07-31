@@ -46,7 +46,7 @@ export default async function RootLayout({
       </head>
       <body
         className={cn(
-          `${geistSans.variable} ${geistMono.variable} antialiased p-6 flex flex-col justify-center`
+          `${geistSans.variable} ${geistMono.variable} antialiased p-6 flex flex-col justify-center overflow-x-hidden`
         )}
       >
         <BrandingProvider

@@ -267,7 +267,10 @@ export function MultipleSelectQuestion({
                   {displayText}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[400px] p-0" align="start">
+              <PopoverContent
+                className="multiple-select-content p-0"
+                align="start"
+              >
                 <MultiSelectOptionList
                   question={question}
                   field={field}

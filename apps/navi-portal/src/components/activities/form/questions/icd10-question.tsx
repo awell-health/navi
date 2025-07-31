@@ -144,7 +144,7 @@ export function ICD10Question({
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[400px] p-0" align="start">
+          <PopoverContent className="icd-selector-content p-0" align="start">
             <Command shouldFilter={false}>
               <CommandInput
                 placeholder="Type to search ICD-10 codes..."

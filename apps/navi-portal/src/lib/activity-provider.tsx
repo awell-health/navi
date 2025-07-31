@@ -87,22 +87,26 @@ class ActivityService {
     currentActivityId: string,
     activities: ActivityFragment[]
   ): ActivityFragment | null {
-    // After completing an activity, find the next one that needs attention
+    // Get all completable activities (order-agnostic)
     const completableActivities = this.getCompletableActivities(activities);
-
-    // Find current activity index
-    const currentIndex = completableActivities.findIndex(
-      (a) => a.id === currentActivityId
+    console.log(
+      "✅ Completable activities:",
+      completableActivities.map((a) => ({
+        id: a.id,
+        name: a.object.name,
+        status: a.status,
+        type: a.object.type,
+      }))
     );
 
-    // If current activity was found and there's a next one, return it
-    if (currentIndex >= 0 && currentIndex < completableActivities.length - 1) {
-      return completableActivities[currentIndex + 1];
-    }
+    // Simply return the first completable activity (order doesn't matter)
+    const nextActivity = completableActivities[0] || null;
+    console.log(
+      "🎯 Next activity to advance to:",
+      nextActivity ? nextActivity.object.name : "none"
+    );
 
-    // If current activity wasn't in completable list (now completed) or was last,
-    // return the first completable activity
-    return completableActivities[0] || null;
+    return nextActivity;
   }
 
   // Activity completion business logic
@@ -316,6 +320,14 @@ export function ActivityProvider({
 
         // Auto-advance to next activity if the completed one was active
         if (activeActivity?.id === completedActivity.id) {
+          console.log("🔄 Completed activity was active, checking for next...");
+          console.log("✅ Completed activity details:", {
+            id: completedActivity.id,
+            name: completedActivity.object.name,
+            status: completedActivity.status,
+            resolution: completedActivity.resolution,
+          });
+
           // Update current activity state first
           setActiveActivityState(completedActivity);
 
@@ -326,12 +338,21 @@ export function ActivityProvider({
           );
 
           if (nextActivity) {
-            console.log("🎯 Auto-advancing to next activity:", nextActivity.id);
+            console.log("🎯 Auto-advancing to next activity:", {
+              id: nextActivity.id,
+              name: nextActivity.object.name,
+              type: nextActivity.object.type,
+              status: nextActivity.status,
+            });
             setActiveActivityState(nextActivity);
             service.emit("activity.activated", { activity: nextActivity });
           } else {
             console.log("🏁 No more activities to complete");
           }
+        } else {
+          console.log(
+            "⏭️ Completed activity was not active, no auto-advance needed"
+          );
         }
       }
     },
@@ -527,11 +548,26 @@ export function ActivityProvider({
           variables: { input },
         });
 
-        if (result.data?.completeActivity.success) {
+        if (
+          result.data?.completeActivity.success &&
+          result.data.completeActivity.activity
+        ) {
           console.log("✅ Activity completed successfully:", activityId);
+
+          // Immediately update local cache with completed activity
+          const completedActivity = result.data.completeActivity.activity;
+          setActivities((prev) =>
+            prev.map((activity) => {
+              if (activity.id === activityId) {
+                return completedActivity;
+              }
+              return activity;
+            })
+          );
+
           service.emit("activity.completed", {
             activityId,
-            activity: result.data.completeActivity.activity,
+            activity: completedActivity,
             timestamp: Date.now(),
           });
         } else {

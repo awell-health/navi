@@ -148,7 +148,10 @@ export function MultipleChoiceQuestion({
                 {displayValue || placeholder}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[400px] p-0" align="start">
+            <PopoverContent
+              className="multiple-choice-content p-0"
+              align="start"
+            >
               <OptionList question={question} field={field} setOpen={setOpen} />
             </PopoverContent>
           </Popover>

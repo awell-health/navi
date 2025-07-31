@@ -120,7 +120,7 @@ const CountrySelect = ({
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0">
+      <PopoverContent className="phone-input-content p-0">
         <Command>
           <CommandInput
             value={searchValue}
