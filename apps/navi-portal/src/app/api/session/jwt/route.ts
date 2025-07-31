@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
     const response = NextResponse.json({
       jwt,
       expiresAt: Math.floor(Date.now() / 1000) + 15 * 60, // 15 minutes from now
+      environment: sessionData.environment,
     });
 
     // Refresh the JWT cookie

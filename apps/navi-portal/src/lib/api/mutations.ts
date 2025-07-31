@@ -1,3 +1,5 @@
+"use server";
+
 import { print } from "graphql";
 import { AuthService, SessionData } from "@awell-health/navi-core";
 import { env } from "@/env";
@@ -9,6 +11,7 @@ import {
   StartCareFlowDocument,
   PatientMatchDocument,
 } from "../awell-client/generated/graphql";
+import { ENDPOINTS } from "./environments";
 
 /**
  * GraphQL mutations for care flow operations
@@ -69,7 +72,7 @@ async function executeGraphQL<T = unknown>(
     },
   });
 
-  const response = await fetch(env.NEXT_PUBLIC_GRAPHQL_ENDPOINT, {
+  const response = await fetch(ENDPOINTS[sessionData.environment], {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -165,7 +168,8 @@ export async function patientMatch(
   try {
     console.debug("🔍 Matching patient:", {
       patient_id: input.patient_id,
-      patient_identifier: input.patient_identifier?.value,
+      patient_identifier_system: input.patient_identifier?.system,
+      patient_identifier_value: input.patient_identifier?.value,
       allow_anonymous_creation: input.allow_anonymous_creation,
     });
 

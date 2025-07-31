@@ -193,8 +193,9 @@ async function createNewCareflow({
 
       setTimeout(() => {
         let redirectUrl = `/careflows/${careflowId}/stakeholders/${stakeholderId}`;
+        redirectUrl += `?session_id=${sessionId}`;
         if (instanceId) {
-          redirectUrl += `?instance_id=${instanceId}`;
+          redirectUrl += `&instance_id=${instanceId}`;
         }
         send({
           type: "ready",

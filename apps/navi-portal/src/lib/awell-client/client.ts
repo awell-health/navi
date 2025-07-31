@@ -7,9 +7,15 @@ import {
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
+import { TokenEnvironment } from "@awell-health/navi-core";
+import { getEndpoint } from "../api/environments";
 
 let _apolloClient: ApolloClient<NormalizedCacheObject> | null = null;
-let _jwtCache: { token: string; expiresAt: number } | null = null;
+let _jwtCache: {
+  token: string;
+  expiresAt: number;
+  environment: TokenEnvironment;
+} | null = null;
 let _refreshTimer: NodeJS.Timeout | null = null;
 
 /**
@@ -94,8 +100,12 @@ function scheduleTokenRefresh(expiresAt: number): void {
         });
 
         if (response.ok) {
-          const { jwt, expiresAt: newExpiresAt } = await response.json();
-          _jwtCache = { token: jwt, expiresAt: newExpiresAt };
+          const {
+            jwt,
+            expiresAt: newExpiresAt,
+            environment,
+          } = await response.json();
+          _jwtCache = { token: jwt, expiresAt: newExpiresAt, environment };
           scheduleTokenRefresh(newExpiresAt); // Schedule next refresh
           console.debug("✅ JWT token refreshed successfully");
         } else {
@@ -117,11 +127,14 @@ function scheduleTokenRefresh(expiresAt: number): void {
 /**
  * Fetch JWT token from the session endpoint
  */
-async function getJWTToken(): Promise<string | null> {
+async function getJWTToken(): Promise<{
+  jwt: string;
+  environment: TokenEnvironment;
+} | null> {
   try {
     // Check if we have a cached token that's still valid
     if (_jwtCache && _jwtCache.expiresAt > Math.floor(Date.now() / 1000) + 60) {
-      return _jwtCache.token;
+      return { jwt: _jwtCache.token, environment: _jwtCache.environment };
     }
 
     // Fetch fresh token from session endpoint
@@ -134,15 +147,15 @@ async function getJWTToken(): Promise<string | null> {
       return null;
     }
 
-    const { jwt, expiresAt } = await response.json();
+    const { jwt, expiresAt, environment } = await response.json();
 
     // Cache the token
-    _jwtCache = { token: jwt, expiresAt };
+    _jwtCache = { token: jwt, expiresAt, environment };
 
     // Schedule automatic refresh
     scheduleTokenRefresh(expiresAt);
 
-    return jwt;
+    return { jwt, environment };
   } catch (error) {
     console.error("Error fetching JWT token:", error);
     return null;
@@ -150,10 +163,6 @@ async function getJWTToken(): Promise<string | null> {
 }
 
 function createApolloClient(): ApolloClient<NormalizedCacheObject> {
-  const httpLink = createHttpLink({
-    uri: env.NEXT_PUBLIC_GRAPHQL_ENDPOINT,
-  });
-
   // Handle authentication errors by clearing token cache and retrying
   const errorLink = onError(
     ({ graphQLErrors, networkError, operation, forward }) => {
@@ -183,12 +192,11 @@ function createApolloClient(): ApolloClient<NormalizedCacheObject> {
   );
 
   const authLink = setContext(async (_, { headers }) => {
-    const jwtToken = await getJWTToken();
-
+    const result = await getJWTToken();
     const authHeaders: Record<string, string> = {};
 
-    if (jwtToken) {
-      authHeaders.Authorization = `Bearer ${jwtToken}`;
+    if (result?.jwt) {
+      authHeaders.Authorization = `Bearer ${result.jwt}`;
     }
 
     return {
@@ -197,6 +205,15 @@ function createApolloClient(): ApolloClient<NormalizedCacheObject> {
         ...authHeaders,
       },
     };
+  });
+
+  const httpLink = setContext(async () => {
+    const result = await getJWTToken();
+    const environment = result?.environment || "development";
+    const endpoint = getEndpoint(environment);
+    return createHttpLink({
+      uri: endpoint,
+    });
   });
 
   return new ApolloClient({

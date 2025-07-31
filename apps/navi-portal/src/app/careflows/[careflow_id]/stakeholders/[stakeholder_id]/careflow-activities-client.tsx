@@ -180,7 +180,7 @@ function CareflowActivitiesContent() {
   const renderActiveActivity = () => {
     if (!activeActivity) {
       return (
-        <div className="h-full flex items-center justify-center p-8">
+        <div className="min-h-[500px] h-full flex items-center justify-center p-8">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-foreground mb-2">
               No Activity Selected

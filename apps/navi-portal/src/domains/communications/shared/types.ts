@@ -1,4 +1,8 @@
-import type { ActivityEvent, UserActivityType } from "@awell-health/navi-core";
+import type {
+  ActivityEvent,
+  TokenEnvironment,
+  UserActivityType,
+} from "@awell-health/navi-core";
 
 /**
  * Communications Domain Types
@@ -25,6 +29,21 @@ export interface HeightChangeEvent extends PostMessageEvent {
   type: "navi.height.changed";
   height: number;
   activity_id?: string;
+}
+
+export interface SessionReadyEvent extends PostMessageEvent {
+  type: "navi.session.ready";
+  instanceId: string;
+  sessionId: string;
+  environment: TokenEnvironment;
+}
+
+export interface SessionErrorEvent extends PostMessageEvent {
+  type: "navi.session.error";
+  instanceId: string;
+  sessionId: string;
+  environment: TokenEnvironment;
+  error: string;
 }
 
 /**

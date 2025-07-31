@@ -40,6 +40,49 @@ class NewCareflowEmbedApp {
     }
   }
 
+  sendSessionReadyMessage() {
+    if (!window.parent || window.parent === window) {
+      return; // Not in an iframe
+    }
+    try {
+      window.parent.postMessage(
+        {
+          source: "navi",
+          type: "navi.session.ready",
+          instance_id: this.instanceId,
+          // data
+          sessionId: this.config.sessionId,
+          environment: this.config.environment,
+        },
+        "*"
+      );
+    } catch (error) {
+      console.error("❌ Failed to send session ready message:", error);
+    }
+  }
+
+  sendSessionErrorMessage(error) {
+    if (!window.parent || window.parent === window) {
+      return; // Not in an iframe
+    }
+    try {
+      window.parent.postMessage(
+        {
+          source: "navi",
+          type: "navi.session.error",
+          instance_id: this.instanceId,
+          // data
+          sessionId: this.config.sessionId,
+          environment: this.config.environment,
+          error,
+        },
+        "*"
+      );
+    } catch (error) {
+      console.error("❌ Failed to send session error message:", error);
+    }
+  }
+
   async init() {
     console.log("🚀 New care flow embed initialized");
     console.log("📍 Navigation context:", {
@@ -159,6 +202,7 @@ class NewCareflowEmbedApp {
 
     this.eventSource.onerror = (error) => {
       console.error("❌ SSE connection error:", error);
+      this.sendSessionErrorMessage(error.message);
       this.eventSource.close();
 
       // Fallback to timeout-based loading
@@ -199,31 +243,23 @@ class NewCareflowEmbedApp {
   }
 
   onCareFlowReady(redirectUrl) {
-    console.log("✅ New care flow ready, redirecting to:", redirectUrl);
+    const [baseUrl, searchParams] = redirectUrl.split("?");
+    const params = new URLSearchParams(searchParams);
+    params.set("session_id", this.config.sessionId);
+    const redirectWithSessionId = `${baseUrl}?${params.toString()}`;
 
     if (this.eventSource) {
       this.eventSource.close();
     }
 
+    this.sendSessionReadyMessage();
+
     // Show 100% completion briefly before redirect
     this.updateProgress(100, "Complete! Redirecting to your care journey...");
 
     setTimeout(() => {
-      // Preserve instance_id parameter when redirecting
-      const currentUrlParams = new URLSearchParams(window.location.search);
-      const instanceId = currentUrlParams.get("instance_id");
-
-      let finalRedirectUrl = redirectUrl;
-      if (instanceId) {
-        const separator = redirectUrl.includes("?") ? "&" : "?";
-        finalRedirectUrl += `${separator}instance_id=${instanceId}`;
-      }
-
-      console.log(
-        "🔄 Redirecting to care flow with instanceId preserved:",
-        finalRedirectUrl
-      );
-      window.location.href = finalRedirectUrl;
+      console.log("🔄 Redirecting to care flow:", redirectWithSessionId);
+      window.location.href = redirectWithSessionId;
     }, 800);
   }
 

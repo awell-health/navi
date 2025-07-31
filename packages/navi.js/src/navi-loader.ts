@@ -178,8 +178,6 @@ export class NaviLoader {
     // Add instance_id parameter for iframe communication
     embedUrl.searchParams.set("instance_id", instanceId);
 
-    // No background URL params needed - iframe will be transparent
-
     // Configure iframe with session-based URL
     iframe.src = embedUrl.toString();
     iframe.id = instanceId;
@@ -256,6 +254,12 @@ export class NaviLoader {
 
     // Handle specific message types
     switch (type) {
+      case "navi.session.ready":
+        this.handleSessionReady(instance, data);
+        break;
+      case "navi.session.error":
+        this.handleSessionError(instance, data);
+        break;
       case "navi.height.changed":
         this.handleHeightChange(instance_id, data.height);
         break;
@@ -319,6 +323,62 @@ export class NaviLoader {
         }))
       );
     }
+  }
+
+  private handleSessionReady(instance: any, data: any) {
+    this.maybeLog("🔍 Navi.js handleSessionReady:", {
+      instanceId: instance.instanceId,
+      sessionId: data.sessionId,
+      environment: data.environment,
+    });
+
+    // Store session ID in a cookie on the client side
+    if (data.sessionId) {
+      this.setSessionCookie(data.sessionId);
+      this.maybeLog("✅ Navi.js: Session cookie stored:", data.sessionId);
+    }
+
+    // Emit session ready event to customer callbacks
+    this.emitEvent(instance.instanceId, "navi.session.ready", {
+      sessionId: data.sessionId,
+      timestamp: Date.now(),
+    });
+  }
+
+  private handleSessionError(instance: any, data: any) {
+    this.maybeLog("❌ Navi.js handleSessionError:", {
+      instanceId: instance.instanceId,
+      sessionId: data.sessionId,
+      environment: data.environment,
+      error: data.error,
+    });
+
+    // Emit session error event to customer callbacks
+    this.emitEvent(instance.instanceId, "navi.session.error", {
+      error: data.error,
+      timestamp: Date.now(),
+    });
+  }
+
+  private setSessionCookie(sessionId: string) {
+    // Set cookie with same attributes as the server would use
+    const isProduction = window.location.protocol === "https:";
+    const cookieValue = `awell.sid=${sessionId}`;
+    const cookieAttributes = [
+      "HttpOnly=false", // Allow JavaScript access
+      `SameSite=${isProduction ? "None" : "Lax"}`,
+      `Secure=${isProduction}`,
+      "Path=/",
+      `Max-Age=${30 * 24 * 60 * 60}`, // 30 days
+    ].join("; ");
+
+    document.cookie = `${cookieValue}; ${cookieAttributes}`;
+
+    this.maybeLog("🍪 Navi.js: Cookie set:", {
+      sessionId,
+      isProduction,
+      cookieAttributes,
+    });
   }
 
   private handleActivityEvent(instance: any, eventType: string, data: any) {

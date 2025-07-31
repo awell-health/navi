@@ -39,6 +39,49 @@ class ExistingCareFlowEmbed {
     }
   }
 
+  sendSessionReadyMessage() {
+    if (!window.parent || window.parent === window) {
+      return; // Not in an iframe
+    }
+    try {
+      window.parent.postMessage(
+        {
+          source: "navi",
+          type: "navi.session.ready",
+          instance_id: this.instanceId,
+          // data
+          sessionId: this.config.sessionId,
+          environment: this.config.environment,
+        },
+        "*"
+      );
+    } catch (error) {
+      console.error("❌ Failed to send session ready message:", error);
+    }
+  }
+
+  sendSessionErrorMessage(error) {
+    if (!window.parent || window.parent === window) {
+      return; // Not in an iframe
+    }
+    try {
+      window.parent.postMessage(
+        {
+          source: "navi",
+          type: "navi.session.error",
+          instance_id: this.instanceId,
+          // data
+          sessionId: this.config.sessionId,
+          environment: this.config.environment,
+          error,
+        },
+        "*"
+      );
+    } catch (error) {
+      console.error("❌ Failed to send session error message:", error);
+    }
+  }
+
   async init() {
     console.log("🚀 Existing care flow embed initialized");
     console.log("📍 Navigation context:", {
@@ -154,6 +197,7 @@ class ExistingCareFlowEmbed {
 
     this.eventSource.onerror = (error) => {
       console.error("❌ SSE connection error:", error);
+      this.sendSessionErrorMessage(error.message);
       this.eventSource.close();
 
       // Fallback to timeout-based loading
@@ -194,21 +238,23 @@ class ExistingCareFlowEmbed {
   }
 
   onCareFlowReady(redirectUrl) {
-    console.log("✅ Existing care flow ready, redirecting to:", redirectUrl);
+    const [baseUrl, searchParams] = redirectUrl.split("?");
+    const params = new URLSearchParams(searchParams);
+    params.set("session_id", this.config.sessionId);
+    const redirectWithSessionId = `${baseUrl}?${params.toString()}`;
 
     if (this.eventSource) {
       this.eventSource.close();
     }
 
+    this.sendSessionReadyMessage();
+
     // Show 100% completion briefly before redirect
     this.updateProgress(100, "Complete! Redirecting to your care flow...");
 
     setTimeout(() => {
-      console.log(
-        "🔄 Redirecting to care flow with instanceId preserved:",
-        redirectUrl
-      );
-      window.location.href = redirectUrl;
+      console.log("🔄 Redirecting to care flow:", redirectWithSessionId);
+      window.location.href = redirectWithSessionId;
     }, 800);
   }
 

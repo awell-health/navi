@@ -186,8 +186,10 @@ export async function GET(
       status: 200,
       headers: {
         "Content-Type": "text/html",
-        "Referrer-Policy": "strict-origin",
-        "Cache-Control": "no-store", // Don't cache embed pages
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Cache-Control": "no-store",
+        "Content-Security-Policy":
+          "frame-ancestors https://shimmering-gingersnap-5c6f62.netlify.app",
       },
     });
 
@@ -205,7 +207,7 @@ export async function GET(
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       secure: process.env.NODE_ENV === "production",
       maxAge: 30 * 24 * 60 * 60, // 30 days
-      path: "/api/graphql",
+      path: "/",
     });
 
     return response;
@@ -453,7 +455,8 @@ function renderNewCareflowScript(
       )},
       stakeholderId: '${sessionData.stakeholder_id || ""}',
       mode: 'new-careflow',
-      instanceId: '${instanceId}'
+      instanceId: '${instanceId}',
+      environment: '${sessionData.environment}'
     };
   </script>
   
@@ -477,7 +480,8 @@ function renderActiveCareflowScript(
       stakeholderId: '${sessionData.stakeholderId}',
       patientId: '${sessionData.patientId}',
       instanceId: '${instanceId}',
-      mode: 'active-careflow'
+      mode: 'active-careflow',
+      environment: '${sessionData.environment}'
     };
   </script>
   
@@ -496,7 +500,8 @@ function renderPreparationScript(
     window.embedConfig = {
       sessionId: '${sessionId}',
       instanceId: '${instanceId}',
-      mode: 'preparation'
+      mode: 'preparation',
+      environment: '${sessionData.environment}'
     };
     
     // Monitor session state changes via SSE
