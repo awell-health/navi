@@ -130,7 +130,7 @@ describe("Magic Link Authentication", () => {
     expect(jwtCookie?.httpOnly).toBe(true);
     expect(sidCookie?.sameSite).toBe("lax");
     expect(jwtCookie?.sameSite).toBe("lax");
-    expect(jwtCookie?.path).toBe("/api/graphql");
+    expect(jwtCookie?.path).toBe("/");
   });
 
   it("should set referrer policy header", async () => {
