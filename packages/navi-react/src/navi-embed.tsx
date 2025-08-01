@@ -230,11 +230,11 @@ export function NaviEmbed({
       <div
         className={className}
         style={{
-          padding: "1rem",
-          background: "#fef2f2",
-          border: "1px solid #fecaca",
+          margin: "auto",
+          padding: "2rem",
+          background: branding.destructive ?? "#fef2f2",
           borderRadius: "8px",
-          color: "#dc2626",
+          color: branding.destructiveForeground ?? "#dc2626",
           textAlign: "center",
           ...style,
         }}
@@ -243,19 +243,15 @@ export function NaviEmbed({
           <strong>There was a problem while loading your care journey:</strong>
         </p>
         <p>{providerError || embedError}</p>
-        <p>
-          (A message has already been sent to our support team. Please try
-          again.)
-        </p>
         <button
           onClick={() => window.location.reload()}
           style={{
-            marginTop: "0.5rem",
+            marginTop: "1rem",
             padding: "0.5rem 1rem",
-            background: "var(--navi-primary, #667eea)",
-            color: "white",
+            background: branding.primary ?? "#667eea",
+            color: branding.primaryForeground ?? "white",
             border: "none",
-            borderRadius: "6px",
+            borderRadius: branding.radius ?? "8px",
             cursor: "pointer",
           }}
         >

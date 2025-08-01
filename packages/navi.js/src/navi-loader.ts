@@ -143,12 +143,6 @@ export class NaviLoader {
       body: JSON.stringify(body),
     });
 
-    if (!response.ok) {
-      throw new Error(
-        `Failed to create care flow session: ${response.statusText}`
-      );
-    }
-
     const data = await response.json();
     if (!data.success) {
       throw new Error(`Failed to create care flow session: ${data.error}`);

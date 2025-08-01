@@ -1,5 +1,11 @@
 # @awell-health/navi-js-react
 
+## 0.0.5-beta.4
+
+### Patch Changes
+
+- updated error message for invalid publishable key
+
 ## 0.0.5-beta.3
 
 ### Patch Changes
