@@ -2,10 +2,10 @@ import {
   NaviEmbedInstance,
   NaviLoadOptions,
   NaviInstance,
-  NaviActivityEvent,
   NaviEventType,
 } from "./types";
 import type {
+  ActivityEventType,
   CreateCareFlowSessionResponse,
   RenderOptions,
 } from "@awell-health/navi-core";
@@ -17,7 +17,7 @@ export class NaviLoader {
   private config: NaviLoadOptions = {};
 
   constructor() {
-    console.log("🔍 Navi.js: ENV", process.env.NODE_ENV);
+    console.log(`Loaded Navi.js version __VERSION_TOKEN__`);
     // Listen for messages from iframes
     window.addEventListener("message", this.handleMessage.bind(this));
   }
@@ -53,7 +53,7 @@ export class NaviLoader {
         instanceId: existingIframe.id,
         iframe: existingIframe,
         destroy: () => this.destroyInstance(existingIframe.id),
-        on: (event: NaviActivityEvent, callback: (data: any) => void) => {
+        on: (event: NaviEventType, callback: (data: any) => void) => {
           this.addEventListener(existingIframe.id, event, callback);
         },
       };
@@ -78,7 +78,7 @@ export class NaviLoader {
       instanceId,
       iframe,
       destroy: () => this.destroyInstance(instanceId),
-      on: (event: NaviActivityEvent, callback: (data: any) => void) => {
+      on: (event: NaviEventType, callback: (data: any) => void) => {
         this.addEventListener(instanceId, event, callback);
       },
     };
@@ -482,7 +482,7 @@ export class NaviLoader {
 
     this.emitEvent(
       instance.instanceId,
-      `navi.activity.${eventType}`,
+      `navi.activity.${eventType}` as ActivityEventType,
       eventData
     );
   }

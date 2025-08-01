@@ -67,9 +67,6 @@ export function CompletionStateRenderer({
           <p className="text-muted-foreground mb-6">
             Thank you! Your session has been completed and securely closed.
           </p>
-          <Button disabled className="action-button">
-            Session ended
-          </Button>
         </div>
       </div>
     );

@@ -23,7 +23,7 @@ import { NaviLoadOptions, NaviInstance } from "./types";
   };
 
   // Add version and debug info
-  (window as any).Navi.version = "1.0.0-poc";
+  (window as any).Navi.version = "__VERSION_TOKEN__";
   (window as any).Navi.debug = () => {
     console.debug("🚀 Navi Loader initialized with Turborepo");
     console.debug("📊 Active instances:", (loader as any).instances.size);

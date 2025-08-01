@@ -15,7 +15,7 @@ export default defineConfig({
     };
   },
   banner: {
-    js: `// Navi SDK v1.0.0 - Healthcare Activities Embed - https://navi.awell.com`,
+    js: `// Navi SDK v__VERSION_TOKEN__ - Healthcare Activities Embed - https://navi.awell.com`,
   },
   esbuildOptions(options) {
     options.outbase = "./";
@@ -39,5 +39,5 @@ export default defineConfig({
       options.drop = ["console", "debugger"];
     }
   },
-  onSuccess: 'echo "✅ Navi CDN bundle built successfully"',
+  onSuccess: "node scripts/post-build.js",
 });

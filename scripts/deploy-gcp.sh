@@ -54,6 +54,7 @@ if [ ! -f "$NAVI_JS_PATH" ]; then
     cd packages/navi.js
     NODE_ENV=production pnpm build
     cd ../..
+    echo -e "${GREEN}🔄 Version tokens automatically replaced during build${NC}"
 fi
 
 # Show build info
