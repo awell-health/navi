@@ -1,5 +1,13 @@
 # @awell-health/navi-js
 
+## 0.0.5-beta.5
+
+### Patch Changes
+
+- Updated build
+- Updated dependencies
+  - @awell-health/navi-core@0.0.5-beta.5
+
 ## 0.0.5-beta.3
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@awell-health/navi-js",
-  "version": "0.0.5-beta.3",
+  "version": "0.0.5-beta.5",
   "description": "Navi.js loading utility - loads the Navi SDK from CDN",
   "repository": "github:awell-health/navi",
   "main": "dist/index.js",
