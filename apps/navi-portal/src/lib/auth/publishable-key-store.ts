@@ -1,5 +1,6 @@
 import { kv } from "@vercel/kv";
 import type { TokenEnvironment } from "@awell-health/navi-core";
+import { minimatch } from "minimatch";
 
 export interface PublishableKeyData {
   key: string;
@@ -186,9 +187,15 @@ export class PublishableKeyStore {
     }
 
     // Validate origin if provided (more strict for production environments)
-    if (origin && keyData.environment.startsWith("production")) {
+    if (origin) {
       const originHost = new URL(origin).host;
-      if (!keyData.allowedDomains.includes(originHost)) {
+      if (!keyData.allowedDomains || keyData.allowedDomains.length === 0) {
+        console.warn("❌ No allowed domains for key:", publishableKey);
+        return null;
+      }
+      if (
+        !keyData.allowedDomains.every((domain) => minimatch(originHost, domain))
+      ) {
         console.warn("❌ Origin not allowed for key:", {
           publishableKey,
           origin,
