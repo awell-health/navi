@@ -110,7 +110,7 @@ body {
 }
 
 .action-button:hover {
-  background: var(--primary-dark);
+  opacity: 0.9;
 }
 
 .action-button:disabled {

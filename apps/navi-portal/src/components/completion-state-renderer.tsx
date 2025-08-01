@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Button } from "@/components/ui/button";
 
 type CompletionState = "active" | "waiting" | "completed";
 
@@ -34,7 +33,7 @@ export function CompletionStateRenderer({
             All done!
           </h2>
           <p className="text-muted-foreground">
-            Your session will end in {waitingCountdown} second
+            Your session will close in {waitingCountdown} second
             {waitingCountdown !== 1 ? "s" : ""}...
           </p>
         </div>

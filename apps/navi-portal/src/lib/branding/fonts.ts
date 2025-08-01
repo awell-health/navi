@@ -1,9 +1,6 @@
 import type { BrandingConfig } from "@awell-health/navi-core";
 import type { OrgBranding } from "@/lib/branding/types";
 
-// Default font weights we commonly use
-const DEFAULT_FONT_WEIGHTS = ["400", "500", "600", "700"];
-
 /**
  * Extract font family name from CSS font-family declaration
  * Handles cases like "Inter, sans-serif" or "Inter"
@@ -30,18 +27,6 @@ function getGoogleFontsUrl(fontFamily: string): string | null {
 
   // Convert spaces to plus signs for Google Fonts URL
   return cleanFont.replace(/\s+/g, "+");
-}
-
-/**
- * Collect font weights - we use a standard set of weights for all branding
- */
-function collectFontWeights(): string[] {
-  const weights = new Set<string>();
-
-  // Add default weights
-  DEFAULT_FONT_WEIGHTS.forEach((weight) => weights.add(weight));
-
-  return Array.from(weights).sort();
 }
 
 /**
@@ -89,7 +74,6 @@ export function renderGoogleFontLinks(
   if (!branding) return "";
 
   const googleFonts = collectGoogleFonts(branding);
-  const fontWeights = collectFontWeights();
 
   if (googleFonts.length === 0) {
     return "";
@@ -97,8 +81,7 @@ export function renderGoogleFontLinks(
 
   // Build the Google Fonts URL
   const fontFamilies = googleFonts.join("&family=");
-  const weights = fontWeights.join(",");
-  const googleFontsUrl = `https://fonts.googleapis.com/css2?family=${fontFamilies}:wght@${weights}&display=swap`;
+  const googleFontsUrl = `https://fonts.googleapis.com/css2?family=${fontFamilies}:wght@400..700&display=swap`;
 
   return `
   <!-- Google Fonts - non-blocking load -->
