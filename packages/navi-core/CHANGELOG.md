@@ -1,5 +1,11 @@
 # @awell-health/navi-core
 
+## 0.0.5-beta.3
+
+### Patch Changes
+
+- feat(navi-core): move publishable key interface into navi-core
+
 ## 0.0.5-beta.2
 
 ### Patch Changes

@@ -11,6 +11,7 @@
     "@awell-health/navi-dot-js": "0.0.4"
   },
   "changesets": [
+    "chubby-times-stick",
     "flat-dancers-punch",
     "neat-baboons-buy",
     "real-seals-smoke"

@@ -1,22 +1,15 @@
 import { kv } from "@vercel/kv";
-import type { TokenEnvironment } from "@awell-health/navi-core";
+import type { PublishableKeyData } from "@awell-health/navi-core";
 import { minimatch } from "minimatch";
 
-export interface PublishableKeyData {
-  key: string;
-  orgId: string;
-  tenantId: string;
-  environment: TokenEnvironment;
-  allowedDomains: string[];
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ValidatedKeyData {
-  orgId: string;
-  tenantId: string;
-  environment: TokenEnvironment;
+/**
+ * Validated Key Data Structure
+ *
+ * Simplified data structure returned after successful publishable key validation.
+ * Contains only the essential information needed for authenticated operations.
+ */
+export interface ValidatedKeyData
+  extends Pick<PublishableKeyData, "orgId" | "tenantId" | "environment"> {
   isValid: boolean;
 }
 

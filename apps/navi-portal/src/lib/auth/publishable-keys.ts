@@ -1,15 +1,17 @@
 // In-memory publishable key store for development
 // TODO: Replace with proper database in production
 
-import type { TokenEnvironment } from "@awell-health/navi-core";
+import type { PublishableKeyData } from "@awell-health/navi-core";
 
-interface PublishableKeyData {
-  key: string;
-  orgId: string;
-  tenantId: string;
-  environment: TokenEnvironment;
-  allowedDomains: string[];
-  isActive: boolean;
+/**
+ * Validated Key Data Structure
+ *
+ * Simplified data structure returned after successful publishable key validation.
+ * Contains only the essential information needed for authenticated operations.
+ */
+export interface ValidatedKeyData
+  extends Pick<PublishableKeyData, "orgId" | "tenantId" | "environment"> {
+  isValid: boolean;
 }
 
 // Development publishable keys store
@@ -26,6 +28,8 @@ const DEVELOPMENT_KEYS: PublishableKeyData[] = [
       "127.0.0.1:3001",
     ],
     isActive: true,
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
   },
   {
     key: "pk_test_awell_dev",
@@ -34,6 +38,8 @@ const DEVELOPMENT_KEYS: PublishableKeyData[] = [
     environment: "development",
     allowedDomains: ["localhost:3001"],
     isActive: true,
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
   },
   {
     key: "pk_test_baker",
@@ -42,6 +48,8 @@ const DEVELOPMENT_KEYS: PublishableKeyData[] = [
     environment: "development",
     allowedDomains: ["localhost:3001"],
     isActive: true,
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
   },
   {
     key: "pk_test_healthcare_org_789",
@@ -54,15 +62,10 @@ const DEVELOPMENT_KEYS: PublishableKeyData[] = [
       "portal.healthcare-org.com",
     ],
     isActive: true,
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
   },
 ];
-
-export interface ValidatedKeyData {
-  orgId: string;
-  tenantId: string;
-  environment: TokenEnvironment;
-  isValid: boolean;
-}
 
 /**
  * Validates a publishable key and returns organization data

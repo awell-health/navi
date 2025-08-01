@@ -1,5 +1,13 @@
 # @awell-health/navi-js-react
 
+## 0.0.5-beta.3
+
+### Patch Changes
+
+- Updated dependencies
+  - @awell-health/navi-core@0.0.5-beta.3
+  - @awell-health/navi-js@0.0.5-beta.3
+
 ## 0.0.5-beta.2
 
 ### Patch Changes

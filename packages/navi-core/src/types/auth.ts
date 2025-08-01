@@ -149,3 +149,34 @@ export interface JWTPayload {
   exp: number; // expiration timestamp
   iat: number; // issued at timestamp
 }
+
+/**
+ * Publishable Key Data Structure
+ *
+ * Configuration data for publishable keys used in client-side authentication.
+ * These keys allow customers to authenticate with Navi services from their applications.
+ *
+ * @example
+ * ```typescript
+ * const keyData: PublishableKeyData = {
+ *   key: "pk_test_awell_dev_123",
+ *   orgId: "awell-dev",
+ *   tenantId: "awell-dev-tenant",
+ *   environment: "development",
+ *   allowedDomains: ["localhost:3000", "localhost:3001"],
+ *   isActive: true,
+ *   createdAt: "2024-01-15T10:30:00.000Z",
+ *   updatedAt: "2024-01-15T10:30:00.000Z"
+ * };
+ * ```
+ */
+export interface PublishableKeyData {
+  key: string;
+  orgId: string;
+  tenantId: string;
+  environment: TokenEnvironment;
+  allowedDomains: string[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
