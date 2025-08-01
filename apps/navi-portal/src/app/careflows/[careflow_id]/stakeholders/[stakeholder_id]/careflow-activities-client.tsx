@@ -321,7 +321,9 @@ function CareflowActivitiesContent() {
         <ActivityHeader onActivityListClick={handleActivityListClick} />
 
         {/* Activity Content */}
-        <div className="flex-1 overflow-y-auto">{renderActiveActivity()}</div>
+        <div className="flex-1 overflow-y-auto w-full">
+          {renderActiveActivity()}
+        </div>
       </main>
 
       {/* Activity Drawer */}
