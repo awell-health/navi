@@ -1,4 +1,4 @@
-import type { BrandingConfig } from "@awell-health/navi-core";
+import type { BrandingConfig, RenderOptions } from "@awell-health/navi-core";
 
 export interface NaviLoadOptions {
   /** Force local development mode (localhost:3000) instead of CDN */
@@ -19,32 +19,8 @@ export interface NaviInstance {
   ) => Promise<NaviEmbedInstance>;
 }
 
-export interface RenderOptions {
-  // Use Case 1: Start new careflow
-  careflowDefinitionId?: string;
-  patientIdentifier?: {
-    system: string;
-    value: string;
-  };
-  awellPatientId?: string;
-  sessionId?: string;
-
-  // Use Case 2: Resume existing careflow
-  careflowId?: string;
-  careflowToken?: string; // Alternative to session creation
-  trackId?: string;
-  activityId?: string;
-
-  // Common options
-  stakeholderId?: string;
-  branding?: BrandingConfig;
-
-  // Iframe styling
-  width?: string; // e.g., "100%", "800px", "50vw"
-
-  // Custom embed URL override (for testing)
-  embedUrl?: string;
-}
+// Re-export RenderOptions from navi-core for consistency
+export type { RenderOptions };
 
 export interface NaviEmbedInstance {
   instanceId: string;

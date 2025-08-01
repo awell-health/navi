@@ -1,5 +1,11 @@
 # @awell-health/navi-core
 
+## 0.0.5-beta.1
+
+### Patch Changes
+
+- add minHeight and minWidth to iframe render options
+
 ## 0.0.5-beta.0
 
 ### Patch Changes

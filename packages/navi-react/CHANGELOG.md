@@ -1,5 +1,14 @@
 # @awell-health/navi-js-react
 
+## 0.0.5-beta.1
+
+### Patch Changes
+
+- add minHeight and minWidth to iframe render options
+- Updated dependencies
+  - @awell-health/navi-core@0.0.5-beta.1
+  - @awell-health/navi-js@0.0.5-beta.1
+
 ## 0.0.5-beta.0
 
 ### Patch Changes

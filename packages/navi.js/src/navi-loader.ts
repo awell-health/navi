@@ -195,15 +195,16 @@ export class NaviLoader {
     iframe.setAttribute("data-navi-instance", instanceId);
 
     // Apply sizing based on options and container
-    const { width, height, minHeight } = this.getIframeDimensions(
+    const { width, height, minHeight, minWidth } = this.getIframeDimensions(
       options,
       container
     );
 
     iframe.style.cssText = `
-      width: ${width};
-      height: ${height};
-      min-height: ${minHeight};
+      ${width ? `width: ${width};` : ""}
+      ${height ? `height: ${height};` : ""}
+      ${minHeight ? `min-height: ${minHeight};` : ""}
+      ${minWidth ? `min-width: ${minWidth};` : ""}
       border: none;
       border-radius: 8px;
       transition: height 0.3s ease;
@@ -469,20 +470,26 @@ export class NaviLoader {
     width: string;
     height: string;
     minHeight: string;
+    minWidth: string;
   } {
     // Get container's actual dimensions
     const containerRect = container.getBoundingClientRect();
     const containerHeight = containerRect.height;
+    const containerWidth = containerRect.width;
 
     // Smart defaults: fill container immediately, never shrink below it
     const baseHeight = containerHeight > 50 ? `${containerHeight}px` : "400px";
+    const baseWidth = containerWidth > 50 ? `${containerWidth}px` : "320px";
     const initialHeight = options.height || baseHeight;
+    const initialWidth = options.width || "100%";
     const minimumHeight = options.minHeight || baseHeight;
+    const minimumWidth = options.minWidth || baseWidth;
 
     return {
-      width: options.width || "100%",
+      width: initialWidth, // Fill container immediately
       height: initialHeight, // Fill container immediately
       minHeight: minimumHeight, // Never shrink below container
+      minWidth: minimumWidth, // Never shrink below container
     };
   }
 

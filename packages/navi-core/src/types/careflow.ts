@@ -31,6 +31,7 @@ export interface RenderOptions {
   width?: string;
   height?: string;
   minHeight?: string;
+  minWidth?: string;
 
   /**
    * Custom embed URL override (for testing)

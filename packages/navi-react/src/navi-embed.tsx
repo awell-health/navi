@@ -2,12 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavi } from "./navi-provider";
 import type { RenderOptions } from "@awell-health/navi-core";
 
-// Import interfaces for the unified API
-interface PatientIdentifier {
-  system: string;
-  value: string;
-}
-
 interface NaviEmbedInstance {
   instanceId: string;
   destroy: () => void;
@@ -224,7 +218,7 @@ export function NaviEmbed({
       id="navi-embed-container"
       ref={containerRef}
       className={className}
-      style={{ ...style, minHeight: "500px" }}
+      style={{ minHeight: "500px", ...style }}
     />
   );
 }

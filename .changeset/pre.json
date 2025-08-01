@@ -11,6 +11,7 @@
     "@awell-health/navi-dot-js": "0.0.4"
   },
   "changesets": [
+    "flat-dancers-punch",
     "neat-baboons-buy"
   ]
 }
