@@ -271,6 +271,10 @@ export function ActivityProvider({
         }
       }
     },
+    onError: (error) => {
+      console.error("❌ Activity created subscription error:", error);
+      // Don't reset state on subscription errors - preserve form data
+    },
   });
 
   useOnActivityUpdatedSubscription({
@@ -296,6 +300,10 @@ export function ActivityProvider({
           setActiveActivityState(updatedActivity);
         }
       }
+    },
+    onError: (error) => {
+      console.error("❌ Activity updated subscription error:", error);
+      // Don't reset state on subscription errors - preserve form data
     },
   });
 
@@ -356,6 +364,10 @@ export function ActivityProvider({
         }
       }
     },
+    onError: (error) => {
+      console.error("❌ Activity completed subscription error:", error);
+      // Don't reset state on subscription errors - preserve form data
+    },
   });
 
   useOnActivityExpiredSubscription({
@@ -378,6 +390,10 @@ export function ActivityProvider({
           setActiveActivityState(expiredActivity);
         }
       }
+    },
+    onError: (error) => {
+      console.error("❌ Activity expired subscription error:", error);
+      // Don't reset state on subscription errors - preserve form data
     },
   });
 

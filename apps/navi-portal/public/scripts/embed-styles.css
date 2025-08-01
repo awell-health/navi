@@ -79,6 +79,7 @@ body {
 }
 
 .welcome-message {
+  color: var(--foreground);
   text-align: center;
   margin-bottom: 2rem;
 }
@@ -150,6 +151,17 @@ button {
   box-sizing: border-box;
 }
 
+/* Input specific styling with separate radius control */
+input,
+textarea,
+select {
+  border-radius: var(--input-radius, var(--radius, 0.375rem));
+}
+
+[scroll-area-viewport] {
+  border-radius: 0 !important;
+}
+
 /* Ensure long text in dropdowns wraps properly */
 [role="option"],
 [data-radix-command-item] {
@@ -169,28 +181,29 @@ button {
   font-family: var(--font-family-body);
 }
 
+/* Popover content size constraints using Radix CSS custom properties */
+[data-slot="popover-content"] {
+  /* Use Radix's available width/height to stay within iframe bounds */
+  max-width: var(--radix-popover-content-available-width) !important;
+  max-height: var(--radix-popover-content-available-height) !important;
+  /* Ensure popover doesn't exceed trigger width + reasonable margin */
+  width: min(var(--radix-popover-trigger-width), calc(100vw - 2rem)) !important;
+}
+
+/* Remove border radius from cmdk components inside popover */
+[data-slot="popover-content"] [cmdk-root],
+[data-slot="popover-content"] .cmdk-root,
+[data-slot="popover-content"] [data-cmdk-root],
+[data-slot="popover-content"] *[class*="cmdk"] {
+  border-radius: 0 !important;
+}
+
 /* Calendar-specific overrides - exclude from rounded corners */
 /* Target the popover-content container that has a calendar child */
 [data-slot="popover-content"]:has([data-slot="calendar"]),
 [data-slot="popover-content"]:has(.rdp) {
   border-radius: 0 !important;
-}
-
-/* Target the calendar itself and all children */
-[data-slot="calendar"],
-[data-slot="calendar"] *,
-.rdp,
-.rdp *,
-.rdp table,
-.rdp td,
-.rdp th,
-.rdp button,
-[data-day],
-[data-selected-single],
-[data-range-start],
-[data-range-end],
-[data-range-middle] {
-  border-radius: 0 !important;
+  border-color: var(--border, var(--primary)) !important;
 }
 
 /* Responsive adjustments */
