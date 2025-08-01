@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       secure: process.env.NODE_ENV === "production",
       maxAge: 15 * 60, // 15 minutes
-      path: "/api/graphql",
+      path: "/",
     });
 
     return response;

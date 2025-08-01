@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       secure: process.env.NODE_ENV === "production",
       maxAge: 0, // Expire immediately
-      path: "/api/graphql",
+      path: "/",
     });
 
     response.cookies.set("awell.sid", "", {

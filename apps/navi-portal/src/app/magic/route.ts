@@ -364,7 +364,7 @@ Branding: ${branding ? "Custom" : "Default (Awell)"}
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     secure: process.env.NODE_ENV === "production",
     maxAge: 30 * 24 * 60 * 60, // 30 days
-    path: "/api/graphql",
+    path: "/",
   });
 
   return response;
