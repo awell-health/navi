@@ -1,37 +1,56 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavi } from "./navi-provider";
-import type { RenderOptions } from "@awell-health/navi-core";
+import type {
+  RenderOptions,
+  NaviEventType,
+  ActivityEvent,
+  SessionEvent,
+} from "@awell-health/navi-core";
 
 interface NaviEmbedInstance {
   instanceId: string;
   destroy: () => void;
   iframe: HTMLIFrameElement;
-  on: (event: string, callback: (data: any) => void) => void;
+  on: (event: NaviEventType, callback: (data: any) => void) => void;
 }
 
 export interface NaviEmbedProps extends RenderOptions {
   className?: string;
   style?: React.CSSProperties;
 
-  // Event handlers for care flow lifecycle
-  onCareFlowStarted?: (data: { careflowId: string; patientId: string }) => void;
-  onActivityCompleted?: (data: {
-    activityId: string;
-    submissionData: any;
-  }) => void;
-  onCompleted?: (data: { careflowId: string }) => void;
-  onError?: (error: { message: string; code?: string }) => void;
+  // Event handlers using centralized navi-core types
+  onActivityCompleted?: (event: ActivityEvent<{ submissionData: any }>) => void;
+  onSessionReady?: (
+    event: SessionEvent<{ sessionId: string; environment: string }>
+  ) => void;
+  onSessionCompleted?: (event: SessionEvent) => void;
+  onSessionError?: (event: SessionEvent<{ error: string }>) => void;
+  onIframeClose?: (event: SessionEvent) => void;
+
+  // Deprecated: Legacy event handlers (for backward compatibility)
+  /** @deprecated Use onSessionReady instead */
   onReady?: () => void;
+  /** @deprecated Use onSessionCompleted instead */
+  onCompleted?: () => void;
+  /** @deprecated Use onSessionError instead */
+  onError?: (error: { message: string; code?: string }) => void;
+  /** @deprecated Use onIframeClose instead */
+  onClose?: () => void;
 }
 
 export function NaviEmbed({
   className,
   style,
-  onCareFlowStarted,
   onActivityCompleted,
+  onSessionReady,
+  onSessionCompleted,
+  onSessionError,
+  onIframeClose,
+  // Legacy event handlers
+  onReady,
   onCompleted,
   onError,
-  onReady,
+  onClose,
   ...renderOptions
 }: NaviEmbedProps) {
   // Add ref to track if rendering is in progress to prevent race conditions
@@ -110,25 +129,50 @@ export function NaviEmbed({
           branding: mergedBranding,
         });
 
-        // Set up event listeners
-        if (onReady) {
-          embedInstance.on("navi.activity.ready", onReady);
-        }
+        // Set up event listeners using centralized event types
 
-        if (onCareFlowStarted) {
-          embedInstance.on("navi.careflow.started", onCareFlowStarted);
-        }
-
+        // Activity events
         if (onActivityCompleted) {
-          embedInstance.on("navi.activity.completed", onActivityCompleted);
+          embedInstance.on("activity-complete", onActivityCompleted);
+        }
+
+        // Session events
+        if (onSessionReady) {
+          embedInstance.on("navi.session.ready", onSessionReady);
+        }
+
+        if (onSessionCompleted) {
+          embedInstance.on("navi.session.completed", onSessionCompleted);
+        }
+
+        if (onSessionError) {
+          embedInstance.on("navi.session.error", onSessionError);
+        }
+
+        if (onIframeClose) {
+          embedInstance.on("navi.iframe.close", onIframeClose);
+        }
+
+        // Legacy event handlers (for backward compatibility)
+        if (onReady) {
+          embedInstance.on("navi.session.ready", onReady);
         }
 
         if (onCompleted) {
-          embedInstance.on("navi.careflow.completed", onCompleted);
+          embedInstance.on("navi.session.completed", onCompleted);
         }
 
         if (onError) {
-          embedInstance.on("navi.error", onError);
+          embedInstance.on(
+            "navi.session.error",
+            (event: SessionEvent<{ error: string }>) => {
+              onError({ message: event.data?.error || "Unknown error" });
+            }
+          );
+        }
+
+        if (onClose) {
+          embedInstance.on("navi.iframe.close", onClose);
         }
 
         setInstance(embedInstance);
@@ -138,6 +182,14 @@ export function NaviEmbed({
         const errorMessage =
           err instanceof Error ? err.message : "Failed to render embed";
         setEmbedError(errorMessage);
+
+        // Notify both new and legacy error handlers
+        onSessionError?.({
+          type: "navi.session.error",
+          instanceId: "unknown",
+          data: { error: errorMessage },
+          timestamp: Date.now(),
+        });
         onError?.({ message: errorMessage });
       } finally {
         setIsEmbedLoading(false);

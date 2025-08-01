@@ -5,6 +5,8 @@ import type { ActivityEvent, UserActivityType } from "@awell-health/navi-core";
 import type {
   HeightChangeEvent,
   PostMessageActivityEvent,
+  SessionCompletedEvent,
+  IframeCloseEvent,
   AllPostMessageEvents,
 } from "../shared/types";
 
@@ -93,10 +95,34 @@ export function usePostMessageBridge({
     [instanceId, sendMessage]
   );
 
+  const sendSessionCompleted = useCallback(() => {
+    const event: SessionCompletedEvent = {
+      source: "navi",
+      instance_id: instanceId!,
+      type: "navi.session.completed",
+      timestamp: Date.now(),
+    };
+
+    sendMessage(event);
+  }, [instanceId, sendMessage]);
+
+  const sendIframeClose = useCallback(() => {
+    const event: IframeCloseEvent = {
+      source: "navi",
+      instance_id: instanceId!,
+      type: "navi.iframe.close",
+      timestamp: Date.now(),
+    };
+
+    sendMessage(event);
+  }, [instanceId, sendMessage]);
+
   return {
     sendMessage,
     sendHeightChange,
     sendActivityEvent,
+    sendSessionCompleted,
+    sendIframeClose,
     isReady: !!instanceId,
   };
 }

@@ -1,5 +1,11 @@
 # @awell-health/navi-core
 
+## 0.0.5-beta.2
+
+### Patch Changes
+
+- Update handlers
+
 ## 0.0.5-beta.1
 
 ### Patch Changes

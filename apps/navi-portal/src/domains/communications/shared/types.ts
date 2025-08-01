@@ -46,6 +46,14 @@ export interface SessionErrorEvent extends PostMessageEvent {
   error: string;
 }
 
+export interface SessionCompletedEvent extends PostMessageEvent {
+  type: "navi.session.completed";
+}
+
+export interface IframeCloseEvent extends PostMessageEvent {
+  type: "navi.iframe.close";
+}
+
 /**
  * Activity events that wrap navi-core ActivityEvent for PostMessage
  * These transform component-level events to iframe-to-parent events
@@ -84,4 +92,8 @@ export interface ActivityActivateEvent extends PostMessageEvent {
 export type AllPostMessageEvents =
   | HeightChangeEvent
   | PostMessageActivityEvent
-  | ActivityActivateEvent;
+  | ActivityActivateEvent
+  | SessionReadyEvent
+  | SessionErrorEvent
+  | SessionCompletedEvent
+  | IframeCloseEvent;

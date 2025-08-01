@@ -28,7 +28,12 @@ export function IframeCommunicator({
   activeActivityId,
   children,
 }: IframeCommunicatorProps) {
-  const { sendHeightChange, sendActivityEvent } = usePostMessageBridge({
+  const {
+    sendHeightChange,
+    sendActivityEvent,
+    sendSessionCompleted,
+    sendIframeClose,
+  } = usePostMessageBridge({
     instanceId,
   });
 
@@ -85,6 +90,8 @@ export function IframeCommunicator({
       value={{
         createActivityEventHandlers,
         calculateHeight,
+        sendSessionCompleted,
+        sendIframeClose,
         isReady: !!instanceId,
       }}
     >
@@ -100,6 +107,8 @@ interface CommunicationsContextType {
     activityType: UserActivityType
   ) => any;
   calculateHeight: () => number;
+  sendSessionCompleted: () => void;
+  sendIframeClose: () => void;
   isReady: boolean;
 }
 

@@ -3,6 +3,7 @@ import {
   NaviLoadOptions,
   NaviInstance,
   NaviActivityEvent,
+  NaviEventType,
 } from "./types";
 import type {
   CreateCareFlowSessionResponse,
@@ -269,8 +270,14 @@ export class NaviLoader {
       case "navi.session.ready":
         this.handleSessionReady(instance, data);
         break;
+      case "navi.session.completed":
+        this.handleSessionCompleted(instance, data);
+        break;
       case "navi.session.error":
         this.handleSessionError(instance, data);
+        break;
+      case "navi.iframe.close":
+        this.handleIframeClose(instance, data);
         break;
       case "navi.height.changed":
         this.handleHeightChange(instance_id, data.height);
@@ -357,6 +364,34 @@ export class NaviLoader {
     });
   }
 
+  private async handleSessionCompleted(instance: any, data: any) {
+    this.maybeLog("🔍 Navi.js handleSessionCompleted:", {
+      instanceId: instance.instanceId,
+      sessionId: data.sessionId,
+    });
+
+    // Clear session cookie on parent domain
+    this.clearSessionCookie();
+
+    // Also call server-side logout to clear KV store
+    try {
+      const baseUrl = this.getEmbedOrigin();
+      await fetch(`${baseUrl}/api/session/logout`, {
+        method: "POST",
+        credentials: "include", // Include cookies
+      });
+      this.maybeLog("🧹 Navi.js: Server-side logout completed");
+    } catch (error) {
+      console.warn("⚠️ Navi.js: Server-side logout failed:", error);
+      // Don't block the completion flow if logout fails
+    }
+
+    // Emit session completed event to customer callbacks
+    this.emitEvent(instance.instanceId, "navi.session.completed", {
+      timestamp: Date.now(),
+    });
+  }
+
   private handleSessionError(instance: any, data: any) {
     this.maybeLog("❌ Navi.js handleSessionError:", {
       instanceId: instance.instanceId,
@@ -370,6 +405,20 @@ export class NaviLoader {
       error: data.error,
       timestamp: Date.now(),
     });
+  }
+
+  private handleIframeClose(instance: any, data: any) {
+    this.maybeLog("🔒 Navi.js handleIframeClose:", {
+      instanceId: instance.instanceId,
+    });
+
+    // Emit iframe close event to customer callbacks first
+    this.emitEvent(instance.instanceId, "navi.iframe.close", {
+      timestamp: Date.now(),
+    });
+
+    // Clean up the iframe and instance
+    this.destroyInstance(instance.instanceId);
   }
 
   private setSessionCookie(sessionId: string) {
@@ -391,6 +440,22 @@ export class NaviLoader {
       isProduction,
       cookieAttributes,
     });
+  }
+
+  private clearSessionCookie() {
+    // Clear the session cookie by setting it to expire immediately
+    const isProduction = window.location.protocol === "https:";
+    const cookieAttributes = [
+      "HttpOnly=false",
+      `SameSite=${isProduction ? "None" : "Lax"}`,
+      `Secure=${isProduction}`,
+      "Path=/",
+      "Max-Age=0", // Expire immediately
+    ].join("; ");
+
+    document.cookie = `awell.sid=; ${cookieAttributes}`;
+
+    this.maybeLog("🗑️ Navi.js: Session cookie cleared");
   }
 
   private handleActivityEvent(instance: any, eventType: string, data: any) {
@@ -424,7 +489,7 @@ export class NaviLoader {
 
   private addEventListener(
     instanceId: string,
-    event: string,
+    event: NaviEventType,
     callback: Function
   ) {
     if (!this.eventHandlers.has(instanceId)) {
@@ -439,7 +504,7 @@ export class NaviLoader {
     handlers.get(event)!.push(callback);
   }
 
-  private emitEvent(instanceId: string, type: string, data: any) {
+  private emitEvent(instanceId: string, type: NaviEventType, data: any) {
     const handlers = this.eventHandlers.get(instanceId);
     if (!handlers || !handlers.has(type)) {
       return;

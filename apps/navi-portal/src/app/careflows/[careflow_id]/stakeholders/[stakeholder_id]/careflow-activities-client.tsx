@@ -22,6 +22,9 @@ import {
   useCommunications,
 } from "@/domains/communications";
 import { ActivityHeader } from "@/components/activity-header";
+import { CompletionStateRenderer } from "@/components/completion-state-renderer";
+import { useCompletionFlow } from "@/hooks/use-completion-flow";
+import { useActivityHandlers } from "@/hooks/use-activity-handlers";
 
 interface CareflowActivitiesClientProps {
   careflowId: string;
@@ -98,16 +101,35 @@ export default function CareflowActivitiesClient({
 function CareflowActivitiesContent() {
   const {
     activeActivity,
+    activities,
     isLoading,
     error,
     setActiveActivity,
     markActivityAsViewed,
     completeActivity,
+    service,
   } = useActivity();
-  const { createActivityEventHandlers } = useCommunications();
+  const { createActivityEventHandlers, sendSessionCompleted, sendIframeClose } =
+    useCommunications();
 
   // State for activity drawer
   const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);
+
+  // Activity handlers
+  const { handleFormSubmit, handleMessageMarkAsRead, handleChecklistComplete } =
+    useActivityHandlers({ completeActivity });
+
+  // Completion flow management
+  const { completionState, waitingCountdown } = useCompletionFlow(
+    activities,
+    service,
+    isLoading,
+    {
+      waitingDuration: 5,
+      onSessionCompleted: sendSessionCompleted,
+      onIframeClose: sendIframeClose,
+    }
+  );
 
   // Mark the active activity as viewed when it changes
   useEffect(() => {
@@ -115,46 +137,6 @@ function CareflowActivitiesContent() {
       markActivityAsViewed(activeActivity.id);
     }
   }, [activeActivity, markActivityAsViewed]);
-
-  const handleFormSubmit = async (
-    activityId: string,
-    data: Record<string, unknown>
-  ) => {
-    console.log("📝 Form submitted with data:", data);
-    console.log("📋 Activity ID:", activityId);
-
-    try {
-      await completeActivity(activityId, { formData: data }, "FORM");
-      console.log("✅ Form completion successful");
-    } catch (error) {
-      console.error("❌ Form completion failed:", error);
-    }
-  };
-
-  const handleMessageMarkAsRead = async (activityId: string) => {
-    console.log("📧 Message marked as read:", activityId);
-
-    try {
-      await completeActivity(activityId, { action: "read" }, "MESSAGE");
-      console.log("✅ Message completion successful");
-    } catch (error) {
-      console.error("❌ Message completion failed:", error);
-    }
-  };
-
-  const handleChecklistComplete = async (
-    activityId: string,
-    data: Record<string, unknown>
-  ) => {
-    console.log("☑️ Checklist completed:", activityId, data);
-
-    try {
-      await completeActivity(activityId, data, "CHECKLIST");
-      console.log("✅ Checklist completion successful");
-    } catch (error) {
-      console.error("❌ Checklist completion failed:", error);
-    }
-  };
 
   // Handle activity list icon click
   const handleActivityListClick = () => {
@@ -175,6 +157,17 @@ function CareflowActivitiesContent() {
 
   // Render the appropriate activity component based on the active activity type
   const renderActiveActivity = () => {
+    // Handle completion flow states first
+    const completionUI = (
+      <CompletionStateRenderer
+        completionState={completionState}
+        waitingCountdown={waitingCountdown}
+      />
+    );
+    if (completionState !== "active") {
+      return completionUI;
+    }
+
     if (!activeActivity) {
       return (
         <div className="min-h-[500px] h-full flex items-center justify-center p-8">
