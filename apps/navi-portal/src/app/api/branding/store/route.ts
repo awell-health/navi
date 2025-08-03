@@ -146,11 +146,56 @@ export async function PUT() {
   );
 }
 
-export async function DELETE() {
-  return NextResponse.json(
-    { error: "Method not allowed. Use POST to store branding data." },
-    { status: 405, headers: corsHeaders }
-  );
+export async function DELETE(request: NextRequest) {
+  console.log("🗑️ Delete Branding API: Request received");
+
+  try {
+    // Get org ID from query parameters
+    const { searchParams } = new URL(request.url);
+    const orgId = searchParams.get("orgId");
+
+    if (!orgId) {
+      console.error("❌ Delete Branding API: Missing orgId parameter");
+      return NextResponse.json(
+        {
+          error: "Organization ID is required as query parameter (?orgId=...)",
+        },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    console.log("🔍 Delete Branding API: Deleting branding for org:", orgId);
+
+    // Initialize branding service and delete the data
+    const brandingService = new BrandingService();
+    await brandingService.deleteBrandingForOrg(orgId);
+
+    console.log(
+      "✅ Delete Branding API: Successfully deleted branding for:",
+      orgId
+    );
+
+    // Return success response
+    return NextResponse.json(
+      {
+        success: true,
+        message: `Branding deleted successfully for organization: ${orgId}`,
+        orgId,
+      },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error) {
+    console.error("❌ Delete Branding API: Error deleting branding:", error);
+
+    // Generic error response
+    return NextResponse.json(
+      {
+        error: "Failed to delete branding data",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500, headers: corsHeaders }
+    );
+  }
 }
 
 // Handle preflight OPTIONS requests for CORS

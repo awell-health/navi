@@ -7,12 +7,14 @@ Branding data flows from **KV Store** (read/write) to **Edge Config** (fast read
 ## Architecture
 
 ```
-User Updates → KV Store → Daily Cron → Edge Config → Production Reads
+User Updates → KV Store + Edge Config (immediate) → Production Reads
+                    ↓
+               Daily Cron (backup sync)
 ```
 
 - **KV Store**: Dynamic updates via `/api/branding/store` (POST/GET/DELETE)
-- **Edge Config**: Ultra-fast reads (<20ms) for production
-- **Cron Job**: Daily sync at 2 AM UTC (`/api/cron/sync-branding`)
+- **Edge Config**: Ultra-fast reads (<20ms) for production + immediate updates
+- **Cron Job**: Daily backup sync at 2 AM UTC (`/api/cron/sync-branding`)
 
 ## Environment Variables
 

@@ -108,8 +108,12 @@ export class BrandingService {
     if (!orgId) throw new Error("Organization ID is required");
 
     try {
-      await brandingStore.set(orgId, branding);
-      console.log(`🎨 Branding updated for: ${orgId}`);
+      // Update both KV store and Edge Config for immediate consistency
+      await Promise.all([
+        brandingStore.set(orgId, branding),
+        edgeConfigBrandingStore.set(orgId, branding),
+      ]);
+      console.log(`🎨 Branding updated for: ${orgId} (KV + Edge Config)`);
     } catch (error) {
       console.error(`Failed to set branding for ${orgId}:`, error);
       throw error;
@@ -123,8 +127,14 @@ export class BrandingService {
     if (!orgId) return;
 
     try {
-      await brandingStore.delete(orgId);
-      console.log(`🎨 Branding deleted for: ${orgId} (will use defaults)`);
+      // Delete from both KV store and Edge Config for immediate consistency
+      await Promise.all([
+        brandingStore.delete(orgId),
+        edgeConfigBrandingStore.delete(orgId),
+      ]);
+      console.log(
+        `🎨 Branding deleted for: ${orgId} (KV + Edge Config, will use defaults)`
+      );
     } catch (error) {
       console.error(`Failed to delete branding for ${orgId}:`, error);
       throw error;
