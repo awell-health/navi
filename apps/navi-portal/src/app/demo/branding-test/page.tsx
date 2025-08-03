@@ -1,7 +1,9 @@
 import React from "react";
+import Head from "next/head";
 import { BrandingProvider } from "@/lib/branding-provider";
 import { BrandingService } from "@/lib/branding/branding-service";
 import { generateThemeCSS } from "@/lib/branding/theme/generator";
+import { renderGoogleFontLinks } from "@/lib/branding/fonts";
 import { awellDefaultBranding } from "@/lib/branding/defaults";
 import { BrandingTestClient } from "./branding-test-client";
 
@@ -29,15 +31,26 @@ export default async function BrandingTestPage({
   // Generate theme CSS for this specific branding
   const themeCSS = generateThemeCSS(branding);
 
+  // Generate Google Fonts links for this specific branding
+  const googleFontLinks = renderGoogleFontLinks(branding);
+
   console.log("🎨 Branding Test Page: Applied branding", {
     orgId: orgId || awellDefaultBranding.orgId,
     hasCustomBranding,
+    hasGoogleFonts: googleFontLinks.length > 0,
   });
 
   return (
     <>
-      {/* Inject custom theme CSS for this page */}
-      <style dangerouslySetInnerHTML={{ __html: themeCSS }} />
+      <Head>
+        {/* Inject Google Fonts links into document head */}
+        {googleFontLinks && (
+          <div dangerouslySetInnerHTML={{ __html: googleFontLinks }} />
+        )}
+
+        {/* Inject custom theme CSS for this page */}
+        <style dangerouslySetInnerHTML={{ __html: themeCSS }} />
+      </Head>
 
       {/* Wrap in BrandingProvider with custom branding */}
       <BrandingProvider
