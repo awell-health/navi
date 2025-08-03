@@ -1,8 +1,8 @@
-import { edgeConfigBrandingStore } from './storage/edge-store';
-import { brandingStore } from './storage/kv-store';
-import { sampleBrandingData } from './sample-data';
-import { awellDefaultBranding } from './defaults';
-import type { OrgBranding } from './types';
+import { edgeConfigBrandingStore } from "./storage/edge-store";
+import { brandingStore } from "./storage/kv-store";
+import { sampleBrandingData } from "./sample-data";
+import { awellDefaultBranding } from "./defaults";
+import type { OrgBranding } from "./types";
 
 /**
  * Main branding service that handles all organizational branding operations
@@ -16,13 +16,13 @@ export class BrandingService {
    */
   private async seedSampleData(): Promise<void> {
     if (BrandingService.seeded) return;
-    
+
     try {
-      console.log('🌱 Seeding sample branding data...');
-      
+      console.log("🌱 Seeding sample branding data...");
+
       // Check which sample orgs don't exist yet
       const seedOperations = [];
-      
+
       for (const [orgId, branding] of Object.entries(sampleBrandingData)) {
         const exists = await brandingStore.exists(orgId);
         if (!exists) {
@@ -30,18 +30,18 @@ export class BrandingService {
           console.log(`🌱 Queued seeding for: ${orgId}`);
         }
       }
-      
+
       // Execute all seed operations in parallel
       if (seedOperations.length > 0) {
         await Promise.all(seedOperations);
         console.log(`✅ Seeded ${seedOperations.length} sample organizations`);
       } else {
-        console.log('✅ Sample data already exists, skipping seed');
+        console.log("✅ Sample data already exists, skipping seed");
       }
-      
+
       BrandingService.seeded = true;
     } catch (error) {
-      console.warn('⚠️ Failed to seed branding data:', error);
+      console.warn("⚠️ Failed to seed branding data:", error);
     }
   }
 
@@ -49,57 +49,64 @@ export class BrandingService {
    * Get branding for an organization with fallback to defaults
    * Tries Edge Config first (fast, read-only), then KV (slower, read-write), then defaults
    */
-  async getBrandingByOrgId(orgId: string): Promise<OrgBranding['branding']> {
+  async getBrandingByOrgId(orgId: string): Promise<OrgBranding["branding"]> {
     if (!orgId) {
-      console.log('🎨 No orgId provided, using default branding');
+      console.log("🎨 No orgId provided, using empty branding");
+      return {};
+    }
+
+    if (orgId === "default") {
+      console.log("🎨 orgId is default, using default branding");
       return awellDefaultBranding.branding;
     }
-    
+
     try {
       const startTime = Date.now();
-      
+
       // Try Edge Config first (production setup, <20ms latency)
       let branding = await edgeConfigBrandingStore.get(orgId);
-      let source = 'Edge Config';
-      
+      let source = "Edge Config";
+
       // Fallback to KV store if not in Edge Config (development/prototype)
       if (!branding) {
-        console.log(`🔄 Branding not in Edge Config for ${orgId}, trying KV store...`);
-        await this.seedSampleData(); // Ensure sample data is available in KV
+        console.log(
+          `🔄 Branding not in Edge Config for ${orgId}, trying KV store...`
+        );
         branding = await brandingStore.get(orgId);
-        source = 'KV Store';
+        source = "KV Store";
       }
-      
+
       const latency = Date.now() - startTime;
-      
+
       // Log performance for monitoring
-      console.log(`📊 Branding latency: ${latency}ms from ${source} for org: ${orgId}`);
-      
+      console.log(
+        `📊 Branding latency: ${latency}ms from ${source} for org: ${orgId}`
+      );
+
       // Warn if latency exceeds budget (only for Edge Config)
-      if (source === 'Edge Config' && latency > 20) {
-        console.warn(`⚠️ Edge Config latency exceeded 20ms budget: ${latency}ms`);
+      if (source === "Edge Config" && latency > 20) {
+        console.warn(
+          `⚠️ Edge Config latency exceeded 20ms budget: ${latency}ms`
+        );
       }
-      
-      if (branding) {
-        console.log(`🎨 Using custom branding from ${source} for: ${orgId}`);
-        return branding;
-      } else {
-        console.log(`🎨 No custom branding found for: ${orgId}, using defaults`);
-        return awellDefaultBranding.branding;
-      }
+
+      return branding ?? {};
     } catch (error) {
-      console.error('Failed to fetch branding:', error);
-      console.log('🎨 Falling back to default branding due to error');
-      return awellDefaultBranding.branding;
+      console.error("Failed to fetch branding:", error);
+      console.log("🎨 Falling back to empty branding due to error");
+      return {};
     }
   }
 
   /**
    * Set branding for an organization
    */
-  async setBrandingForOrg(orgId: string, branding: OrgBranding['branding']): Promise<void> {
-    if (!orgId) throw new Error('Organization ID is required');
-    
+  async setBrandingForOrg(
+    orgId: string,
+    branding: OrgBranding["branding"]
+  ): Promise<void> {
+    if (!orgId) throw new Error("Organization ID is required");
+
     try {
       await brandingStore.set(orgId, branding);
       console.log(`🎨 Branding updated for: ${orgId}`);
@@ -114,7 +121,7 @@ export class BrandingService {
    */
   async deleteBrandingForOrg(orgId: string): Promise<void> {
     if (!orgId) return;
-    
+
     try {
       await brandingStore.delete(orgId);
       console.log(`🎨 Branding deleted for: ${orgId} (will use defaults)`);
@@ -129,7 +136,7 @@ export class BrandingService {
    */
   async hasCustomBranding(orgId: string): Promise<boolean> {
     if (!orgId) return false;
-    
+
     try {
       return await brandingStore.exists(orgId);
     } catch (error) {
@@ -142,13 +149,13 @@ export class BrandingService {
    * Get branding info with metadata
    */
   async getBrandingInfo(orgId: string): Promise<{
-    branding: OrgBranding['branding'];
+    branding: OrgBranding["branding"];
     orgId: string;
     hasCustomBranding: boolean;
   }> {
     const hasCustomBranding = await this.hasCustomBranding(orgId);
     const branding = await this.getBrandingByOrgId(orgId);
-    
+
     return {
       branding,
       orgId: orgId || awellDefaultBranding.orgId,
@@ -159,12 +166,18 @@ export class BrandingService {
   /**
    * Bulk import branding configurations
    */
-  async importBranding(brandingMap: Record<string, OrgBranding['branding']>): Promise<void> {
+  async importBranding(
+    brandingMap: Record<string, OrgBranding["branding"]>
+  ): Promise<void> {
     try {
       await brandingStore.setMultiple(brandingMap);
-      console.log(`🎨 Imported branding for ${Object.keys(brandingMap).length} organizations`);
+      console.log(
+        `🎨 Imported branding for ${
+          Object.keys(brandingMap).length
+        } organizations`
+      );
     } catch (error) {
-      console.error('Failed to import branding:', error);
+      console.error("Failed to import branding:", error);
       throw error;
     }
   }
@@ -182,4 +195,5 @@ export class BrandingService {
 export const brandingService = new BrandingService();
 
 // Export convenience function for backward compatibility
-export const getBrandingByOrgId = (orgId: string) => brandingService.getBrandingByOrgId(orgId); 
+export const getBrandingByOrgId = (orgId: string) =>
+  brandingService.getBrandingByOrgId(orgId);

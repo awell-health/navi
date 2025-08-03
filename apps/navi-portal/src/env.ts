@@ -28,6 +28,14 @@ export const env = createEnv({
       .string()
       .optional()
       .describe("Token for the branding API"),
+    VERCEL_API_TOKEN: z
+      .string()
+      .optional()
+      .describe("Vercel API token for Edge Config updates"),
+    VERCEL_TEAM_ID: z
+      .string()
+      .optional()
+      .describe("Vercel team ID (optional, for team-scoped configs)"),
     ORCHESTRATION_URL: z
       .url()
       .default("https://api.development.awellhealth.com/orchestration/graphql")

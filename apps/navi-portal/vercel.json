@@ -1,3 +1,9 @@
 {
-  "regions": ["iad1", "cdg1", "lhr1"]
+  "regions": ["iad1", "cdg1", "lhr1"],
+  "crons": [
+    {
+      "path": "/api/cron/sync-branding",
+      "schedule": "0 2 * * *"
+    }
+  ]
 }
