@@ -52,7 +52,7 @@ module.exports = {
         sm: "var(--radius-sm, 0.125rem)",
         md: "var(--radius-md, 0.375rem)",
         lg: "var(--radius-lg, 0.5rem)",
-        button: "var(--button-radius, var(--radius-md, 0.375rem))",
+        button: "var(--radius, var(--radius-md, 0.375rem))",
         input: "var(--input-radius, var(--radius-md, 0.375rem))",
         control: "var(--control-radius, 0.25rem)",
       },
