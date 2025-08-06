@@ -1,5 +1,11 @@
 # @awell-health/navi-core
 
+## 0.0.5-beta.6
+
+### Patch Changes
+
+- updated font config
+
 ## 0.0.5-beta.5
 
 ### Patch Changes

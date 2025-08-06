@@ -1,3 +1,10 @@
+export interface FontConfig {
+  fontFamily: string;
+  weight: string[];
+  style: string[];
+  local?: boolean;
+}
+
 /**
  * Shared Branding Configuration
  *
@@ -56,9 +63,9 @@ export interface BrandingConfig {
 
   // === Typography ===
   // Font families
-  fontFamily?: string;
-  fontFamilyHeading?: string;
-  fontFamilyMono?: string;
+  fontFamilyBody?: FontConfig;
+  fontFamilyHeading?: FontConfig;
+  fontFamilyMono?: FontConfig;
 
   // === Brand Assets ===
   logoUrl?: string;
