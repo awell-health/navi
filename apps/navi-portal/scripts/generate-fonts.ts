@@ -8,6 +8,11 @@
 import { generateDynamicFonts } from "../src/lib/branding/fonts/dynamic-fonts";
 
 async function main() {
+  console.log("Running in NODE_ENV:", process.env.NODE_ENV);
+  if (!process.env.NODE_ENV) {
+    const { config } = await import("dotenv");
+    config({ path: ".env.local" });
+  }
   console.log("🚀 Starting font generation script...");
 
   // Vercel automatically provides KV environment variables during build/runtime

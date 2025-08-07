@@ -185,7 +185,7 @@ function ActivityEventsDemoComponent() {
     });
   };
 
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: Record<string, unknown>) => {
     console.log("🎯 Activity Event:", {
       type: "activity-complete",
       activityId: "demo-form",

@@ -20,6 +20,10 @@ const eslintConfig = [
       "**/*.fixture.tsx",
       "**/*.test.ts",
       "**/*.test.tsx",
+      // Ignore generated files
+      "**/generated/**",
+      "**/*.generated.ts",
+      "**/*.generated.tsx",
     ],
   },
 ];
