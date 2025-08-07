@@ -32,7 +32,7 @@ async function getBranding(orgId: string, branding?: BrandingConfig) {
 export async function POST(request: NextRequest) {
   try {
     const body: CreateCareFlowSessionRequest = await request.json();
-    console.log("🔍 POST /api/create-careflow-session", body);
+    console.debug("🔍 POST /api/create-careflow-session", body);
 
     // Always validate the publishable key first for security
     const origin = request.headers.get("origin");

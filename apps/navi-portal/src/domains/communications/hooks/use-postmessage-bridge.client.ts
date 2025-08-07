@@ -8,6 +8,7 @@ import type {
   SessionCompletedEvent,
   IframeCloseEvent,
   AllPostMessageEvents,
+  WidthChangeEvent,
 } from "../shared/types";
 
 interface UsePostMessageBridgeProps {
@@ -51,6 +52,20 @@ export function usePostMessageBridge({
       };
 
       sendMessage(event);
+    },
+    [instanceId, sendMessage]
+  );
+
+  const sendWidthChange = useCallback(
+    (width: number, source: string, activityId?: string) => {
+      const event: WidthChangeEvent = {
+        source: "navi",
+        instance_id: instanceId!,
+        type: "navi.width.changed",
+        width,
+        activity_id: activityId,
+        timestamp: Date.now(),
+      };
     },
     [instanceId, sendMessage]
   );
@@ -120,6 +135,7 @@ export function usePostMessageBridge({
   return {
     sendMessage,
     sendHeightChange,
+    sendWidthChange,
     sendActivityEvent,
     sendSessionCompleted,
     sendIframeClose,

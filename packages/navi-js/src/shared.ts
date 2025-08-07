@@ -45,12 +45,6 @@ const getCDNConfig = (options?: NaviLoadOptions) => {
 // Production: will use versioned URLs later
 const getNaviJSUrl = (options?: NaviLoadOptions) => {
   const config = getCDNConfig(options);
-
-  if (options?.local || process.env.NODE_ENV === "development") {
-    return `${config.origin}/alpha/navi.js`;
-  }
-
-  // Alpha development on GCP CDN
   return `${config.origin}/alpha/navi.js`;
 };
 
@@ -130,11 +124,6 @@ const onLoad =
 export const loadScript = (
   options?: NaviLoadOptions
 ): Promise<NaviConstructor | null> => {
-  // Ensure that we only attempt to load Navi.js at most once
-  if (naviPromise !== null) {
-    return naviPromise;
-  }
-
   naviPromise = new Promise((resolve, reject) => {
     if (typeof window === "undefined" || typeof document === "undefined") {
       // Resolve to null when imported server side. This makes the module
@@ -143,28 +132,21 @@ export const loadScript = (
       return;
     }
 
-    if (window.Navi) {
-      resolve(window.Navi);
-      return;
-    }
-
     try {
       let script = findScript();
+      const desiredUrl = getNaviJSUrl(options);
 
-      if (!script) {
-        script = injectScript(options);
-      } else if (
-        script &&
-        onLoadListener !== null &&
-        onErrorListener !== null
-      ) {
-        // remove event listeners
-        script.removeEventListener("load", onLoadListener);
-        script.removeEventListener("error", onErrorListener);
-
-        // if script exists, but we are reloading due to an error,
-        // reload script to trigger 'load' event
-        script.parentNode?.removeChild(script);
+      // If a script already exists and its src matches desired, reuse it
+      if (script && script.src === desiredUrl && !options?.alwaysFetch) {
+        if (window.Navi) {
+          resolve(window.Navi);
+          return;
+        }
+      } else {
+        // No script, or src differs, or forced fetch → inject fresh script
+        if (script) {
+          script.parentNode?.removeChild(script);
+        }
         script = injectScript(options);
       }
 
@@ -198,14 +180,16 @@ export const initNavi = (
   const publishableKey = args[0];
   const isTestKey = publishableKey.match(/^pk_test/);
 
-  if (isTestKey) {
-    console.log("🚀 Navi.js loaded in development mode");
+  if (isTestKey && options?.verbose) {
+    console.log(`🚀 Navi.js loaded using test key: ${publishableKey}`);
   }
 
   // Convert navi-js options to navi.js options format
   const naviJsOptions = options
     ? {
-        embedOrigin: getCDNConfig(options).embedOrigin,
+        ...getCDNConfig(options),
+        verbose: options.verbose,
+        alwaysFetch: options.alwaysFetch,
       }
     : undefined;
 

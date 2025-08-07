@@ -24,7 +24,7 @@ export async function GET(
     const { session_id: sessionId } = await params;
     const brandingOverride = request.nextUrl.searchParams.get("branding");
     const instanceId = request.nextUrl.searchParams.get("instance_id");
-    console.log("🔍 GET /embed/[session_id]", { sessionId, instanceId });
+    console.debug("🔍 GET /embed/[session_id]", { sessionId, instanceId });
 
     // Check for existing session cookie (same-domain persistence)
     const existingSessionCookie = request.cookies.get("awell.sid");

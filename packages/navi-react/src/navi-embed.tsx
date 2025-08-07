@@ -55,10 +55,6 @@ export function NaviEmbed({
 }: NaviEmbedProps) {
   // Add ref to track if rendering is in progress to prevent race conditions
   const isRenderingRef = useRef(false);
-  console.log("🔍 NaviEmbed component mounting/re-rendering...", {
-    renderOptions,
-  });
-
   const {
     publishableKey,
     branding,
@@ -74,7 +70,6 @@ export function NaviEmbed({
 
   useEffect(() => {
     if (isRenderingRef.current || !navi || !containerRef.current) {
-      console.log("🔍 Iframe creation already in progress, skipping duplicate");
       return;
     }
     isRenderingRef.current = true;

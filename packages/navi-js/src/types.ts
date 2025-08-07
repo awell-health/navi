@@ -1,8 +1,8 @@
-import type { BrandingConfig, RenderOptions } from "@awell-health/navi-core";
+import type { RenderOptions } from "@awell-health/navi-core";
 
 export interface NaviLoadOptions {
-  /** Force local development mode (localhost:3000) instead of CDN */
-  local?: boolean;
+  /** Force always fetch the script, even if it's already loaded */
+  alwaysFetch?: boolean;
   /** Override the CDN origin for loading navi.js script */
   origin?: string;
   /** Override the embed origin for iframe destinations */

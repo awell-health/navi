@@ -6,7 +6,7 @@ import { awellDefaultBranding } from "@/lib/branding/defaults";
 import { getBrandingByOrgId } from "@/lib/edge-config";
 
 export async function GET() {
-  console.log("🎨 Branding API endpoint called");
+  console.debug("🎨 Branding API endpoint called");
 
   try {
     // Get session from cookie

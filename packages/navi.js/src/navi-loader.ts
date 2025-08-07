@@ -23,6 +23,7 @@ export class NaviLoader {
   }
 
   createNavi(publishableKey: string, options?: NaviLoadOptions): NaviInstance {
+    console.log("createNavi with options", options);
     // Store configuration for this instance
     this.config = options || {};
 
@@ -89,7 +90,7 @@ export class NaviLoader {
     // Add to DOM
     container.appendChild(iframe);
 
-    console.log("🔍 Navi.js: iframe added to DOM", { iframe, instanceId });
+    this.maybeLog("🔍 Navi.js: iframe added to DOM", { instanceId });
 
     return instance;
   }
@@ -206,6 +207,7 @@ export class NaviLoader {
       background: transparent;
       display: block;
       box-sizing: border-box;
+      max-width: 100%;
     `;
     iframe.setAttribute("frameborder", "0");
     // iframe.setAttribute("scrolling", "no");
@@ -276,6 +278,15 @@ export class NaviLoader {
       case "navi.height.changed":
         this.handleHeightChange(instance_id, data.height);
         break;
+      case "navi.width.changed":
+        // No-op for now. Width should be responsive via CSS (width:100%, max-width:100%).
+        // Height recalculation is already handled by ResizeObserver in the portal
+        // which will emit navi.height.changed when width-driven reflow changes height.
+        this.maybeLog("ℹ️ Navi.js: width changed (no-op)", {
+          instanceId: instance.instanceId,
+          width: data.width,
+        });
+        break;
       case "navi.activity.ready":
         this.handleActivityEvent(instance, "ready", data);
         break;
@@ -312,7 +323,6 @@ export class NaviLoader {
     console.log("🔍 Navi.js: handleHeightChange", {
       instanceId,
       height,
-      iframe,
     });
     if (iframe) {
       iframe.style.height = `${height}px`;
@@ -531,24 +541,19 @@ export class NaviLoader {
     minHeight: string;
     minWidth: string;
   } {
-    // Get container's actual dimensions
     const containerRect = container.getBoundingClientRect();
     const containerHeight = containerRect.height;
-    const containerWidth = containerRect.width;
 
-    // Smart defaults: fill container immediately, never shrink below it
     const baseHeight = containerHeight > 50 ? `${containerHeight}px` : "400px";
-    const baseWidth = containerWidth > 50 ? `${containerWidth}px` : "320px";
     const initialHeight = options.height || baseHeight;
     const initialWidth = options.width || "100%";
-    const minimumHeight = options.minHeight || baseHeight;
-    const minimumWidth = options.minWidth || baseWidth;
-
+    const minimumHeight = options.minHeight || "400px"; // Reasonable minimum
+    const minimumWidth = options.minWidth || "320px"; // Reasonable minimum
     return {
-      width: initialWidth, // Fill container immediately
+      width: initialWidth, // Fill container immediately with 100% default
       height: initialHeight, // Fill container immediately
-      minHeight: minimumHeight, // Never shrink below container
-      minWidth: minimumWidth, // Never shrink below container
+      minHeight: minimumHeight, // Never shrink below reasonable minimum
+      minWidth: minimumWidth, // Never shrink below reasonable minimum
     };
   }
 
