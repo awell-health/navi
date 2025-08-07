@@ -160,24 +160,25 @@ export function generateFontCSS(branding: BrandingConfig | null): string {
 
   let fontCSS = "";
 
-  // Font families
-  if (branding.fontFamily && typeof branding.fontFamily === "string") {
-    fontCSS += `  --font-family: ${sanitizeCSSValue(branding.fontFamily)};\n`;
+  // Font families - map to variables expected by Tailwind config
+  if (branding.fontFamilyBody && typeof branding.fontFamilyBody === "object") {
+    const sanitizedFont = sanitizeCSSValue(branding.fontFamilyBody.fontFamily);
+    fontCSS += `  --font-family-body: ${sanitizedFont};\n`;
   }
 
   if (
     branding.fontFamilyHeading &&
-    typeof branding.fontFamilyHeading === "string"
+    typeof branding.fontFamilyHeading === "object"
   ) {
-    fontCSS += `  --font-family-heading: ${sanitizeCSSValue(
-      branding.fontFamilyHeading
-    )};\n`;
+    const sanitizedFont = sanitizeCSSValue(
+      branding.fontFamilyHeading.fontFamily
+    );
+    fontCSS += `  --font-family-heading: ${sanitizedFont};\n`;
   }
 
-  if (branding.fontFamilyMono && typeof branding.fontFamilyMono === "string") {
-    fontCSS += `  --font-family-mono: ${sanitizeCSSValue(
-      branding.fontFamilyMono
-    )};\n`;
+  if (branding.fontFamilyMono && typeof branding.fontFamilyMono === "object") {
+    const sanitizedFont = sanitizeCSSValue(branding.fontFamilyMono.fontFamily);
+    fontCSS += `  --font-family-mono: ${sanitizedFont};\n`;
   }
 
   // Generate typography component classes
@@ -190,8 +191,8 @@ function generateTypographyClasses(branding: BrandingConfig): string {
   const headingFamily = branding.fontFamilyHeading
     ? sanitizeCSSValue(branding.fontFamilyHeading)
     : "system-ui, sans-serif";
-  const bodyFamily = branding.fontFamily
-    ? sanitizeCSSValue(branding.fontFamily)
+  const bodyFamily = branding.fontFamilyBody
+    ? sanitizeCSSValue(branding.fontFamilyBody)
     : "system-ui, sans-serif";
   const monoFamily = branding.fontFamilyMono
     ? sanitizeCSSValue(branding.fontFamilyMono)

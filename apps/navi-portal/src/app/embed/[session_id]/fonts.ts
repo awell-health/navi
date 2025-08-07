@@ -12,21 +12,10 @@ function extractFontFamily(fontFamily: string): string | null {
   const cleanFont = fontFamily
     .replace(/['"]/g, "") // Remove quotes
     .split(",")[0] // Get first font family
-    .trim();
+    .trim()
+    .replace(/[\s_]+/g, "+"); // Convert spaces to plus signs for Google Fonts URL
 
   return cleanFont;
-}
-
-/**
- * Get Google Fonts URL for a font family
- * Converts font family name to Google Fonts format (spaces to plus signs)
- */
-function getGoogleFontsUrl(fontFamily: string): string | null {
-  const cleanFont = extractFontFamily(fontFamily);
-  if (!cleanFont) return null;
-
-  // Convert spaces to plus signs for Google Fonts URL
-  return cleanFont.replace(/\s+/g, "+");
 }
 
 /**
@@ -38,25 +27,24 @@ function collectGoogleFonts(
 ): string[] {
   const fonts = new Set<string>();
 
-  // Check font family properties based on interface type
-  if ("fontFamily" in branding && branding.fontFamily) {
-    const googleFont = getGoogleFontsUrl(branding.fontFamily);
+  if ("fontFamilyBody" in branding && branding.fontFamilyBody) {
+    const googleFont = extractFontFamily(
+      branding.fontFamilyBody?.fontFamily ?? ""
+    );
     if (googleFont) fonts.add(googleFont);
   }
 
   if ("fontFamilyHeading" in branding && branding.fontFamilyHeading) {
-    const googleFont = getGoogleFontsUrl(branding.fontFamilyHeading);
+    const googleFont = extractFontFamily(
+      branding.fontFamilyHeading?.fontFamily ?? ""
+    );
     if (googleFont) fonts.add(googleFont);
   }
 
   if ("fontFamilyMono" in branding && branding.fontFamilyMono) {
-    const googleFont = getGoogleFontsUrl(branding.fontFamilyMono);
-    if (googleFont) fonts.add(googleFont);
-  }
-
-  // Fallback for BrandingConfig (simplified interface)
-  if ("fontFamily" in branding && branding.fontFamily) {
-    const googleFont = getGoogleFontsUrl(branding.fontFamily);
+    const googleFont = extractFontFamily(
+      branding.fontFamilyMono?.fontFamily ?? ""
+    );
     if (googleFont) fonts.add(googleFont);
   }
 

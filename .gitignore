@@ -120,3 +120,6 @@ Thumbs.db
 # Stripe example files
 stripe-example-files/
 *storybook.log
+
+# Font generation
+apps/navi-portal/src/lib/branding/fonts/generated/

@@ -20,7 +20,9 @@
         "BRANDING_API_URL",
         "BRANDING_API_TOKEN",
         "ORCHESTRATION_URL",
-        "EDGE_CONFIG_URL"
+        "EDGE_CONFIG_URL",
+        "KV_REST_API_URL",
+        "KV_REST_API_TOKEN"
       ],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },

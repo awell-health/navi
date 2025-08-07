@@ -22,6 +22,13 @@ const fontFamilySchema = z.string().min(1).max(200);
 // URL validation
 const urlSchema = z.string().url().optional();
 
+const fontConfigSchema = z.object({
+  fontFamily: fontFamilySchema,
+  weight: z.array(z.string()),
+  style: z.array(z.string()),
+  local: z.boolean().optional(),
+});
+
 export const brandingSchema = z.object({
   // Core palette
   primary: cssColorSchema.optional(),
@@ -43,8 +50,9 @@ export const brandingSchema = z.object({
   onSuccess: cssColorSchema.optional(),
 
   // Typography
-  fontFamilyBody: fontFamilySchema.optional(),
-  fontFamilyHeading: fontFamilySchema.optional(),
+  fontFamilyBody: fontConfigSchema.optional(),
+  fontFamilyHeading: fontConfigSchema.optional(),
+  fontFamilyMono: fontConfigSchema.optional(),
   fontWeightBold: z.string().optional(),
   fontSizeBase: cssUnitSchema.optional(),
   lineHeightBase: z.string().optional(),

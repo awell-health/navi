@@ -159,8 +159,10 @@ export class PublishableKeyStore {
   ): Promise<ValidatedKeyData | null> {
     // Basic format validation
     if (
-      !publishableKey.startsWith("pk_test_") &&
-      !publishableKey.startsWith("pk_live_")
+      !publishableKey.startsWith("pk_test_") && // TODO: remove
+      !publishableKey.startsWith("pk_live_") && // TODO: remove
+      !publishableKey.startsWith("pk_test-") &&
+      !publishableKey.startsWith("pk_live-")
     ) {
       console.warn("❌ Invalid publishable key format:", publishableKey);
       return null;
@@ -181,17 +183,20 @@ export class PublishableKeyStore {
 
     // Validate origin if provided (more strict for production environments)
     if (origin) {
-      const originHost = new URL(origin).host;
+      const originHost = new URL(origin).host
+        .replace("https://", "")
+        .replace("http://", "");
+      console.log("🔍 Origin host:", originHost);
       if (!keyData.allowedDomains || keyData.allowedDomains.length === 0) {
         console.warn("❌ No allowed domains for key:", publishableKey);
         return null;
       }
       if (
-        !keyData.allowedDomains.every((domain) => minimatch(originHost, domain))
+        !keyData.allowedDomains.some((domain) => minimatch(originHost, domain))
       ) {
         console.warn("❌ Origin not allowed for key:", {
           publishableKey,
-          origin,
+          originHost,
           allowedDomains: keyData.allowedDomains,
         });
         return null;

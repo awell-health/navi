@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "prebuild": "tsx scripts/generate-fonts.ts",
     "build": "next build --turbopack",
     "export": "next export",
     "generate-tokens": "NODE_ENV=development tsx --env-file=.env.local scripts/generate-secure-tokens.ts",
@@ -21,7 +22,11 @@
     "codegen": "graphql-codegen --config codegen.yml",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "clean": "rm -rf .next dist"
+    "clean": "rm -rf .next dist",
+    "test-fonts": "tsx --env-file=.env.local scripts/test-font-generation.ts",
+    "test-runtime-fonts": "tsx --env-file=.env.local scripts/test-runtime-fonts.ts",
+    "font:generate": "tsx scripts/generate-fonts.ts",
+    "font:test": "tsx scripts/test-font-generation.ts"
   },
   "engines": {
     "node": ">=22"
