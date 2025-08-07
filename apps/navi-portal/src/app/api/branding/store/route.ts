@@ -19,11 +19,10 @@ interface StoreBrandingRequest {
 }
 
 export async function POST(request: NextRequest) {
-  console.log("🎨 Store Branding API: Request received");
-
   try {
     // Parse the request body
     const body: StoreBrandingRequest = await request.json();
+    console.debug("🎨 Store Branding API: Request received", body);
 
     // Validate required fields
     if (!body.orgId) {

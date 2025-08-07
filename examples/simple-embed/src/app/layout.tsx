@@ -12,6 +12,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <script>window.__NAVI_DISABLE_PRELOAD = true</script>
+      </head>
       <body style={{ margin: 0, padding: 0, height: "100vh" }}>{children}</body>
     </html>
   );

@@ -79,8 +79,7 @@ export default function CareflowActivitiesClient({
   const searchParams = useSearchParams();
   const instanceId = searchParams.get("instance_id");
 
-  // Debug logging to see what's happening with instanceId
-  console.log("🔍 CareflowActivitiesClient Debug:", {
+  console.debug("🔍 CareflowActivitiesClient Debug:", {
     careflowId,
     stakeholderId,
     instanceId,

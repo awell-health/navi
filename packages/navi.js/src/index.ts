@@ -18,7 +18,7 @@ import { NaviLoadOptions, NaviInstance } from "./types";
     if (!publishableKey || !publishableKey.startsWith("pk_")) {
       throw new Error('Invalid publishable key. Must start with "pk_"');
     }
-
+    console.log("Navi function called with options", options);
     return loader.createNavi(publishableKey, options);
   };
 

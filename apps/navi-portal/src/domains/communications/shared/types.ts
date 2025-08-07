@@ -31,6 +31,15 @@ export interface HeightChangeEvent extends PostMessageEvent {
   activity_id?: string;
 }
 
+/**
+ * Width change event - unique to iframe communication
+ */
+export interface WidthChangeEvent extends PostMessageEvent {
+  type: "navi.width.changed";
+  width: number;
+  activity_id?: string;
+}
+
 export interface SessionReadyEvent extends PostMessageEvent {
   type: "navi.session.ready";
   instanceId: string;

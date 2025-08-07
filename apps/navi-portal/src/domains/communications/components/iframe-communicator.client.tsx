@@ -30,6 +30,7 @@ export function IframeCommunicator({
 }: IframeCommunicatorProps) {
   const {
     sendHeightChange,
+    sendWidthChange,
     sendActivityEvent,
     sendSessionCompleted,
     sendIframeClose,
@@ -42,6 +43,9 @@ export function IframeCommunicator({
     activeActivityId,
     onHeightChange: (height, source, activityId) => {
       sendHeightChange(height, source, activityId);
+    },
+    onWidthChange: (width, source, activityId) => {
+      sendWidthChange(width, source, activityId);
     },
   });
 

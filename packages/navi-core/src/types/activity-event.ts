@@ -47,7 +47,8 @@ export type SessionEventType =
   | "navi.session.completed" // All activities completed, session finished
   | "navi.session.error" // Session-level error occurred
   | "navi.iframe.close" // Iframe should be closed/removed
-  | "navi.height.changed"; // Iframe height changed (for dynamic sizing)
+  | "navi.height.changed" // Iframe height changed (for dynamic sizing)
+  | "navi.width.changed"; // Iframe width changed (for dynamic sizing)
 
 /**
  * All Navi Event Types

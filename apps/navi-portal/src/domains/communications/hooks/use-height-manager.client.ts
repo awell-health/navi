@@ -6,6 +6,7 @@ interface UseHeightManagerProps {
   instanceId: string | null;
   activeActivityId?: string;
   onHeightChange: (height: number, source: string, activityId?: string) => void;
+  onWidthChange: (width: number, source: string, activityId?: string) => void;
 }
 
 /**
@@ -20,6 +21,7 @@ export function useHeightManager({
   instanceId,
   activeActivityId,
   onHeightChange,
+  onWidthChange,
 }: UseHeightManagerProps) {
   // Height calculation utilities (extracted from original)
   const calculateHeight = useCallback(() => {
@@ -36,19 +38,15 @@ export function useHeightManager({
 
     // Take the larger of the two, but don't include clientHeight which can be stale
     const finalHeight = Math.max(bodyHeight, htmlHeight);
-
-    console.debug("📏 Height calculation details:", {
-      bodyScrollHeight: body.scrollHeight,
-      bodyOffsetHeight: body.offsetHeight,
-      htmlScrollHeight: html.scrollHeight,
-      htmlOffsetHeight: html.offsetHeight,
-      htmlClientHeight: html.clientHeight,
-      bodyHeight,
-      htmlHeight,
-      finalHeight: finalHeight + 20,
-    });
-
     return finalHeight + 20; // Add padding to prevent scrollbars
+  }, []);
+
+  const calculateWidth = useCallback(() => {
+    const body = document.body;
+    const html = document.documentElement;
+    const bodyWidth = body.offsetWidth;
+    const htmlWidth = html.offsetWidth;
+    return Math.max(bodyWidth, htmlWidth);
   }, []);
 
   const emitHeightChange = useCallback(
@@ -61,6 +59,16 @@ export function useHeightManager({
       onHeightChange(currentHeight, source, activityId);
     },
     [instanceId, calculateHeight, onHeightChange]
+  );
+
+  const emitWidthChange = useCallback(
+    (source: string, activityId?: string) => {
+      if (!instanceId) return;
+      const currentWidth = calculateWidth();
+      console.log(`📏 ${source} width:`, currentWidth);
+      onWidthChange(currentWidth, source, activityId);
+    },
+    [instanceId, calculateWidth, onWidthChange]
   );
 
   // 1. Measure height after activity renders (useLayoutEffect = after DOM updates, before paint)
@@ -106,6 +114,8 @@ export function useHeightManager({
 
   return {
     calculateHeight,
+    calculateWidth,
     emitHeightChange,
+    emitWidthChange,
   };
 }

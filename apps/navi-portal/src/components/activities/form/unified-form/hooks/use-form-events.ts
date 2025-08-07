@@ -44,8 +44,7 @@ export function useFormEvents({
       if (name && type === "change") {
         loggedEmitActivityEvent("activity-data-change", {
           field: name,
-          value: data[name],
-          currentData: data,
+          value: "***",
         });
 
         // Calculate progress across all questions
@@ -100,10 +99,10 @@ export function useFormEvents({
       data: Record<string, unknown>
     ) => Promise<void>
   ) => {
-    console.log(`📝 Form submission for activity: ${activityId}`);
-    console.log(`📊 Total fields in form data: ${Object.keys(data).length}`);
-    console.log(`📋 Form data keys:`, Object.keys(data));
-    console.log(
+    console.debug(`📝 Form submission for activity: ${activityId}`);
+    console.debug(`📊 Total fields in form data: ${Object.keys(data).length}`);
+    console.debug(`📋 Form data keys:`, Object.keys(data));
+    console.debug(
       `🎯 Form data with values:`,
       Object.entries(data).filter(
         ([, value]) => value !== "" && value !== undefined && value !== null

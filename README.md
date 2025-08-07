@@ -15,7 +15,7 @@ A monorepo for the Navi healthcare activities SDK, following a Stripe-like archi
 - **[REPOSITORY-STRATEGY.md](./docs/REPOSITORY-STRATEGY.md)** - High-level implementation strategy
 - **[DEPLOYMENT-STRATEGY.md](./docs/DEPLOYMENT-STRATEGY.md)** - High level deployment strategy
 
-> **For Developers**: Read `.cursorrules` for critical development guidelines and patterns.
+> **For Developers**: Read `.cursor/rules` for critical development guidelines and patterns.
 > **For Architecture**: Review `API-CONTRACTS.md` and `REPOSITORY-STRATEGY.md` for system design.
 > **For Releases**: Follow `RELEASE-PIPELINE.md` for deployment coordination.
 
@@ -147,7 +147,7 @@ navi/
 │   ├── navi-react/               # React components (NPM)
 │   └── navi-core/                # Shared utilities (NPM)
 ├── examples/
-│   └── test-integration/         # Cross-origin testing app
+│   └── simple-embed/             # Cross-origin testing app
 └── requirements/                 # Architecture & API documentation
 ```
 

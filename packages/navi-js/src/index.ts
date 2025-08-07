@@ -8,10 +8,14 @@ const getNaviPromise = (
   options?: NaviLoadOptions
 ): Promise<NaviConstructor | null> => {
   if (naviPromise) {
-    console.log("🔍 navi-js: Navi already loaded");
+    if (options?.verbose) {
+      console.log("🔍 navi-js: Navi already loaded");
+    }
     return naviPromise;
   }
-  console.log("🔍 navi-js: loading Navi...");
+  if (options?.verbose) {
+    console.log("🔍 navi-js: loading Navi with options:", options);
+  }
 
   naviPromise = loadScript(options).catch((error) => {
     // clear cache on error
@@ -21,15 +25,29 @@ const getNaviPromise = (
   return naviPromise;
 };
 
-// Execute our own script injection after a tick to give users time to do their
-// own script injection.
-Promise.resolve()
-  .then(() => getNaviPromise())
-  .catch((error) => {
-    if (!loadCalled) {
-      console.warn(error);
-    }
-  });
+const shouldAutoPreload = (): boolean => {
+  // Env-based switch for CI/builds
+  if (process.env.NAVI_DISABLE_PRELOAD === "true") return false;
+
+  // Runtime dev flags: if your team is overriding loader behavior, skip preload
+  // e.g. set this in your dev HTML before the app boots
+  // <script>window.__NAVI_DISABLE_PRELOAD = true</script>
+  if (typeof window !== "undefined" && (window as any).__NAVI_DISABLE_PRELOAD) {
+    return false;
+  }
+
+  return true;
+};
+
+if (shouldAutoPreload()) {
+  Promise.resolve()
+    .then(() => getNaviPromise())
+    .catch((error) => {
+      if (!loadCalled) {
+        console.warn(error);
+      }
+    });
+}
 
 export const loadNavi: LoadNavi = (publishableKey, options) => {
   loadCalled = true;
@@ -37,7 +55,6 @@ export const loadNavi: LoadNavi = (publishableKey, options) => {
 
   // if previous attempts are unsuccessful, will re-load script
   return getNaviPromise(options).then((maybeNavi) => {
-    console.log("🔍 navi-js: loading Navi...");
     return initNavi(maybeNavi, [publishableKey], startTime, options);
   });
 };
