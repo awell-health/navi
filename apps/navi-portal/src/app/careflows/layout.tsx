@@ -1,22 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { getBrandingAction } from "@/app/actions";
 import { BrandingProvider } from "@/lib/branding-provider";
 import "../globals.css";
 import { cn } from "@/lib/utils";
-import { orgFontMap } from "@/lib/branding/fonts/generated/dynamic-fonts";
+import { loadOrgFontConfig } from "@/lib/branding/fonts/dynamic-fonts";
 
 export const dynamic = "force-dynamic";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Navi | Powered by Awell",
@@ -30,19 +19,22 @@ export default async function RootLayout({
 }>) {
   const { themeCSS, orgId, hasCustomBranding, branding } =
     await getBrandingAction();
-  const fontVariables =
-    orgFontMap[orgId as keyof typeof orgFontMap]?.variables ?? "";
+
+  // Load font configuration dynamically for this organization
+  const fontConfig = await loadOrgFontConfig(orgId);
+  const fontVariables = fontConfig?.variables ?? "";
   return (
     <html lang="en">
       <head>
         <style dangerouslySetInnerHTML={{ __html: `${themeCSS}` }} />
-      </head>
-      <body
-        className={cn(
-          `${geistSans.variable} ${geistMono.variable} antialiased w-full h-full`,
-          fontVariables
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" />
+        {/* Only load Google Fonts for this specific organization */}
+        {fontConfig?.googleFontsUrl && (
+          <link href={fontConfig.googleFontsUrl} rel="stylesheet" as="font" />
         )}
-      >
+      </head>
+      <body className={cn(fontVariables, "antialiased w-full h-full")}>
         <BrandingProvider
           branding={branding ?? {}}
           orgId={orgId}

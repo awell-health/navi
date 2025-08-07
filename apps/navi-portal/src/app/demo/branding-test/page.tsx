@@ -31,7 +31,7 @@ export default async function BrandingTestPage({
   // Generate theme CSS for this specific branding
   const themeCSS = generateThemeCSS(branding);
   console.log("🎨 Branding Test Page: Theme CSS", themeCSS);
-  const setup = getOrgFontSetup(orgId);
+  const setup = await getOrgFontSetup(orgId);
   const fontVariables = setup.classNames;
 
   return (

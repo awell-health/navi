@@ -16,7 +16,8 @@ const GENERATED_FONTS_DIR = path.join(
   process.cwd(),
   "src/lib/branding/fonts/generated"
 );
-const GENERATED_FONTS_FILE = path.join(GENERATED_FONTS_DIR, "dynamic-fonts.ts");
+const GENERATED_INDEX_FILE = path.join(GENERATED_FONTS_DIR, "index.ts");
+const GENERATED_FALLBACK_FILE = path.join(GENERATED_FONTS_DIR, "fallback.ts");
 
 // Font validation is now handled by the Google Fonts API validator module
 // This provides access to all 1,800+ Google Fonts with complete metadata
@@ -155,121 +156,209 @@ function extractUniqueFontConfigs(brandingConfigs: Record<string, unknown>): {
 }
 
 /**
- * Generate TypeScript code for unique font instances and org mapping
+ * Generate Google Fonts URL for the given fonts
  */
-function generateFontCode(
-  uniqueFonts: UniqueFontInstance[],
-  orgFontMap: Record<string, { body?: string; heading?: string; mono?: string }>
-): string {
-  if (uniqueFonts.length === 0) {
-    return [
-      "/**",
-      " * AUTO-GENERATED FILE - NO FONTS FOUND",
-      ` * Generated on: ${new Date().toISOString()}`,
-      " */",
-      "",
-      "export const orgFontMap = {};",
-    ].join("\n");
-  }
+function generateGoogleFontsUrl(fonts: UniqueFontInstance[]): string {
+  if (fonts.length === 0) return "";
 
-  // Generate imports
-  const uniqueImports = new Set<string>();
-  uniqueFonts.forEach((font) => {
-    uniqueImports.add(`import { ${font.importName} } from 'next/font/google';`);
-  });
+  const fontSpecs = fonts.map((font) => {
+    const family = font.fontFamily.replace(/\s+/g, "+");
 
-  // Generate font declarations with error handling
-  const fontDeclarations = uniqueFonts
-    .map((font) => {
-      try {
-        // Handle weight parameter - 'variable' should be a string, arrays should stay as arrays
-        let weightParam;
-        if (
-          Array.isArray(font.weight) &&
-          font.weight.length === 1 &&
-          font.weight[0] === "variable"
-        ) {
-          weightParam = '"variable"';
-        } else {
-          weightParam = JSON.stringify(font.weight);
-        }
-
-        // Validate font configuration before generating
-        if (!font.varName || !font.importName || !font.cssVariable) {
-          console.error(`❌ Invalid font configuration:`, font);
-          return `// Error: Invalid font configuration for ${font.fontFamily}`;
-        }
-
-        return `// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Used in orgFontMap
-const ${font.varName} = ${font.importName}({
-  subsets: ['latin'],
-  weight: ${weightParam},
-  style: ${JSON.stringify(font.style)},
-  display: 'swap',
-  variable: '${font.cssVariable}',
-});`;
-      } catch (error) {
-        console.error(
-          `❌ Error generating font declaration for ${font.fontFamily}:`,
-          error
-        );
-        return `// Error generating font: ${font.fontFamily}`;
+    // Handle weights - convert to Google Fonts format
+    let weights = "";
+    if (Array.isArray(font.weight)) {
+      // Check if the array contains "variable"
+      if (font.weight.includes("variable")) {
+        // For variable fonts, use the typical range most variable fonts support
+        weights = "100..900";
+      } else {
+        weights = font.weight.join(";");
       }
-    })
-    .join("\n\n");
+    } else if (font.weight === "variable") {
+      // For variable fonts, use the typical range most variable fonts support
+      weights = "100..900";
+    } else {
+      weights = font.weight;
+    }
 
-  // Generate org font map with CSS assignments and error handling
-  const orgEntries = Object.entries(orgFontMap).map(([orgId, fonts]) => {
-    try {
-      const fontVars = Object.values(fonts).join(" ");
-      const cssAssignments = {
-        "--font-body": fonts.body
-          ? `var(${fonts.body})`
-          : "system-ui, sans-serif",
-        "--font-heading": fonts.heading
-          ? `var(${fonts.heading})`
-          : "system-ui, sans-serif",
-        "--font-mono": fonts.mono
-          ? `var(${fonts.mono})`
-          : "ui-monospace, monospace",
-      };
+    // Handle styles
+    const styles = font.style.join(",");
+    const hasItalic = font.style.includes("italic");
 
-      return `  '${orgId}': {
-    variables: '${fontVars}',
-    cssAssignments: ${JSON.stringify(cssAssignments, null, 2).replace(
-      /^/gm,
-      "    "
-    )}
-  },`;
-    } catch (error) {
-      console.error(
-        `❌ Error generating font mapping for org ${orgId}:`,
-        error
-      );
-      return `  // Error: Could not generate mapping for org ${orgId}`;
+    if (hasItalic && weights) {
+      return `family=${family}:ital,wght@0,${weights};1,${weights}`;
+    } else if (weights) {
+      return `family=${family}:wght@${weights}`;
+    } else {
+      return `family=${family}`;
     }
   });
 
+  return `https://fonts.googleapis.com/css2?${fontSpecs.join(
+    "&"
+  )}&display=swap`;
+}
+
+/**
+ * Generate TypeScript code for a single organization's fonts (CSS-only approach)
+ */
+function generateOrgFontFile(
+  orgId: string,
+  orgFonts: { body?: string; heading?: string; mono?: string },
+  orgUniqueFonts: UniqueFontInstance[]
+): string {
+  if (orgUniqueFonts.length === 0) {
+    return [
+      "/**",
+      ` * AUTO-GENERATED ORG FONT FILE - ${orgId}`,
+      " * No fonts configured for this organization",
+      ` * Generated on: ${new Date().toISOString()}`,
+      " */",
+      "",
+      "export const orgFontConfig = {",
+      "  googleFontsUrl: '',",
+      "  variables: '',",
+      "  cssAssignments: {",
+      "    '--font-body': 'system-ui, sans-serif',",
+      "    '--font-heading': 'system-ui, sans-serif',",
+      "    '--font-mono': 'ui-monospace, monospace',",
+      "  },",
+      "};",
+      "",
+      "export default orgFontConfig;",
+    ].join("\n");
+  }
+
+  // Generate Google Fonts URL
+  const googleFontsUrl = generateGoogleFontsUrl(orgUniqueFonts);
+
+  // Generate CSS font-family values (no CSS variables, direct font names)
+  const cssAssignments = {
+    "--font-body": orgFonts.body
+      ? `"${
+          orgUniqueFonts.find((f) => f.cssVariable === orgFonts.body)
+            ?.fontFamily || "system-ui"
+        }", system-ui, sans-serif`
+      : "system-ui, sans-serif",
+    "--font-heading": orgFonts.heading
+      ? `"${
+          orgUniqueFonts.find((f) => f.cssVariable === orgFonts.heading)
+            ?.fontFamily || "system-ui"
+        }", system-ui, sans-serif`
+      : "system-ui, sans-serif",
+    "--font-mono": orgFonts.mono
+      ? `"${
+          orgUniqueFonts.find((f) => f.cssVariable === orgFonts.mono)
+            ?.fontFamily || "ui-monospace"
+        }", ui-monospace, monospace`
+      : "ui-monospace, monospace",
+  };
+
   return [
     "/**",
-    " * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY",
-    " * Generated at build time based on all branding configurations",
-    " * Each unique font configuration gets its own CSS variable",
+    ` * AUTO-GENERATED ORG FONT FILE - ${orgId}`,
+    " * Contains only fonts used by this specific organization",
+    " * Uses CSS-only Google Fonts loading to avoid Next.js preloading",
     ` * Generated on: ${new Date().toISOString()}`,
-    ` * Unique fonts: ${uniqueFonts.length}`,
-    ` * Organizations: ${Object.keys(orgFontMap).length}`,
+    ` * Fonts: ${orgUniqueFonts.map((f) => f.fontFamily).join(", ")}`,
     " */",
     "",
-    ...Array.from(uniqueImports),
-    "",
-    fontDeclarations,
-    "",
-    "// Organization-specific font mapping",
-    "export const orgFontMap = {",
-    ...orgEntries,
+    "export const orgFontConfig = {",
+    `  googleFontsUrl: '${googleFontsUrl}',`,
+    "  variables: '',", // No CSS variables needed with this approach
+    `  cssAssignments: ${JSON.stringify(cssAssignments, null, 2)},`,
     "};",
     "",
-    "export default orgFontMap;",
+    "export default orgFontConfig;",
+  ].join("\n");
+}
+
+/**
+ * Generate the index file that exports the org registry
+ */
+function generateIndexFile(orgIds: string[]): string {
+  return [
+    "/**",
+    " * AUTO-GENERATED FONT INDEX - DO NOT EDIT MANUALLY",
+    " * Registry of available organization font files",
+    ` * Generated on: ${new Date().toISOString()}`,
+    ` * Organizations: ${orgIds.length}`,
+    " */",
+    "",
+    "export interface OrgFontConfig {",
+    "  googleFontsUrl: string;",
+    "  variables: string;",
+    "  cssAssignments: Record<string, string>;",
+    "}",
+    "",
+    "// Available organization font files",
+    "export const availableOrgs = new Set([",
+    ...orgIds.map((orgId) => `  '${orgId}',`),
+    "]);",
+    "",
+    "/**",
+    " * Dynamically import font configuration for an organization",
+    " */",
+    "export async function loadOrgFonts(orgId: string): Promise<OrgFontConfig | null> {",
+    "  if (!availableOrgs.has(orgId)) {",
+    "    console.warn(`No font configuration found for organization: ${orgId}`);",
+    "    return null;",
+    "  }",
+    "",
+    "  try {",
+    `    const fontModule = await import(\`./org-\${orgId}\`);`,
+    "    return fontModule.orgFontConfig;",
+    "  } catch (error) {",
+    "    console.error(`Failed to load fonts for organization ${orgId}:`, error);",
+    "    return null;",
+    "  }",
+    "}",
+    "",
+    "/**",
+    " * Load fallback fonts for unknown organizations",
+    " */",
+    "export async function loadFallbackFonts(): Promise<OrgFontConfig> {",
+    "  try {",
+    "    const fallbackModule = await import('./fallback');",
+    "    return fallbackModule.orgFontConfig;",
+    "  } catch (error) {",
+    "    console.error('Failed to load fallback fonts:', error);",
+    "    return {",
+    "      googleFontsUrl: '',",
+    "      variables: '',",
+    "      cssAssignments: {",
+    "        '--font-body': 'system-ui, sans-serif',",
+    "        '--font-heading': 'system-ui, sans-serif',",
+    "        '--font-mono': 'ui-monospace, monospace',",
+    "      },",
+    "    };",
+    "  }",
+    "}",
+  ].join("\n");
+}
+
+/**
+ * Generate fallback font file
+ */
+function generateFallbackFile(): string {
+  return [
+    "/**",
+    " * AUTO-GENERATED FALLBACK FONT FILE",
+    " * Used when no organization-specific fonts are found",
+    ` * Generated on: ${new Date().toISOString()}`,
+    " */",
+    "",
+    "export const orgFontConfig = {",
+    "  googleFontsUrl: '',",
+    "  variables: '',",
+    "  cssAssignments: {",
+    "    '--font-body': 'system-ui, sans-serif',",
+    "    '--font-heading': 'system-ui, sans-serif',",
+    "    '--font-mono': 'ui-monospace, monospace',",
+    "  },",
+    "};",
+    "",
+    "export default orgFontConfig;",
   ].join("\n");
 }
 
@@ -315,17 +404,94 @@ export async function generateDynamicFonts(): Promise<void> {
       `🎨 Validated against ${getGoogleFontsCount()} available Google Fonts`
     );
 
-    // Generate TypeScript file with org-specific font mapping
-    const fontCode = generateFontCode(uniqueFonts, orgFontMap);
-
     // Ensure directory exists
     await fs.mkdir(GENERATED_FONTS_DIR, { recursive: true });
 
-    // Write generated file
-    await fs.writeFile(GENERATED_FONTS_FILE, fontCode, "utf-8");
+    // Clean up old generated files
+    try {
+      const existingFiles = await fs.readdir(GENERATED_FONTS_DIR);
+      const filesToDelete = existingFiles.filter(
+        (file) => file.startsWith("org-") && file.endsWith(".ts")
+      );
+      await Promise.all(
+        filesToDelete.map((file) =>
+          fs.unlink(path.join(GENERATED_FONTS_DIR, file)).catch(() => {})
+        )
+      );
+    } catch {
+      // Directory might not exist yet, that's okay
+    }
 
-    console.log("✅ Dynamic fonts generated successfully!");
-    console.log(`📁 Generated file: ${GENERATED_FONTS_FILE}`);
+    // Create a map from unique font key to font instance for lookup
+    const uniqueFontLookup = new Map<string, UniqueFontInstance>();
+    uniqueFonts.forEach((font) => {
+      const key = `${font.fontFamily}-${
+        Array.isArray(font.weight) ? font.weight.join("-") : font.weight
+      }-${font.style.join("-")}`;
+      uniqueFontLookup.set(key, font);
+    });
+
+    // Generate individual files for each organization
+    const orgIds = Object.keys(orgFontMap);
+    const fileGenerationPromises = orgIds.map(async (orgId) => {
+      try {
+        const orgFonts = orgFontMap[orgId];
+
+        // Find the unique font instances used by this org
+        const orgUniqueFonts: UniqueFontInstance[] = [];
+        Object.values(orgFonts).forEach((cssVar) => {
+          const matchingFont = uniqueFonts.find(
+            (font) => font.cssVariable === cssVar
+          );
+          if (
+            matchingFont &&
+            !orgUniqueFonts.some(
+              (f) => f.cssVariable === matchingFont.cssVariable
+            )
+          ) {
+            orgUniqueFonts.push(matchingFont);
+          }
+        });
+
+        const orgFontCode = generateOrgFontFile(
+          orgId,
+          orgFonts,
+          orgUniqueFonts
+        );
+        const orgFilePath = path.join(GENERATED_FONTS_DIR, `org-${orgId}.ts`);
+
+        await fs.writeFile(orgFilePath, orgFontCode, "utf-8");
+        console.log(
+          `✅ Generated font file for org: ${orgId} (${orgUniqueFonts.length} fonts)`
+        );
+
+        return orgId;
+      } catch (error) {
+        console.error(
+          `❌ Failed to generate font file for org ${orgId}:`,
+          error
+        );
+        return null;
+      }
+    });
+
+    const generatedOrgIds = (await Promise.all(fileGenerationPromises)).filter(
+      (orgId): orgId is string => orgId !== null
+    );
+
+    // Generate index file with registry
+    const indexCode = generateIndexFile(generatedOrgIds);
+    await fs.writeFile(GENERATED_INDEX_FILE, indexCode, "utf-8");
+
+    // Generate fallback file
+    const fallbackCode = generateFallbackFile();
+    await fs.writeFile(GENERATED_FALLBACK_FILE, fallbackCode, "utf-8");
+
+    console.log("✅ Dynamic font system generated successfully!");
+    console.log(`📁 Generated files:`);
+    console.log(`   - Index: ${GENERATED_INDEX_FILE}`);
+    console.log(`   - Fallback: ${GENERATED_FALLBACK_FILE}`);
+    console.log(`   - Organizations: ${generatedOrgIds.length} files`);
     console.log(
       `🔤 Unique fonts: ${uniqueFonts.map((f) => f.fontFamily).join(", ")}`
     );
@@ -342,35 +508,101 @@ export async function generateDynamicFonts(): Promise<void> {
   } catch (error) {
     console.error("❌ Failed to generate dynamic fonts:", error);
 
-    // Generate fallback file to prevent build failures
-    const fallbackContent = [
+    // Ensure directory exists for fallback
+    await fs.mkdir(GENERATED_FONTS_DIR, { recursive: true });
+
+    // Generate minimal fallback files to prevent build failures
+    const fallbackIndexContent = [
       "/**",
-      " * FALLBACK FONT FILE - Generated due to error",
+      " * FALLBACK FONT INDEX - Generated due to error",
       ` * Error: ${error instanceof Error ? error.message : "Unknown error"}`,
       ` * Generated on: ${new Date().toISOString()}`,
       " */",
       "",
-      "export const orgFontMap = {};",
+      "export interface OrgFontConfig {",
+      "  googleFontsUrl: string;",
+      "  variables: string;",
+      "  cssAssignments: Record<string, string>;",
+      "}",
+      "",
+      "export const availableOrgs = new Set<string>();",
+      "",
+      "export async function loadOrgFonts(): Promise<OrgFontConfig | null> {",
+      "  return null;",
+      "}",
+      "",
+      "export async function loadFallbackFonts(): Promise<OrgFontConfig> {",
+      "  return {",
+      "    googleFontsUrl: '',",
+      "    variables: '',",
+      "    cssAssignments: {",
+      "      '--font-body': 'system-ui, sans-serif',",
+      "      '--font-heading': 'system-ui, sans-serif',",
+      "      '--font-mono': 'ui-monospace, monospace',",
+      "    },",
+      "  };",
+      "}",
     ].join("\n");
 
-    await fs.mkdir(GENERATED_FONTS_DIR, { recursive: true });
-    await fs.writeFile(GENERATED_FONTS_FILE, fallbackContent, "utf-8");
+    const fallbackOrgContent = generateFallbackFile();
 
-    console.log("🔄 Generated fallback font file");
+    await fs.writeFile(GENERATED_INDEX_FILE, fallbackIndexContent, "utf-8");
+    await fs.writeFile(GENERATED_FALLBACK_FILE, fallbackOrgContent, "utf-8");
+
+    console.log("🔄 Generated fallback font files");
   }
 }
 
 /**
- * Load generated font functions for runtime use
+ * Load font configuration for a specific organization
+ */
+export async function loadOrgFontConfig(orgId: string): Promise<{
+  googleFontsUrl: string;
+  variables: string;
+  cssAssignments: Record<string, string>;
+} | null> {
+  try {
+    const { loadOrgFonts, loadFallbackFonts } = await import(
+      "./generated/index"
+    );
+
+    // Try to load org-specific fonts first
+    const orgFonts = await loadOrgFonts(orgId);
+    if (orgFonts) {
+      return orgFonts;
+    }
+
+    // Fallback to default fonts
+    console.warn(
+      `No fonts found for organization ${orgId}, using fallback fonts`
+    );
+    return await loadFallbackFonts();
+  } catch (error) {
+    console.warn(
+      "⚠️ Failed to load font system, using system defaults:",
+      error
+    );
+    return {
+      googleFontsUrl: "",
+      variables: "",
+      cssAssignments: {
+        "--font-body": "system-ui, sans-serif",
+        "--font-heading": "system-ui, sans-serif",
+        "--font-mono": "ui-monospace, monospace",
+      },
+    };
+  }
+}
+
+/**
+ * @deprecated Use loadOrgFontConfig instead
+ * Legacy function for backward compatibility
  */
 export async function loadGeneratedFonts(): Promise<
   Record<string, { variables: string; cssAssignments: Record<string, string> }>
 > {
-  try {
-    const fontModule = await import("./generated/dynamic-fonts");
-    return fontModule.orgFontMap || {};
-  } catch (error) {
-    console.warn("⚠️ Failed to load generated fonts, using fallback:", error);
-    return {};
-  }
+  console.warn(
+    "loadGeneratedFonts is deprecated, use loadOrgFontConfig instead"
+  );
+  return {};
 }

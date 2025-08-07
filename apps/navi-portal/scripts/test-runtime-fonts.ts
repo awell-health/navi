@@ -19,7 +19,7 @@ async function testRuntimeFonts() {
     for (const orgId of orgIds) {
       console.log(`\n📋 Testing org: ${orgId}`);
 
-      const result = getOrgFontSetup(orgId);
+      const result = await getOrgFontSetup(orgId);
 
       console.log("CSS class names:", result.classNames);
       console.log("CSS assignments:", result.cssAssignments);
@@ -28,7 +28,7 @@ async function testRuntimeFonts() {
 
     // Test with missing org (fallback)
     console.log("\n📋 Testing with missing org (fallback)");
-    const fallbackResult = getOrgFontSetup("non-existent-org");
+    const fallbackResult = await getOrgFontSetup("non-existent-org");
     console.log("Fallback assignments:", fallbackResult.cssAssignments);
     console.log("Fallback class names:", fallbackResult.classNames);
 
