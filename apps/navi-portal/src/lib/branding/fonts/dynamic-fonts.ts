@@ -236,11 +236,11 @@ const ${font.varName} = ${font.importName}({
 
       return `  '${orgId}': {
     variables: '${fontVars}',
-    cssAssignments: ${JSON.stringify(cssAssignments, null, 6).replace(
+    cssAssignments: ${JSON.stringify(cssAssignments, null, 2).replace(
       /^/gm,
       "    "
     )}
-  }`;
+  },`;
     } catch (error) {
       console.error(
         `❌ Error generating font mapping for org ${orgId}:`,

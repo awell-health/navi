@@ -6,7 +6,8 @@ export default function PatientIntakePage() {
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <NaviProvider
-        publishableKey="pk_test-EFlZSnSvIzc67Lnx8HZW6"
+        publishableKey="pk_test-sXbLlQC3cgLxpAMGCtuCK" // baker-pro
+        // publishableKey="pk_test-EFlZSnSvIzc67Lnx8HZW6" // awell dev
         config={{
           verbose: true,
         }}
