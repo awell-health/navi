@@ -123,3 +123,4 @@ stripe-example-files/
 
 # Font generation
 apps/navi-portal/src/lib/branding/fonts/generated/
+.env*.local
