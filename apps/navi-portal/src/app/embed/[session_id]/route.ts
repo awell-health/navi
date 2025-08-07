@@ -10,7 +10,7 @@ import {
   generateInlineThemeStyle,
   generateFaviconHTML,
 } from "@/lib/branding/theme/generator";
-import { renderGoogleFontLinks } from "@/lib/branding/fonts";
+import { renderGoogleFontLinks } from "./fonts";
 import { env } from "@/env";
 import { BrandingConfig } from "@awell-health/navi-core";
 

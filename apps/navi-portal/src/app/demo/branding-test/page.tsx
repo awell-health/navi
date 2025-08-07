@@ -3,7 +3,7 @@ import Head from "next/head";
 import { BrandingProvider } from "@/lib/branding-provider";
 import { BrandingService } from "@/lib/branding/branding-service";
 import { generateThemeCSS } from "@/lib/branding/theme/generator";
-import { renderGoogleFontLinks } from "@/lib/branding/fonts";
+import { renderGoogleFontLinks } from "@/app/embed/[session_id]/fonts";
 import { awellDefaultBranding } from "@/lib/branding/defaults";
 import { BrandingTestClient } from "./branding-test-client";
 

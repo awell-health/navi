@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { getBrandingAction } from "@/app/actions";
 import { BrandingProvider } from "@/lib/branding-provider";
-import { awellDefaultBranding } from "@/lib/branding/defaults";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { orgFontMap } from "@/lib/branding/fonts/generated/dynamic-fonts";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Awell Health Portal",
+  title: "Navi | Powered by Awell",
   description: "Your personalized health care portal",
 };
 
@@ -31,26 +31,22 @@ export default async function RootLayout({
   const { themeCSS, orgId, hasCustomBranding, branding } =
     await getBrandingAction();
 
-  console.log("🏗️  Layout: Rendering with branding", {
-    orgId,
-    hasCustomBranding,
-  });
-
-  // Ensure we always have a branding object (fallback to defaults)
-  const finalBranding = branding || awellDefaultBranding.branding;
-
+  const finalBranding = branding;
+  const fontVariables =
+    orgFontMap[orgId as keyof typeof orgFontMap]?.variables ?? "";
   return (
     <html lang="en">
       <head>
-        <style dangerouslySetInnerHTML={{ __html: themeCSS }} />
+        <style dangerouslySetInnerHTML={{ __html: `${themeCSS}` }} />
       </head>
       <body
         className={cn(
-          `${geistSans.variable} ${geistMono.variable} antialiased w-full h-full`
+          `${geistSans.variable} ${geistMono.variable} antialiased w-full h-full`,
+          fontVariables
         )}
       >
         <BrandingProvider
-          branding={finalBranding}
+          branding={finalBranding ?? {}}
           orgId={orgId}
           hasCustomBranding={hasCustomBranding}
         >

@@ -70,9 +70,21 @@ export const awellDefaultBranding: OrgBranding = {
     radius: "0.5rem",
 
     // === Typography ===
-    fontFamily: "system-ui, sans-serif",
-    fontFamilyHeading: "system-ui, sans-serif",
-    fontFamilyMono: "ui-monospace, monospace",
+    fontFamilyBody: {
+      fontFamily: "system-ui, sans-serif",
+      weight: ["400", "700"],
+      style: ["normal"],
+    },
+    fontFamilyHeading: {
+      fontFamily: "system-ui, sans-serif",
+      weight: ["400", "700"],
+      style: ["normal"],
+    },
+    fontFamilyMono: {
+      fontFamily: "ui-monospace, monospace",
+      weight: ["400", "700"],
+      style: ["normal"],
+    },
 
     // === Brand Assets ===
     faviconUrl: "/favicon-16x16.png",

@@ -6,7 +6,7 @@ export default function PatientIntakePage() {
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <NaviProvider
-        publishableKey="pk_test_awell_dev"
+        publishableKey="pk_test-EFlZSnSvIzc67Lnx8HZW6"
         config={{
           origin: "http://localhost:3000",
           embedOrigin: "http://localhost:3000",
@@ -14,7 +14,6 @@ export default function PatientIntakePage() {
         }}
       >
         <NaviEmbed
-          sessionId="e05e7a4b-e51c-4368-a8f7-38d0f0845b0c"
           careflowDefinitionId="1CnTTHNYM1Q3"
           /* A patient identifier is optional -- you can also use an Awell patient ID. */
           patientIdentifier={{

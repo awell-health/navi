@@ -1,6 +1,5 @@
 import { edgeConfigBrandingStore } from "./storage/edge-store";
 import { brandingStore } from "./storage/kv-store";
-import { sampleBrandingData } from "./sample-data";
 import { awellDefaultBranding } from "./defaults";
 import type { OrgBranding } from "./types";
 
@@ -9,42 +8,6 @@ import type { OrgBranding } from "./types";
  * Provides the public API for branding functionality
  */
 export class BrandingService {
-  private static seeded = false;
-
-  /**
-   * Initialize the service by seeding sample data
-   */
-  private async seedSampleData(): Promise<void> {
-    if (BrandingService.seeded) return;
-
-    try {
-      console.log("🌱 Seeding sample branding data...");
-
-      // Check which sample orgs don't exist yet
-      const seedOperations = [];
-
-      for (const [orgId, branding] of Object.entries(sampleBrandingData)) {
-        const exists = await brandingStore.exists(orgId);
-        if (!exists) {
-          seedOperations.push(brandingStore.set(orgId, branding));
-          console.log(`🌱 Queued seeding for: ${orgId}`);
-        }
-      }
-
-      // Execute all seed operations in parallel
-      if (seedOperations.length > 0) {
-        await Promise.all(seedOperations);
-        console.log(`✅ Seeded ${seedOperations.length} sample organizations`);
-      } else {
-        console.log("✅ Sample data already exists, skipping seed");
-      }
-
-      BrandingService.seeded = true;
-    } catch (error) {
-      console.warn("⚠️ Failed to seed branding data:", error);
-    }
-  }
-
   /**
    * Get branding for an organization with fallback to defaults
    * Tries Edge Config first (fast, read-only), then KV (slower, read-write), then defaults
@@ -190,14 +153,6 @@ export class BrandingService {
       console.error("Failed to import branding:", error);
       throw error;
     }
-  }
-
-  /**
-   * Seed sample data manually (useful for development)
-   */
-  async forceSeedSampleData(): Promise<void> {
-    BrandingService.seeded = false;
-    await this.seedSampleData();
   }
 }
 

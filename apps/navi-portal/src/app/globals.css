@@ -4,6 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -35,19 +36,14 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  /* --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px); */
+
+  --font-body: var(--font-family-body, system-ui, sans-serif);
+  --font-heading: var(--font-family-heading, system-ui, sans-serif);
+  --font-mono: var(--font-family-mono, ui-monospace, monospace);
 }
 
 /* CSS custom properties for our theming system */
 :root {
-  /* Font families */
-  --font-family-body: var(--font-family-body, system-ui, sans-serif);
-  --font-family-heading: var(--font-family-heading, system-ui, sans-serif);
-  --font-family-mono: var(--font-family-mono, ui-monospace, monospace);
-
   /* Font sizes */
   --font-size-xs: var(--font-size-xs, 0.75rem);
   --font-size-sm: var(--font-size-sm, 0.875rem);
@@ -151,40 +147,44 @@
 
   /* Base typography styles for HTML elements */
   h1 {
-    @apply text-3xl font-bold text-foreground leading-tight;
+    @apply text-3xl font-bold text-foreground leading-tight font-heading;
   }
 
   h2 {
-    @apply text-2xl font-semibold text-foreground leading-tight;
+    @apply text-2xl font-semibold text-foreground leading-tight font-heading;
   }
 
   h3 {
-    @apply text-xl font-medium text-foreground leading-tight;
+    @apply text-xl font-medium text-foreground leading-tight font-heading;
   }
 
   h4 {
-    @apply text-lg font-medium text-foreground leading-tight;
+    @apply text-lg font-medium text-foreground leading-tight font-heading;
   }
 
   h5 {
-    @apply text-base font-medium text-foreground leading-tight;
+    @apply text-base font-medium text-foreground leading-tight font-heading;
   }
 
   h6 {
-    @apply text-sm font-medium text-foreground leading-tight;
+    @apply text-sm font-medium text-foreground leading-tight font-heading;
+  }
+
+  label {
+    @apply text-foreground font-body;
   }
 
   p {
-    @apply text-foreground leading-relaxed;
+    @apply text-foreground leading-relaxed font-body;
   }
 
   ul,
   ol {
-    @apply text-foreground space-y-1;
+    @apply text-foreground space-y-1 font-body;
   }
 
   li {
-    @apply text-foreground;
+    @apply text-foreground font-body;
   }
 
   strong,
