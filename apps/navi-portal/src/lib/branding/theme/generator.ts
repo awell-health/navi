@@ -162,7 +162,9 @@ export function generateFontCSS(branding: BrandingConfig | null): string {
 
   // Font families - map to variables expected by Tailwind config
   if (branding.fontFamilyBody && typeof branding.fontFamilyBody === "object") {
-    const sanitizedFont = sanitizeCSSValue(branding.fontFamilyBody.fontFamily);
+    const sanitizedFont = underscoresToSpaces(
+      sanitizeCSSValue(branding.fontFamilyBody.fontFamily)
+    );
     fontCSS += `  --font-family-body: ${sanitizedFont};\n`;
   }
 
@@ -170,102 +172,94 @@ export function generateFontCSS(branding: BrandingConfig | null): string {
     branding.fontFamilyHeading &&
     typeof branding.fontFamilyHeading === "object"
   ) {
-    const sanitizedFont = sanitizeCSSValue(
-      branding.fontFamilyHeading.fontFamily
+    const sanitizedFont = underscoresToSpaces(
+      sanitizeCSSValue(branding.fontFamilyHeading.fontFamily)
     );
     fontCSS += `  --font-family-heading: ${sanitizedFont};\n`;
   }
 
   if (branding.fontFamilyMono && typeof branding.fontFamilyMono === "object") {
-    const sanitizedFont = sanitizeCSSValue(branding.fontFamilyMono.fontFamily);
+    const sanitizedFont = underscoresToSpaces(
+      sanitizeCSSValue(branding.fontFamilyMono.fontFamily)
+    );
     fontCSS += `  --font-family-mono: ${sanitizedFont};\n`;
   }
 
   // Generate typography component classes
-  fontCSS += generateTypographyClasses(branding);
+  fontCSS += generateTypographyClasses();
 
   return fontCSS;
 }
 
-function generateTypographyClasses(branding: BrandingConfig): string {
-  const headingFamily = branding.fontFamilyHeading
-    ? sanitizeCSSValue(branding.fontFamilyHeading)
-    : "system-ui, sans-serif";
-  const bodyFamily = branding.fontFamilyBody
-    ? sanitizeCSSValue(branding.fontFamilyBody)
-    : "system-ui, sans-serif";
-  const monoFamily = branding.fontFamilyMono
-    ? sanitizeCSSValue(branding.fontFamilyMono)
-    : "ui-monospace, monospace";
-
+function generateTypographyClasses(): string {
   return `
   
   /* Typography component classes */
   .navi-h1 {
-    font-family: ${headingFamily};
+    font-family: var(--font-family-heading);
     font-size: 2.25rem;
     line-height: 1.25;
     font-weight: 800;
   }
   
   .navi-h2 {
-    font-family: ${headingFamily};
+    font-family: var(--font-family-heading);
     font-size: 1.875rem;
     line-height: 1.25;
     font-weight: 600;
   }
   
   .navi-h3 {
-    font-family: ${headingFamily};
+    font-family: var(--font-family-heading);
     font-size: 1.5rem;
     line-height: 1.25;
     font-weight: 600;
   }
   
   .navi-h4 {
-    font-family: ${headingFamily};
+    font-family: var(--font-family-heading);
     font-size: 1.25rem;
     line-height: 1.25;
     font-weight: 500;
   }
   
   .navi-p {
-    font-family: ${bodyFamily};
+    font-family: var(--font-family-body);
     font-size: 1rem;
     line-height: 1.625;
     font-weight: 400;
   }
   
   .navi-lead {
-    font-family: ${bodyFamily};
+    font-family: var(--font-family-body);
     font-size: 1.25rem;
     line-height: 1.5;
     font-weight: 400;
   }
   
   .navi-large {
-    font-family: ${bodyFamily};
+    font-family: var(--font-family-body);
     font-size: 1.125rem;
     line-height: 1.5;
     font-weight: 600;
   }
   
   .navi-small {
-    font-family: ${bodyFamily};
+    font-family: var(--font-family-body);
     font-size: 0.875rem;
     line-height: 1.25;
     font-weight: 500;
   }
   
   .navi-muted {
-    font-family: ${bodyFamily};
+    font-family: var(--font-family-body);
     font-size: 0.875rem;
     line-height: 1.5;
     font-weight: 400;
   }
   
   .navi-code {
-    font-family: ${monoFamily};
+    font-family: var(--font-family-mono);
     font-size: 0.875rem;
     line-height: 1.5;
     font-weight: 600;
@@ -320,4 +314,8 @@ export function generateFaviconHTML(branding: BrandingConfig | null): string {
   const faviconType = getFaviconType(faviconUrl);
 
   return `<link rel="icon" type="${faviconType}" href="${faviconUrl}">`;
+}
+
+function underscoresToSpaces(fontFamily: string): string {
+  return JSON.stringify(fontFamily.replace(/_/g, " "));
 }

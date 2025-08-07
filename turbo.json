@@ -13,16 +13,20 @@
       ],
       "env": [
         "NEXT_PUBLIC_GRAPHQL_ENDPOINT",
-        "PROTOTYPE_API_KEY",
         "JWT_SIGNING_KEY",
         "JWT_KEY_ID",
         "TOKEN_ENCRYPTION_KEY",
         "BRANDING_API_URL",
         "BRANDING_API_TOKEN",
-        "ORCHESTRATION_URL",
+        "EDGE_CONFIG",
         "EDGE_CONFIG_URL",
+        "NODE_ENV",
+        "GRAPHQL_ENDPOINT",
+        "KV_URL",
         "KV_REST_API_URL",
-        "KV_REST_API_TOKEN"
+        "KV_REST_API_TOKEN",
+        "REDIS_URL",
+        "KV_REST_API_READ_ONLY_TOKEN"
       ],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },

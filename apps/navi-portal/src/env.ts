@@ -9,10 +9,6 @@ export const env = createEnv({
       .url()
       .optional()
       .describe("Vercel edge config URL for branding and other cache"),
-    PROTOTYPE_API_KEY: z
-      .string()
-      .min(1)
-      .describe("API key for the prototype API"),
     JWT_SIGNING_KEY: z
       .string()
       .min(32)
@@ -36,10 +32,6 @@ export const env = createEnv({
       .string()
       .optional()
       .describe("Vercel team ID (optional, for team-scoped configs)"),
-    ORCHESTRATION_URL: z
-      .url()
-      .default("https://api.development.awellhealth.com/orchestration/graphql")
-      .describe("URL for the orchestration service"),
   },
   client: {
     NEXT_PUBLIC_GRAPHQL_ENDPOINT: z

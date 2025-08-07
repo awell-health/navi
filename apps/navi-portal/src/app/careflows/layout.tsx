@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { getBrandingAction } from "@/app/actions";
 import { BrandingProvider } from "@/lib/branding-provider";
-import "./globals.css";
+import "../globals.css";
 import { cn } from "@/lib/utils";
 import { orgFontMap } from "@/lib/branding/fonts/generated/dynamic-fonts";
 
@@ -30,8 +30,6 @@ export default async function RootLayout({
 }>) {
   const { themeCSS, orgId, hasCustomBranding, branding } =
     await getBrandingAction();
-
-  const finalBranding = branding;
   const fontVariables =
     orgFontMap[orgId as keyof typeof orgFontMap]?.variables ?? "";
   return (
@@ -46,7 +44,7 @@ export default async function RootLayout({
         )}
       >
         <BrandingProvider
-          branding={finalBranding ?? {}}
+          branding={branding ?? {}}
           orgId={orgId}
           hasCustomBranding={hasCustomBranding}
         >

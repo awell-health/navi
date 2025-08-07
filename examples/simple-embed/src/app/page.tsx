@@ -8,8 +8,6 @@ export default function PatientIntakePage() {
       <NaviProvider
         publishableKey="pk_test-EFlZSnSvIzc67Lnx8HZW6"
         config={{
-          origin: "http://localhost:3000",
-          embedOrigin: "http://localhost:3000",
           verbose: true,
         }}
       >

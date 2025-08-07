@@ -234,24 +234,6 @@ export function BrandingTestClient({
                 className="w-full"
               />
             </div>
-
-            <div className="space-y-2">
-              <Label>Status Indicators</Label>
-              <div className="flex flex-wrap gap-2">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground">
-                  Default Status
-                </span>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
-                  Secondary Status
-                </span>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border border-primary text-primary">
-                  Outline Status
-                </span>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-destructive text-destructive-foreground">
-                  Error Status
-                </span>
-              </div>
-            </div>
           </CardContent>
         </Card>
 

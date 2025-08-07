@@ -20,7 +20,7 @@ User Updates → KV Store + Edge Config (immediate) → Production Reads
 
 ```bash
 # Required
-EDGE_CONFIG=https://edge-config.vercel.com/{id}?token={token}
+EDGE_CONFIG_URL=https://edge-config.vercel.com/{id}?token={token}
 VERCEL_API_TOKEN=your_vercel_api_token
 CRON_SECRET=your_random_secret
 

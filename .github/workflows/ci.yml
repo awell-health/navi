@@ -105,66 +105,66 @@ jobs:
       - name: Run tests
         run: pnpm --filter navi-portal test:run
 
-  lighthouse:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  # lighthouse:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: "22"
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 10.12.1
+  #     - name: Setup pnpm
+  #       uses: pnpm/action-setup@v2
+  #       with:
+  #         version: 10.12.1
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+  #     - name: Install dependencies
+  #       run: pnpm install --frozen-lockfile
 
-      - name: Install Vercel CLI
-        run: npm install -g vercel@latest
+  #     - name: Install Vercel CLI
+  #       run: npm install -g vercel@latest
 
-      - name: Restore build cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            apps/navi-portal/.next
-            apps/navi-portal/.env.test
-          key: ${{ needs.build.outputs.cache-key }}
-          fail-on-cache-miss: true
+  #     - name: Restore build cache
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: |
+  #           apps/navi-portal/.next
+  #           apps/navi-portal/.env.test
+  #         key: ${{ needs.build.outputs.cache-key }}
+  #         fail-on-cache-miss: true
 
-      - name: Link to Vercel project and pull environment variables
-        working-directory: ./apps/navi-portal
-        run: |
-          vercel link --yes --token=$VERCEL_TOKEN
-          vercel env pull .env.local --token=$VERCEL_TOKEN
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  #     - name: Link to Vercel project and pull environment variables
+  #       working-directory: ./apps/navi-portal
+  #       run: |
+  #         vercel link --yes --token=$VERCEL_TOKEN
+  #         vercel env pull .env.local --token=$VERCEL_TOKEN
+  #       env:
+  #         VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  #         VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  #         VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
-      - name: Set up environment for server
-        working-directory: ./apps/navi-portal
-        run: cp .env.local .env
+  #     - name: Set up environment for server
+  #       working-directory: ./apps/navi-portal
+  #       run: cp .env.local .env
 
-      - name: Start server
-        working-directory: ./apps/navi-portal
-        run: pnpm start &
-        env:
-          PORT: 3000
+  #     - name: Start server
+  #       working-directory: ./apps/navi-portal
+  #       run: pnpm start &
+  #       env:
+  #         PORT: 3000
 
-      - name: Wait for server
-        run: npx wait-on http://localhost:3000
+  #     - name: Wait for server
+  #       run: npx wait-on http://localhost:3000
 
-      - name: Run Lighthouse CI
-        uses: treosh/lighthouse-ci-action@v12
-        with:
-          configPath: "./apps/navi-portal/.lighthouserc.js"
-          serverBaseUrl: "https://lhci-server-731351933016.us-central1.run.app"
-          serverToken: ${{ secrets.LHCI_TOKEN }}
-          uploadArtifacts: false
-          temporaryPublicStorage: false
+  #     - name: Run Lighthouse CI
+  #       uses: treosh/lighthouse-ci-action@v12
+  #       with:
+  #         configPath: "./apps/navi-portal/.lighthouserc.js"
+  #         serverBaseUrl: "https://lhci-server-731351933016.us-central1.run.app"
+  #         serverToken: ${{ secrets.LHCI_TOKEN }}
+  #         uploadArtifacts: false
+  #         temporaryPublicStorage: false

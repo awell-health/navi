@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { BrandingService } from "@/lib/branding/branding-service";
 import type { OrgBranding } from "@/lib/branding/types";
+import { EdgeConfigBrandingStore } from "@/lib/branding/storage/edge-store";
 
 // Use edge runtime for faster response times
 export const runtime = "edge";
@@ -169,6 +170,22 @@ export async function DELETE(request: NextRequest) {
     // Initialize branding service and delete the data
     const brandingService = new BrandingService();
     await brandingService.deleteBrandingForOrg(orgId);
+
+    if (process.env.EDGE_CONFIG) {
+      try {
+        const edgeConfig = new EdgeConfigBrandingStore();
+        await edgeConfig.delete(orgId);
+        console.log(
+          "✅ Delete Branding API: Successfully deleted branding for:",
+          orgId
+        );
+      } catch (error) {
+        console.error(
+          "❌ Delete Branding API: Error deleting branding:",
+          error
+        );
+      }
+    }
 
     console.log(
       "✅ Delete Branding API: Successfully deleted branding for:",
