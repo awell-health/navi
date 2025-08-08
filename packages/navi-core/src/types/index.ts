@@ -7,3 +7,5 @@ export * from "./config";
 export * from "./careflow";
 export * from "./errors";
 export * from "./form";
+export * from "./navi-js";
+export * from "./patient";

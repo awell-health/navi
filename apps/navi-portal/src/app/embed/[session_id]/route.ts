@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sessionStore } from "@/lib/session-store";
+import { getSession, deleteSession } from "@/domains/session/store";
 import {
   EmbedSessionData,
   ActiveSessionTokenData,
@@ -29,9 +29,7 @@ export async function GET(
     // Check for existing session cookie (same-domain persistence)
     const existingSessionCookie = request.cookies.get("awell.sid");
     if (existingSessionCookie && existingSessionCookie.value !== sessionId) {
-      const existingSessionData = await sessionStore.get(
-        existingSessionCookie.value
-      );
+      const existingSessionData = await getSession(existingSessionCookie.value);
       if (existingSessionData && "state" in existingSessionData) {
         // Validate existing session is not expired
         const now = Math.floor(Date.now() / 1000);
@@ -41,7 +39,7 @@ export async function GET(
           );
 
           // Get new session to compare organizations
-          const newSessionData = await sessionStore.get(sessionId);
+          const newSessionData = await getSession(sessionId);
           if (
             newSessionData &&
             "orgId" in newSessionData &&
@@ -52,7 +50,7 @@ export async function GET(
                 "✅ Reusing existing session:",
                 existingSessionCookie.value
               );
-              await sessionStore.delete(sessionId);
+              await deleteSession(sessionId);
               // Redirect to existing session instead
               const url = new URL(request.url);
               url.pathname = `/embed/${existingSessionCookie.value}`;
@@ -79,7 +77,7 @@ export async function GET(
     }
 
     // Retrieve session data from KV store
-    const sessionData = await sessionStore.get(sessionId);
+    const sessionData = await getSession(sessionId);
 
     if (!sessionData) {
       console.error("❌ Session not found:", sessionId);

@@ -1,4 +1,4 @@
-import { sessionStore } from "@/lib/session-store";
+import { getSession, setSession } from "@/domains/session/store";
 import { NextRequest } from "next/server";
 import { patientMatch, startCareflow } from "@/lib/api/mutations";
 import {
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     return new Response("Missing session_id", { status: 400 });
   }
 
-  const originalSession = await sessionStore.get(sessionId);
+  const originalSession = await getSession(sessionId);
   if (!originalSession) {
     return new Response("Session not found", { status: 404 });
   }
@@ -180,7 +180,7 @@ async function createNewCareflow({
       stakeholder_id: embedFields?.stakeholder_id,
     };
 
-    await sessionStore.set(sessionId, activeSession);
+    await setSession(sessionId, activeSession);
 
     // Step 4: Complete
     setTimeout(() => {
@@ -230,7 +230,7 @@ async function createNewCareflow({
       stakeholderId: originalSession.stakeholderId,
     };
 
-    await sessionStore.set(sessionId, errorSession);
+    await setSession(sessionId, errorSession);
     controller.close();
   }
 }

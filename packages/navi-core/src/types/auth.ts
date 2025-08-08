@@ -1,4 +1,4 @@
-import type { PatientIdentifier } from "./careflow";
+import type { PatientIdentifier } from "./patient";
 
 /**
  * Token Environment Types

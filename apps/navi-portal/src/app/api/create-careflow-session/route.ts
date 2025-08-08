@@ -1,29 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { publishableKeyStore } from "@/lib/auth/publishable-key-store";
-import { getBrandingByOrgId } from "@/lib/edge-config";
-import { sessionStore } from "@/lib/session-store";
-import type {
-  BrandingConfig,
-  CreateCareFlowSessionRequest,
-  CreateCareFlowSessionResponse,
-  EmbedSessionData,
-} from "@awell-health/navi-core";
+import type { CreateCareFlowSessionRequest } from "@awell-health/navi-core";
+import { createSession } from "@/domains/session";
+import { isSessionResponseSuccess } from "@awell-health/navi-core/helpers";
 
 export const runtime = "edge";
 
-// Helper function to get branding configuration
-async function getBranding(orgId: string, branding?: BrandingConfig) {
-  try {
-    const storedBranding = await getBrandingByOrgId(orgId);
-    return {
-      ...storedBranding,
-      ...branding,
-    };
-  } catch (error) {
-    console.warn("⚠️ Branding fetch failed, using defaults:", error);
-    return branding ?? {};
-  }
-}
+// (branding resolution is handled in the session domain)
 
 /**
  * This API is used to create a careflow session.
@@ -33,35 +15,6 @@ export async function POST(request: NextRequest) {
   try {
     const body: CreateCareFlowSessionRequest = await request.json();
     console.debug("🔍 POST /api/create-careflow-session", body);
-
-    // Always validate the publishable key first for security
-    const origin = request.headers.get("origin");
-    const keyValidation = await publishableKeyStore.validateKey(
-      body.publishableKey,
-      origin || undefined
-    );
-
-    if (!keyValidation) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Invalid publishable key or unauthorized origin",
-        },
-        {
-          status: 401,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, Authorization",
-          },
-        }
-      );
-    }
-
-    // Note: Session persistence handled in iframe route (/embed/[session_id])
-    // where cookies exist on the correct domain. This API runs cross-origin
-    // and cannot access iframe cookies due to browser security policies.
-
     // Validate required fields
     if (
       !body.publishableKey ||
@@ -84,60 +37,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const branding = await getBranding(keyValidation.orgId, body.branding);
-
-    if (body.sessionId) {
-      return NextResponse.json(
-        {
-          success: true,
-          embedUrl: `/embed/${body.sessionId}`,
-          branding,
-        },
-        {
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, Authorization",
-          },
-        }
-      );
-    }
-
-    // Generate session ID
-    const sessionId = crypto.randomUUID();
-
-    // Create embed session data (supports both existing and new careflows)
-    const embedSessionData: EmbedSessionData = {
-      sessionId,
-      patientId: body.awellPatientId, // May be undefined
-      careflowId: body.careflowId, // May be undefined for new careflows
-      careflowDefinitionId: body.careflowDefinitionId, // May be undefined for existing careflows
-      orgId: keyValidation.orgId,
-      tenantId: keyValidation.tenantId,
-      environment: keyValidation.environment,
-      authenticationState: "unauthenticated" as const,
-      exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60, // 30 days in seconds
-      state: "created" as const,
-      // Include additional fields for new careflow creation
-      patientIdentifier: body.patientIdentifier,
-      track_id: body.trackId,
-      activity_id: body.activityId,
-      stakeholder_id: body.stakeholderId, // If undefined, default to patient.
-    };
-
-    // Store the session data in KV
-    await sessionStore.set(sessionId, embedSessionData);
-
-    // Generate embedUrl using session-based approach
-    const embedUrl = `/embed/${sessionId}`;
-
-    const response: CreateCareFlowSessionResponse = {
-      success: true,
-      embedUrl,
-      branding,
-    };
-
+    const origin = request.headers.get("origin");
+    const response = await createSession({ ...body, origin });
+    const status = isSessionResponseSuccess(response) ? 200 : 401;
     return NextResponse.json(response, {
+      status,
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",

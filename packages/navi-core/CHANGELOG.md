@@ -1,5 +1,11 @@
 # @awell-health/navi-core
 
+## 0.0.5-beta.7
+
+### Patch Changes
+
+- Refactored session and auth domains; created helpers entrypoint in navi-core
+
 ## 0.0.5-beta.6
 
 ### Patch Changes

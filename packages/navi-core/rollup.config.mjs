@@ -2,14 +2,19 @@ import resolve from "@rollup/plugin-node-resolve";
 import typescript from "@rollup/plugin-typescript";
 
 export default [
-  // CommonJS build
   {
     input: "src/index.ts",
-    output: {
-      file: "dist/index.js",
-      format: "cjs",
-      exports: "named",
-    },
+    output: [
+      {
+        file: "dist/index.js",
+        format: "cjs",
+        exports: "named",
+      },
+      {
+        file: "dist/index.esm.js",
+        format: "esm",
+      },
+    ],
     plugins: [
       resolve(),
       typescript({
@@ -20,21 +25,25 @@ export default [
     ],
     external: ["graphql", "jose", "zod"],
   },
-  // ESM build
   {
-    input: "src/index.ts",
-    output: {
-      file: "dist/index.esm.js",
-      format: "esm",
-    },
+    input: "src/helpers.ts",
+    output: [
+      {
+        file: "dist/helpers.js",
+        format: "cjs",
+      },
+      {
+        file: "dist/helpers.esm.js",
+        format: "esm",
+      },
+    ],
     plugins: [
       resolve(),
       typescript({
         tsconfig: "./tsconfig.build.json",
-        declaration: false, // Only generate declarations once
-        declarationDir: undefined, // Don't specify declarationDir when declaration is false
+        declaration: true,
+        declarationDir: "dist",
       }),
     ],
-    external: ["graphql", "jose", "zod"],
   },
 ];

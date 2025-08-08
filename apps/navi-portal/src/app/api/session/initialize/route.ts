@@ -1,12 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { sessionStore } from "@/lib/session-store";
-import { AuthService } from "@awell-health/navi-core";
-import type {
-  SessionData,
-  EmbedSessionData,
-  ActiveSessionTokenData,
-} from "@awell-health/navi-core";
-import { env } from "@/env";
+import { NextRequest } from "next/server";
+import { initializeCookies } from "@/domains/session";
 
 export const runtime = "edge";
 
@@ -19,63 +12,10 @@ export const runtime = "edge";
 export async function GET(request: NextRequest) {
   const sessionId = request.nextUrl.searchParams.get("session_id");
   if (!sessionId) {
-    return NextResponse.json({ error: "Missing session_id" }, { status: 400 });
+    return new Response(JSON.stringify({ error: "Missing session_id" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
-
-  const session = (await sessionStore.get(sessionId)) as
-    | SessionData
-    | EmbedSessionData
-    | ActiveSessionTokenData
-    | null;
-
-  if (!session) {
-    return NextResponse.json({ error: "Session not found" }, { status: 404 });
-  }
-
-  // Check expiry if present
-  if (session.exp && session.exp <= Math.floor(Date.now() / 1000)) {
-    return NextResponse.json({ error: "Session expired" }, { status: 401 });
-  }
-
-  // Create JWT for this session
-  const authService = new AuthService();
-  await authService.initialize(env.JWT_SIGNING_KEY);
-
-  const tokenPayload = {
-    patientId: session.patientId,
-    careflowId: (session as ActiveSessionTokenData).careflowId,
-    stakeholderId: session.stakeholderId,
-    orgId: session.orgId,
-    tenantId: session.tenantId,
-    environment: session.environment,
-    authenticationState: session.authenticationState,
-    exp: session.exp,
-  };
-
-  const jwt = await authService.createJWTFromSession(
-    tokenPayload,
-    sessionId,
-    env.JWT_KEY_ID
-  );
-
-  const response = new NextResponse(null, { status: 204 });
-  const isProd = process.env.NODE_ENV === "production";
-
-  response.cookies.set("awell.sid", sessionId, {
-    httpOnly: true,
-    sameSite: isProd ? "none" : "lax",
-    secure: isProd,
-    maxAge: 30 * 24 * 60 * 60,
-    path: "/",
-  });
-
-  response.cookies.set("awell.jwt", jwt, {
-    httpOnly: true,
-    sameSite: isProd ? "none" : "lax",
-    secure: isProd,
-    maxAge: 60 * 15, // 15 minutes
-    path: "/",
-  });
-
-  return response;
+  return initializeCookies(sessionId);
 }

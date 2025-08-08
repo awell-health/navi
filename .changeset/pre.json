@@ -8,9 +8,12 @@
     "@awell-health/navi-core": "0.0.4",
     "@awell-health/navi-js": "0.0.4",
     "@awell-health/navi-js-react": "0.0.4",
-    "@awell-health/navi-dot-js": "0.0.4"
+    "@awell-health/navi-dot-js": "0.0.4",
+    "app-navi-portal": "0.1.0-alpha.0",
+    "example-simple-embed": "1.0.0"
   },
   "changesets": [
+    "chubby-pandas-travel",
     "chubby-times-stick",
     "dull-crabs-prove",
     "flat-dancers-punch",

@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { sessionStore } from "@/lib/session-store";
+import { getSession } from "@/domains/session/store";
 import type {
   ActiveSessionTokenData,
   EmbedSessionData,
@@ -18,7 +18,7 @@ export default async function DirectSessionPage({
 }) {
   const { session_id: sessionId } = await params;
 
-  const session = (await sessionStore.get(sessionId)) as
+  const session = (await getSession(sessionId)) as
     | SessionData
     | EmbedSessionData
     | ActiveSessionTokenData

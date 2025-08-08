@@ -7,8 +7,10 @@ import {
 import type {
   ActivityEventType,
   CreateCareFlowSessionResponse,
+  CreateCareFlowSessionResponseSuccess,
   RenderOptions,
 } from "@awell-health/navi-core";
+import { isSessionResponseSuccess } from "@awell-health/navi-core/helpers";
 
 // Main loader class
 export class NaviLoader {
@@ -110,7 +112,7 @@ export class NaviLoader {
   private async createSession(
     publishableKey: string,
     options: RenderOptions
-  ): Promise<CreateCareFlowSessionResponse> {
+  ): Promise<CreateCareFlowSessionResponseSuccess> {
     const baseUrl = this.getEmbedOrigin();
     const { __dangerouslySetEmbedUrl, width, ...sessionOptions } = options;
 
@@ -144,21 +146,17 @@ export class NaviLoader {
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
-    if (!data.success) {
+    const data: CreateCareFlowSessionResponse = await response.json();
+    if (!isSessionResponseSuccess(data)) {
       throw new Error(`Failed to create care flow session: ${data.error}`);
     }
 
-    return {
-      success: data.success,
-      embedUrl: data.embedUrl,
-      branding: data.branding,
-    };
+    return data;
   }
 
   private createIframe(
     instanceId: string,
-    sessionInfo: CreateCareFlowSessionResponse,
+    sessionInfo: CreateCareFlowSessionResponseSuccess,
     options: RenderOptions,
     container: Element
   ): HTMLIFrameElement {
