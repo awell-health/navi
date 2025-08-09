@@ -1,6 +1,11 @@
 import { jwtVerify, SignJWT } from "jose";
 import { z } from "zod/v4";
-import { NaviAuthError, JWTPayload, SessionTokenData } from "./types";
+import {
+  NaviAuthError,
+  JWTPayload,
+  SessionTokenData,
+  AuthenticationState,
+} from "./types";
 
 /**
  * Zod schema for validating SessionTokenData structure at runtime
@@ -21,7 +26,10 @@ const SessionTokenDataSchema = z.object({
     "production-us",
     "production-uk",
   ]),
-  authenticationState: z.enum(["unauthenticated", "verified", "authenticated"]),
+  naviStytchUserId: z
+    .string()
+    .min(1, "Navi Stytch User ID is required")
+    .optional(),
   exp: z.number().positive("Expiration must be a positive number"),
 });
 
@@ -50,6 +58,7 @@ const JWTPayloadSchema = z.object({
     "verified",
     "authenticated",
   ]),
+  navi_stytch_user_id: z.string().min(1).optional(),
   iss: z.string().min(1, "Issuer is required"),
   exp: z.number().positive("Expiration must be a positive number"),
   iat: z.number().positive("Issued at must be a positive number"),
@@ -175,7 +184,11 @@ export class AuthService {
   convertSessionToJWTPayload(
     sessionData: SessionTokenData,
     sessionId: string,
-    issuer: string
+    issuer: string,
+    options?: {
+      authenticationState?: AuthenticationState;
+      naviStytchUserId?: string;
+    }
   ): JWTPayload {
     try {
       // Parse and validate session data
@@ -192,7 +205,9 @@ export class AuthService {
         tenant_id: validatedSession.tenantId,
         org_id: validatedSession.orgId,
         environment: validatedSession.environment,
-        authentication_state: validatedSession.authenticationState,
+        authentication_state: options?.authenticationState ?? "unauthenticated",
+        navi_stytch_user_id:
+          options?.naviStytchUserId ?? validatedSession.naviStytchUserId,
         iss: issuer,
         exp: validatedSession.exp,
         iat: now,
@@ -223,7 +238,11 @@ export class AuthService {
   async createJWTFromSession(
     sessionData: SessionTokenData,
     sessionId: string,
-    issuer: string
+    issuer: string,
+    options?: {
+      authenticationState?: AuthenticationState;
+      naviStytchUserId?: string;
+    }
   ): Promise<string> {
     if (!this.secretKey) {
       throw NaviAuthError.notInitialized();
@@ -234,7 +253,8 @@ export class AuthService {
       const jwtPayload = this.convertSessionToJWTPayload(
         sessionData,
         sessionId,
-        issuer
+        issuer,
+        options
       );
 
       // Convert to compatible jose payload format
@@ -251,39 +271,6 @@ export class AuthService {
         throw error; // Re-throw NaviAuthError from convertSessionToJWTPayload
       }
       throw NaviAuthError.jwtCreationFailed(error);
-    }
-  }
-
-  /**
-   * Create a session token for internal navi-portal use
-   *
-   * @param sessionData - Session token data
-   * @returns Promise<string> - Signed session token (for internal use)
-   * @throws NaviAuthError - If validation fails or token creation fails
-   */
-  async createSessionToken(sessionData: SessionTokenData): Promise<string> {
-    if (!this.secretKey) {
-      throw NaviAuthError.notInitialized();
-    }
-
-    try {
-      // Parse and validate session data
-      const validatedSession = SessionTokenDataSchema.parse(sessionData);
-
-      // Convert to compatible jose payload format
-      const josePayload = { ...validatedSession } as Record<string, unknown>;
-
-      const token = await new SignJWT(josePayload)
-        .setProtectedHeader({ alg: "HS256" })
-        .setIssuedAt()
-        .sign(this.secretKey);
-
-      return token;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        throw NaviAuthError.invalidSessionData(error.issues);
-      }
-      throw NaviAuthError.sessionTokenCreationFailed(error);
     }
   }
 
@@ -314,39 +301,6 @@ export class AuthService {
         throw NaviAuthError.payloadValidationFailed(error.issues);
       }
       throw NaviAuthError.invalidToken("Invalid or expired token", error);
-    }
-  }
-
-  /**
-   * Verify a session token and return session data
-   *
-   * Used by navi-portal backend for internal session validation.
-   *
-   * @param token - Session token string to verify
-   * @returns Promise<SessionTokenData> - Verified session data
-   * @throws NaviAuthError - If token is invalid, expired, or fails validation
-   */
-  async verifySessionToken(token: string): Promise<SessionTokenData> {
-    if (!this.secretKey) {
-      throw NaviAuthError.notInitialized();
-    }
-
-    try {
-      // Verify JWT signature and expiration
-      const { payload } = await jwtVerify(token, this.secretKey);
-
-      // Parse and validate session data structure
-      const validatedSession = SessionTokenDataSchema.parse(payload);
-
-      return validatedSession;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        throw NaviAuthError.sessionTokenValidationFailed(error.issues);
-      }
-      throw NaviAuthError.invalidToken(
-        "Invalid or expired session token",
-        error
-      );
     }
   }
 }

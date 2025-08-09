@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AuthService, SessionTokenData } from "@awell-health/navi-core";
+import { AuthService } from "@awell-health/navi-core";
 import { env } from "@/env";
-import { kv } from "@vercel/kv";
+import { getSession, setSession } from "@/domains/session/store";
+import { NaviSession } from "@/domains/session/navi-session";
 
 export const runtime = "edge";
 
@@ -22,52 +23,61 @@ export async function POST(request: NextRequest) {
     const sessionId = sessionCookie.value;
 
     // Get session data from KV store
-    const sessionData = await kv.get<SessionTokenData>(`session:${sessionId}`);
-    if (!sessionData) {
+    const session = await getSession(sessionId);
+    if (!session) {
       console.log("🔍 Session not found for refresh:", sessionId);
       return NextResponse.json({ error: "Session expired" }, { status: 401 });
     }
 
-    // Check if session is still valid (not expired)
-    if (new Date(sessionData.exp * 1000).getTime() < Date.now()) {
-      console.log("🔍 Session expired during refresh:", sessionId);
-      await kv.del(`session:${sessionId}`); // Clean up expired session
-      return NextResponse.json({ error: "Session expired" }, { status: 401 });
-    }
+    // Extend session expiry (30 days from now) and persist
+    const updatedSession = NaviSession.extendSessionExpiration(
+      session,
+      30 * 24 * 60 * 60
+    );
+    await setSession(sessionId, updatedSession as never);
 
-    // Extend session expiry (30 days from now)
-    const newExp = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
-    const updatedSessionData = {
-      ...sessionData,
-      exp: newExp,
-    };
-
-    // Update session in KV store
-    await kv.set(`session:${sessionId}`, updatedSessionData, {
-      ex: 30 * 24 * 60 * 60,
-    }); // 30 days TTL
-
-    // Generate fresh JWT using AuthService
+    // Generate fresh JWT using AuthService, preserving current auth state from existing jwt
     const authService = new AuthService();
     await authService.initialize(env.JWT_SIGNING_KEY);
+    const existingJwtCookie = request.cookies.get("awell.jwt");
+
+    const { authenticationState } = await NaviSession.extractAuthContextFromJwt(
+      authService,
+      existingJwtCookie?.value
+    );
+
+    // Create fresh token data from session and renew token exp (15 minutes)
+    const tokenData = NaviSession.renewJwtExpiration(
+      NaviSession.deriveTokenDataFromSession(
+        updatedSession as Parameters<
+          typeof NaviSession.deriveTokenDataFromSession
+        >[0]
+      ),
+      15 * 60
+    );
 
     const jwt = await authService.createJWTFromSession(
-      updatedSessionData,
+      tokenData,
       sessionId,
-      env.JWT_KEY_ID
+      env.JWT_KEY_ID,
+      { authenticationState }
     );
 
     console.log("🔄 Session refreshed:", {
       sessionId,
-      careflowId: updatedSessionData.careflowId,
-      newExpiresAt: new Date(newExp * 1000).toISOString(),
+      careflowId: (updatedSession as { careflowId?: string }).careflowId,
+      newExpiresAt: new Date(
+        (updatedSession as { exp: number }).exp * 1000
+      ).toISOString(),
     });
 
     // Return new JWT and update cookies
     const response = NextResponse.json({
       jwt,
       expiresAt: Math.floor(Date.now() / 1000) + 15 * 60, // 15 minutes from now
-      sessionExpiresAt: new Date(newExp * 1000).toISOString(),
+      sessionExpiresAt: new Date(
+        (updatedSession as { exp: number }).exp * 1000
+      ).toISOString(),
     });
 
     // Refresh session cookie (30 days)

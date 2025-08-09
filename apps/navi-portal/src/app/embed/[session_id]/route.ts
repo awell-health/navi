@@ -126,22 +126,11 @@ export async function GET(
     const authService = new AuthService();
     await authService.initialize(env.JWT_SIGNING_KEY);
 
-    // Convert to SessionTokenData format for JWT creation
-    const sessionTokenData = {
-      patientId: embedSession.patientId,
-      careflowId: embedSession.careflowId,
-      stakeholderId: embedSession.stakeholderId,
-      orgId: embedSession.orgId,
-      tenantId: embedSession.tenantId,
-      environment: embedSession.environment,
-      authenticationState: embedSession.authenticationState,
-      exp: embedSession.exp,
-    };
-
     const jwt = await authService.createJWTFromSession(
-      sessionTokenData,
+      embedSession,
       sessionId,
-      env.JWT_KEY_ID
+      env.JWT_KEY_ID,
+      { authenticationState: "unauthenticated" }
     );
 
     // Generate theme and favicon

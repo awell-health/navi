@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Sheet,
   SheetHeader,
@@ -12,6 +12,8 @@ import { ArrowLeftToLine } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useActivity } from "@/lib/activity-provider";
 import { ActivityFragment } from "@/lib/awell-client/generated/graphql";
+import { Button } from "./ui";
+import { OtcVerificationCard } from "./auth/otc-verification";
 
 interface ActivityDrawerProps {
   open: boolean;
@@ -59,6 +61,59 @@ export function ActivityDrawer({
   const { activities, newActivities, setActiveActivity, activeActivity } =
     useActivity();
 
+  type AuthenticationState = "unauthenticated" | "verified" | "authenticated";
+  const [authState, setAuthState] =
+    useState<AuthenticationState>("unauthenticated");
+  const [isLoadingAuth, setIsLoadingAuth] = useState<boolean>(true);
+  // OTC UI moved to OtcVerificationCard
+  const isVerified = useMemo(
+    () => authState === "verified" || authState === "authenticated",
+    [authState]
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchAuth() {
+      try {
+        const res = await fetch("/api/session/jwt", { credentials: "include" });
+        if (!res.ok) {
+          if (!cancelled) setIsLoadingAuth(false);
+          return;
+        }
+        const { jwt } = (await res.json()) as { jwt?: string };
+        if (!jwt) {
+          if (!cancelled) setIsLoadingAuth(false);
+          return;
+        }
+        const payloadPart = jwt.split(".")[1];
+        if (!payloadPart) {
+          if (!cancelled) setIsLoadingAuth(false);
+          return;
+        }
+        const decoded = JSON.parse(
+          atob(payloadPart.replace(/-/g, "+").replace(/_/g, "/"))
+        ) as { authentication_state?: AuthenticationState };
+        if (!cancelled) {
+          setAuthState(
+            decoded.authentication_state ??
+              ("unauthenticated" as AuthenticationState)
+          );
+          setIsLoadingAuth(false);
+        }
+      } catch {
+        if (!cancelled) setIsLoadingAuth(false);
+      }
+    }
+    fetchAuth();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function handleVerified() {
+    setAuthState("verified");
+  }
+
   const handleActivityClick = (activityId: string) => {
     setActiveActivity(activityId);
     const clickedActivity = activities.find(
@@ -73,7 +128,21 @@ export function ActivityDrawer({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <CustomSheetContent side="left" className="p-0">
         <SheetHeader className="px-4 py-6">
-          <SheetTitle>Activities</SheetTitle>
+          <div className="flex items-center gap-2">
+            <SheetTitle>Activities</SheetTitle>
+            {!isLoadingAuth && (
+              <span
+                className={cn(
+                  "text-xs px-2 py-0.5 rounded-full",
+                  isVerified
+                    ? "bg-green-500 text-white"
+                    : "bg-amber-500 text-white"
+                )}
+              >
+                {isVerified ? "Verified" : "Unverified"}
+              </span>
+            )}
+          </div>
           <SheetDescription>
             {activities.length}{" "}
             {activities.length === 1 ? "activity" : "activities"}
@@ -86,6 +155,9 @@ export function ActivityDrawer({
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-4 pb-4">
+          {!isVerified && !isLoadingAuth && (
+            <OtcVerificationCard onVerified={handleVerified} />
+          )}
           {activities.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground text-sm">

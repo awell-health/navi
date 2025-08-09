@@ -54,7 +54,8 @@ export interface SessionTokenData {
   orgId: string;
   tenantId: string;
   environment: TokenEnvironment;
-  authenticationState: AuthenticationState;
+  /** Optional foreign key to the Navi Stytch Consumer user */
+  naviStytchUserId?: string;
   exp: number;
 }
 
@@ -144,7 +145,9 @@ export interface JWTPayload {
   tenant_id: string;
   org_id: string;
   environment: TokenEnvironment;
-  authentication_state: string; // unauthenticated, verified, authenticated
+  authentication_state: AuthenticationState;
+  /** Optional foreign key to the Navi Stytch Consumer user */
+  navi_stytch_user_id?: string;
   iss: string; // issuer - Navi's GraphQL API uses this to lookup the consumer
   exp: number; // expiration timestamp
   iat: number; // issued at timestamp
