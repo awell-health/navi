@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { OTCVerifyFactory } from "@/domains/auth/otc/strategy";
 import {
   getOtcChallenge,
   incrementOtcAttempts,
@@ -41,11 +43,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Too many attempts" }, { status: 429 });
     }
 
-    const { code } = (await request.json()) as { code: string };
-    if (!code || code.length < 4) {
+    const CodeSchema = z
+      .object({ code: z.string().min(4) })
+      .transform((v) => v.code.trim());
+    const parsed = CodeSchema.safeParse(await request.json());
+    if (!parsed.success) {
       await incrementOtcAttempts(sessionId);
       return NextResponse.json({ error: "Invalid code" }, { status: 400 });
     }
+    const code = parsed.data;
 
     const stytch = createStytchClient();
     if (!stytch) {
@@ -56,7 +62,10 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      const verifyResult = await stytch.authenticateOtp(
+      // Strategy selection based on method discriminator
+      const verifyFactory = new OTCVerifyFactory(stytch);
+      const verifyResult = await verifyFactory.verify(
+        challenge.method,
         challenge.methodId,
         code
       );

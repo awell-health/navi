@@ -30,11 +30,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Extend session expiry (30 days from now) and persist
-    const updatedSession = NaviSession.extendSessionExpiration(
-      session,
-      30 * 24 * 60 * 60
-    );
-    await setSession(sessionId, updatedSession as never);
+    const updatedSession = NaviSession.extendSessionExpiration(session);
+    await setSession(sessionId, updatedSession);
 
     // Generate fresh JWT using AuthService, preserving current auth state from existing jwt
     const authService = new AuthService();
@@ -48,12 +45,7 @@ export async function POST(request: NextRequest) {
 
     // Create fresh token data from session and renew token exp (15 minutes)
     const tokenData = NaviSession.renewJwtExpiration(
-      NaviSession.deriveTokenDataFromSession(
-        updatedSession as Parameters<
-          typeof NaviSession.deriveTokenDataFromSession
-        >[0]
-      ),
-      15 * 60
+      NaviSession.deriveTokenDataFromSession(updatedSession)
     );
 
     const jwt = await authService.createJWTFromSession(

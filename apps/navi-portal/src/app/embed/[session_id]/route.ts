@@ -5,6 +5,7 @@ import {
   ActiveSessionTokenData,
   AuthService,
 } from "@awell-health/navi-core";
+import { NaviSession } from "@/domains/session/navi-session";
 import { getBrandingByOrgId } from "@/lib/edge-config";
 import {
   generateInlineThemeStyle,
@@ -127,7 +128,9 @@ export async function GET(
     await authService.initialize(env.JWT_SIGNING_KEY);
 
     const jwt = await authService.createJWTFromSession(
-      embedSession,
+      NaviSession.renewJwtExpiration(
+        NaviSession.deriveTokenDataFromSession(embedSession)
+      ),
       sessionId,
       env.JWT_KEY_ID,
       { authenticationState: "unauthenticated" }
@@ -192,7 +195,7 @@ export async function GET(
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       secure: process.env.NODE_ENV === "production",
-      maxAge: 30 * 24 * 60 * 60, // 30 days
+      maxAge: NaviSession.DEFAULT_SESSION_TTL_SECONDS, // 30 days
       path: "/",
     });
 
@@ -200,7 +203,7 @@ export async function GET(
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       secure: process.env.NODE_ENV === "production",
-      maxAge: 30 * 24 * 60 * 60, // 30 days
+      maxAge: NaviSession.DEFAULT_JWT_TTL_SECONDS, // 15 minutes
       path: "/",
     });
 

@@ -5,8 +5,12 @@ import {
   deleteOtcChallenge,
 } from "@/domains/session/store";
 import { createStytchClient } from "@/lib/stytch";
+import { z } from "zod";
+import { OTCStartFactory } from "@/domains/auth/otc/strategy";
 
 export const runtime = "edge";
+
+// Strategies extracted to domain module
 
 /**
  * POST /api/otc/start
@@ -35,43 +39,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { method, phoneNumber, email } = (await request
-      .json()
-      .catch(() => ({}))) as {
-      method?: "sms" | "email";
-      phoneNumber?: string;
-      email?: string;
-    };
+    const BodySchema = z
+      .discriminatedUnion("method", [
+        z.object({
+          method: z.literal("sms"),
+          phoneNumber: z.string().min(5),
+        }),
+        z.object({
+          method: z.literal("email"),
+          email: z.string().email(),
+        }),
+      ])
+      .transform((v) => {
+        return {
+          method: v.method,
+          destination: "phoneNumber" in v ? v.phoneNumber : v.email,
+        };
+      });
+    const body = await request.json().catch(() => ({}));
 
-    let chosen: { method: "sms" | "email"; destination: string } | null = null;
-    if (method === "sms" && phoneNumber)
-      chosen = { method: "sms", destination: phoneNumber };
-    if (method === "email" && email)
-      chosen = { method: "email", destination: email };
-    if (!chosen) {
-      if (phoneNumber) chosen = { method: "sms", destination: phoneNumber };
-      else if (email) chosen = { method: "email", destination: email };
+    const parseResult = BodySchema.safeParse(body);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: parseResult.error.message },
+        { status: 400 }
+      );
     }
-
-    if (!chosen) {
-      return NextResponse.json({ error: "Missing contact" }, { status: 400 });
-    }
+    const chosen = parseResult.data;
 
     // Clear any existing challenge
     await deleteOtcChallenge(sessionId);
 
-    const sendResult =
-      chosen.method === "sms"
-        ? await stytch.loginOrCreateSms(chosen.destination)
-        : await stytch.loginOrCreateEmail(chosen.destination);
+    const otcStartFactory = new OTCStartFactory(stytch);
+    const sendResult = await otcStartFactory.start(sessionId, chosen);
 
     const expiresAt = Math.floor(Date.now() / 1000) + 10 * 60; // default 10m
 
     await setOtcChallenge(sessionId, {
-      methodId:
-        chosen.method === "sms"
-          ? (sendResult as { phone_id: string }).phone_id
-          : (sendResult as { email_id: string }).email_id,
+      methodId: sendResult.method_id,
       method: chosen.method,
       destination: chosen.destination,
       attempts: 0,
