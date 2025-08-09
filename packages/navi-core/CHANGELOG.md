@@ -1,5 +1,17 @@
 # @awell-health/navi-core
 
+## 0.0.5
+
+### Patch Changes
+
+- 03951e2: Refactored session and auth domains; created helpers entrypoint in navi-core
+- cd5cb8b: feat(navi-core): move publishable key interface into navi-core
+- ea48bb0: Updated build
+- 7b2b210: add minHeight and minWidth to iframe render options
+- 8b85edf: updates to organization branding to follow shadcn css variables
+- 053cfb7: updated font config
+- 1d7a964: Update handlers
+
 ## 0.0.5-beta.7
 
 ### Patch Changes

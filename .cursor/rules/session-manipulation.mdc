@@ -1,0 +1,8 @@
+---
+alwaysApply: false
+description: When working with SessionData, SessionTokenData/SessionToken, KV session storage, or JWT minting/refresh
+---
+
+## Working with sessions
+
+All session manipulations (KV reads/writes, expiration updates, durable IDs, JWT token data derivation) must go through the NaviSession utility (apps/navi-portal/src/domains/session/navi-session.ts). Do not construct or mutate session or SessionTokenData objects directly in routes/libs; use NaviSession helpers to ensure consistent auth policy (JWT-only auth state) and auditability.

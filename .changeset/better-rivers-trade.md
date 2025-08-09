@@ -5,4 +5,4 @@
 "@awell-health/navi-dot-js": patch
 ---
 
-add minHeight and minWidth to iframe render options
+feat(session): authenticated state is separated from session data and should exist only in the JWT

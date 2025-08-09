@@ -32,6 +32,20 @@ export const env = createEnv({
       .string()
       .optional()
       .describe("Vercel team ID (optional, for team-scoped configs)"),
+    STYTCH_PROJECT_ID: z
+      .string()
+      .optional()
+      .describe("Stytch Project ID (optional for OTC POC)"),
+    STYTCH_SECRET: z
+      .string()
+      .optional()
+      .describe("Stytch Project Secret (optional for OTC POC)"),
+    STYTCH_ENV: z
+      .enum(["test", "live"])
+      .optional()
+      .describe(
+        "Stytch environment: test or live (optional, defaults to test)"
+      ),
   },
   client: {
     NEXT_PUBLIC_GRAPHQL_ENDPOINT: z

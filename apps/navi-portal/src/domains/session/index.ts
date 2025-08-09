@@ -5,6 +5,7 @@ import { getSession, setSession } from "./store";
 import { validateKey } from "@/domains/auth/publishable-key-store";
 import { getBrandingByOrgId } from "@/lib/edge-config";
 import { AuthService } from "@awell-health/navi-core";
+import { NaviSession } from "@/domains/session/navi-session";
 import type {
   BrandingConfig,
   CreateCareFlowSessionRequest,
@@ -49,7 +50,6 @@ export async function createSession(
     orgId: keyValidation.orgId,
     tenantId: keyValidation.tenantId,
     environment: keyValidation.environment,
-    authenticationState: "unauthenticated",
     exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
     state: "created",
     patientIdentifier: input.patientIdentifier,
@@ -76,20 +76,17 @@ export async function initializeCookies(sessionId: string) {
 
   const authService = new AuthService();
   await authService.initialize(env.JWT_SIGNING_KEY);
-  const tokenPayload = {
-    patientId: session.patientId,
-    careflowId: (session as ActiveSessionTokenData).careflowId,
-    stakeholderId: session.stakeholderId,
-    orgId: session.orgId,
-    tenantId: session.tenantId,
-    environment: session.environment,
-    authenticationState: session.authenticationState,
-    exp: session.exp,
-  };
+  const tokenData = NaviSession.renewJwtExpiration(
+    NaviSession.deriveTokenDataFromSession(
+      session as Parameters<typeof NaviSession.deriveTokenDataFromSession>[0]
+    ),
+    NaviSession.DEFAULT_JWT_TTL_SECONDS
+  );
   const jwt = await authService.createJWTFromSession(
-    tokenPayload,
+    tokenData,
     sessionId,
-    env.JWT_KEY_ID
+    env.JWT_KEY_ID,
+    { authenticationState: "unauthenticated" }
   );
 
   const response = new NextResponse(null, { status: 204 });

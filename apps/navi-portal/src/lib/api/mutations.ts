@@ -2,6 +2,7 @@
 
 import { print } from "graphql";
 import { AuthService, SessionData } from "@awell-health/navi-core";
+import { NaviSession } from "@/domains/session/navi-session";
 import { env } from "@/env";
 import {
   StartCareFlowMutation,
@@ -46,20 +47,19 @@ async function executeGraphQL<T = unknown>(
   const authService = new AuthService();
   await authService.initialize(env.JWT_SIGNING_KEY);
 
-  // Create JWT from session data using proper AuthService method
+  // Create JWT from session data using helper (no auth state in tokenData)
   const jwt = await authService.createJWTFromSession(
-    {
-      patientId: sessionData.patientId,
-      careflowId: sessionData.careflowId,
-      stakeholderId: sessionData.stakeholderId,
-      orgId: sessionData.orgId,
-      tenantId: sessionData.tenantId,
-      environment: sessionData.environment,
-      authenticationState: sessionData.authenticationState,
-      exp: Math.floor(Date.now() / 1000) + 15 * 60, // 15 minutes
-    },
+    NaviSession.renewJwtExpiration(
+      NaviSession.deriveTokenDataFromSession(
+        sessionData as Parameters<
+          typeof NaviSession.deriveTokenDataFromSession
+        >[0]
+      ),
+      NaviSession.DEFAULT_JWT_TTL_SECONDS
+    ),
     sessionData.sessionId,
-    "navi-portal.awellhealth.com" // issuer
+    "navi-portal.awellhealth.com",
+    { authenticationState: "unauthenticated" }
   );
 
   console.debug("🔍 Executing GraphQL operation:", {
