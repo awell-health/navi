@@ -73,7 +73,11 @@ describe("AuthService", () => {
 
       try {
         // any call to sign or verify should throw an error
-        await authService.createSessionToken(VALID_SESSION_DATA);
+        await authService.createJWTFromSession(
+          VALID_SESSION_DATA,
+          MOCK_SESSION_ID,
+          MOCK_ISSUER
+        );
       } catch (error) {
         expect(error).toBeInstanceOf(NaviAuthError);
         expect((error as NaviAuthError).errorType).toBe(
@@ -268,66 +272,6 @@ describe("AuthService", () => {
     });
   });
 
-  describe("createSessionToken", () => {
-    beforeEach(async () => {
-      await authService.initialize(TEST_SECRET);
-    });
-
-    it("should create valid session token", async () => {
-      const token = await authService.createSessionToken(VALID_SESSION_DATA);
-
-      expect(token).toBeTypeOf("string");
-      expect(token.split(".")).toHaveLength(3); // Valid JWT format
-    });
-
-    it("should throw NOT_INITIALIZED when service not initialized", async () => {
-      const uninitializedService = new AuthService();
-
-      await expect(
-        uninitializedService.createSessionToken(VALID_SESSION_DATA)
-      ).rejects.toThrow(NaviAuthError);
-
-      try {
-        await uninitializedService.createSessionToken(VALID_SESSION_DATA);
-      } catch (error) {
-        expect((error as NaviAuthError).errorType).toBe(
-          AuthErrorType.NOT_INITIALIZED
-        );
-      }
-    });
-
-    it("should throw INVALID_SESSION_DATA for invalid session data", async () => {
-      const invalidSessionData = {
-        ...VALID_SESSION_DATA,
-        careflowId: "", // Invalid: empty string
-      };
-
-      await expect(
-        authService.createSessionToken(invalidSessionData)
-      ).rejects.toThrow(NaviAuthError);
-
-      try {
-        await authService.createSessionToken(invalidSessionData);
-      } catch (error) {
-        expect((error as NaviAuthError).errorType).toBe(
-          AuthErrorType.INVALID_SESSION_DATA
-        );
-        expect((error as NaviAuthError).validationErrors).toBeDefined();
-      }
-    });
-
-    it("should throw INVALID_SESSION_DATA for missing required fields", async () => {
-      const invalidSessionData = {
-        ...VALID_SESSION_DATA,
-        orgId: undefined as any, // orgId is required, not optional
-      };
-
-      await expect(
-        authService.createSessionToken(invalidSessionData)
-      ).rejects.toThrow(NaviAuthError);
-    });
-  });
-
   describe("verifyToken", () => {
     let validJWT: string;
 
@@ -437,114 +381,18 @@ describe("AuthService", () => {
     });
   });
 
-  describe("verifySessionToken", () => {
-    let validSessionToken: string;
-
-    beforeEach(async () => {
-      await authService.initialize(TEST_SECRET);
-      validSessionToken = await authService.createSessionToken(
-        VALID_SESSION_DATA
-      );
-    });
-
-    it("should verify valid session token and return session data", async () => {
-      const sessionData = await authService.verifySessionToken(
-        validSessionToken
-      );
-
-      expect(sessionData).toEqual(VALID_SESSION_DATA);
-    });
-
-    it("should throw NOT_INITIALIZED when service not initialized", async () => {
-      const uninitializedService = new AuthService();
-
-      await expect(
-        uninitializedService.verifySessionToken(validSessionToken)
-      ).rejects.toThrow(NaviAuthError);
-
-      try {
-        await uninitializedService.verifySessionToken(validSessionToken);
-      } catch (error) {
-        expect((error as NaviAuthError).errorType).toBe(
-          AuthErrorType.NOT_INITIALIZED
-        );
-      }
-    });
-
-    it("should throw INVALID_TOKEN_FORMAT for malformed session token", async () => {
-      const malformedToken = "not.a.valid.token";
-
-      await expect(
-        authService.verifySessionToken(malformedToken)
-      ).rejects.toThrow(NaviAuthError);
-
-      try {
-        await authService.verifySessionToken(malformedToken);
-      } catch (error) {
-        expect((error as NaviAuthError).errorType).toBe(
-          AuthErrorType.INVALID_TOKEN_FORMAT
-        );
-      }
-    });
-
-    it("should throw TOKEN_EXPIRED for expired session token", async () => {
-      // Create session token with very short expiration (1 second)
-      const shortExpiredSessionData = {
-        ...VALID_SESSION_DATA,
-        exp: Math.floor(Date.now() / 1000) + 1, // 1 second from now
-      };
-
-      const expiredToken = await authService.createSessionToken(
-        shortExpiredSessionData
-      );
-
-      // Wait for token to expire
-      await new Promise((resolve) => setTimeout(resolve, 1100));
-
-      await expect(
-        authService.verifySessionToken(expiredToken)
-      ).rejects.toThrow(NaviAuthError);
-
-      try {
-        await authService.verifySessionToken(expiredToken);
-      } catch (error) {
-        expect((error as NaviAuthError).errorType).toBe(
-          AuthErrorType.TOKEN_EXPIRED
-        );
-      }
-    });
-
-    it.skip("should throw INVALID_SESSION_FORMAT for session token with invalid payload", async () => {
-      // Skip this test for now - mocking jose is complex and this scenario is unlikely in practice
-      // The validation happens in our own Zod validation after JWT verification
-    });
-  });
-
   describe("integration tests", () => {
     beforeEach(async () => {
       await authService.initialize(TEST_SECRET);
     });
 
     it("should handle complete session to JWT flow", async () => {
-      // 1. Create session token
-      const sessionToken = await authService.createSessionToken(
-        VALID_SESSION_DATA
-      );
-
-      // 2. Verify session token
-      const verifiedSessionData = await authService.verifySessionToken(
-        sessionToken
-      );
-      expect(verifiedSessionData).toEqual(VALID_SESSION_DATA);
-
-      // 3. Convert session to JWT
       const jwt = await authService.createJWTFromSession(
-        verifiedSessionData,
+        VALID_SESSION_DATA,
         MOCK_SESSION_ID,
         MOCK_ISSUER
       );
 
-      // 4. Verify JWT
       const jwtPayload = await authService.verifyToken(jwt);
       expect(jwtPayload).toMatchObject(EXPECTED_JWT_PAYLOAD);
     });
@@ -618,46 +466,6 @@ describe("AuthService", () => {
         VALID_SESSION_DATA.authenticationState
       );
     });
-  });
-
-  describe("error message clarity", () => {
-    beforeEach(async () => {
-      await authService.initialize(TEST_SECRET);
-    });
-    it.each([
-      {
-        name: "missing patientId",
-        data: { ...VALID_SESSION_DATA, patientId: "" },
-        expectedErrorType: AuthErrorType.INVALID_SESSION_DATA,
-      },
-      {
-        name: "missing careflowId",
-        data: { ...VALID_SESSION_DATA, careflowId: "" },
-        expectedErrorType: AuthErrorType.INVALID_SESSION_DATA,
-      },
-      {
-        name: "invalid environment",
-        data: { ...VALID_SESSION_DATA, environment: "invalid" as any },
-        expectedErrorType: AuthErrorType.INVALID_SESSION_DATA,
-      },
-    ])(
-      "should provide clear error message for $name",
-      async ({ name, data, expectedErrorType }) => {
-        try {
-          await authService.createSessionToken(data);
-          expect.fail(`Expected error for ${name}`);
-        } catch (error) {
-          expect(error, `Scenario: ${name}`).toBeInstanceOf(NaviAuthError);
-          expect((error as NaviAuthError).errorType, `Scenario: ${name}`).toBe(
-            expectedErrorType
-          );
-          expect(
-            (error as NaviAuthError).validationErrors,
-            `Scenario: ${name}`
-          ).toBeDefined();
-        }
-      }
-    );
   });
 });
 

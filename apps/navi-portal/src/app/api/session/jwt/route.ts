@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AuthService, SessionTokenData } from "@awell-health/navi-core";
+import { AuthService } from "@awell-health/navi-core";
 import { env } from "@/env";
-import { kv } from "@vercel/kv";
+import { getSession } from "@/domains/session/store";
+import { NaviSession } from "@/domains/session/navi-session";
 
 export const runtime = "edge";
 
@@ -21,28 +22,43 @@ export async function GET(request: NextRequest) {
 
     const sessionId = sessionCookie.value;
 
-    // Get session data from KV store
-    const sessionData = await kv.get<SessionTokenData>(`session:${sessionId}`);
-    if (!sessionData) {
+    // Get session data from KV store via helper (applies expiration semantics)
+    const session = await getSession(sessionId);
+    if (!session) {
       console.log("🔍 Session not found:", sessionId);
       return NextResponse.json({ error: "Session expired" }, { status: 401 });
     }
 
-    // Generate fresh JWT using AuthService
+    const existingJwtCookie = request.cookies.get("awell.jwt");
     const authService = new AuthService();
     await authService.initialize(env.JWT_SIGNING_KEY);
 
+    // Derive current auth context from existing JWT
+    const { authenticationState } = await NaviSession.extractAuthContextFromJwt(
+      authService,
+      existingJwtCookie?.value
+    );
+
+    // Create fresh token data from session
+    const tokenData = NaviSession.renewJwtExpiration(
+      NaviSession.deriveTokenDataFromSession(
+        session as Parameters<typeof NaviSession.deriveTokenDataFromSession>[0]
+      ),
+      NaviSession.DEFAULT_JWT_TTL_SECONDS
+    );
+
     const jwt = await authService.createJWTFromSession(
-      sessionData,
+      tokenData,
       sessionId,
-      env.JWT_KEY_ID
+      env.JWT_KEY_ID,
+      { authenticationState }
     );
 
     // Update the JWT cookie as well
     const response = NextResponse.json({
       jwt,
       expiresAt: Math.floor(Date.now() / 1000) + 15 * 60, // 15 minutes from now
-      environment: sessionData.environment,
+      environment: tokenData.environment,
     });
 
     // Refresh the JWT cookie
