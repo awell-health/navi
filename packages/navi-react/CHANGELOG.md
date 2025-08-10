@@ -1,5 +1,14 @@
 # @awell-health/navi-js-react
 
+## 0.0.6
+
+### Patch Changes
+
+- 7a4f7b0: feat(session): authenticated state is separated from session data and should exist only in the JWT
+- Updated dependencies [7a4f7b0]
+  - @awell-health/navi-core@0.0.6
+  - @awell-health/navi-js@0.0.6
+
 ## 0.0.5
 
 ### Patch Changes
