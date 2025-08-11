@@ -5,6 +5,7 @@
   "favicon": "/public/favicon.ico",
   "colors": { "primary": "#A45128" },
   "navigation": {
+    "pages": ["index"],
     "groups": [
       {
         "group": "Tutorials",
