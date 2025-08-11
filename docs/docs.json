@@ -1,0 +1,21 @@
+{
+  "name": "Awell Navi Docs",
+  "logo": "/public/logo.svg",
+  "theme": "willow",
+  "favicon": "/public/favicon.ico",
+  "colors": { "primary": "#A45128" },
+  "navigation": [
+    { "group": "Getting Started", "pages": ["index", "quickstart"] },
+    {
+      "group": "Navi.js",
+      "pages": ["navi/overview", "navi/install", "navi/embed"]
+    },
+    { "group": "API", "pages": ["api/overview"] }
+  ],
+  "seo": {
+    "title": "Awell Navi Documentation",
+    "description": "Design, embed, and operate care flows with Navi.",
+    "image": "/public/social-card.png",
+    "siteUrl": "https://navi-portal.awellhealth.com/docs"
+  }
+}
