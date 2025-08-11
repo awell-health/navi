@@ -4,18 +4,49 @@
   "theme": "willow",
   "favicon": "/public/favicon.ico",
   "colors": { "primary": "#A45128" },
-  "navigation": [
-    { "group": "Getting Started", "pages": ["index", "quickstart"] },
-    {
-      "group": "Navi.js",
-      "pages": ["navi/overview", "navi/install", "navi/embed"]
-    },
-    { "group": "API", "pages": ["api/overview"] }
-  ],
-  "seo": {
-    "title": "Awell Navi Documentation",
-    "description": "Design, embed, and operate care flows with Navi.",
-    "image": "/public/social-card.png",
-    "siteUrl": "https://navi-portal.awellhealth.com/docs"
+  "navigation": {
+    "groups": [
+      {
+        "group": "Tutorials",
+        "icon": "play",
+        "pages": [
+          "tutorials/quickstart",
+          "tutorials/setup-sandbox",
+          "tutorials/first-activity"
+        ]
+      },
+      {
+        "group": "How‑to guides",
+        "icon": "wrench",
+        "pages": [
+          "how-to/install-navi-js",
+          "how-to/authentication-and-session-refresh",
+          "how-to/branding-and-theming",
+          "how-to/file-uploads",
+          "how-to/i18n",
+          "how-to/accessibility"
+        ]
+      },
+      {
+        "group": "Explanation",
+        "icon": "lightbulb",
+        "pages": [
+          "explanations/architecture-and-security",
+          "explanations/activity-model-and-lifecycle",
+          "explanations/sessions-and-jwts",
+          "explanations/performance"
+        ]
+      },
+      {
+        "group": "Reference",
+        "icon": "book",
+        "pages": [
+          "reference/loader",
+          "reference/sdk/navi-js",
+          "reference/sdk/navi-react",
+          "reference/sdk/navi-core"
+        ]
+      }
+    ]
   }
 }
