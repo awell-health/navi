@@ -26,16 +26,6 @@ export interface NaviEmbedProps extends RenderOptions {
   onSessionCompleted?: (event: SessionEvent) => void;
   onSessionError?: (event: SessionEvent<{ error: string }>) => void;
   onIframeClose?: (event: SessionEvent) => void;
-
-  // Deprecated: Legacy event handlers (for backward compatibility)
-  /** @deprecated Use onSessionReady instead */
-  onReady?: () => void;
-  /** @deprecated Use onSessionCompleted instead */
-  onCompleted?: () => void;
-  /** @deprecated Use onSessionError instead */
-  onError?: (error: { message: string; code?: string }) => void;
-  /** @deprecated Use onIframeClose instead */
-  onClose?: () => void;
 }
 
 export function NaviEmbed({
@@ -46,11 +36,6 @@ export function NaviEmbed({
   onSessionCompleted,
   onSessionError,
   onIframeClose,
-  // Legacy event handlers
-  onReady,
-  onCompleted,
-  onError,
-  onClose,
   ...renderOptions
 }: NaviEmbedProps) {
   // Add ref to track if rendering is in progress to prevent race conditions
@@ -148,28 +133,6 @@ export function NaviEmbed({
           embedInstance.on("navi.iframe.close", onIframeClose);
         }
 
-        // Legacy event handlers (for backward compatibility)
-        if (onReady) {
-          embedInstance.on("navi.session.ready", onReady);
-        }
-
-        if (onCompleted) {
-          embedInstance.on("navi.session.completed", onCompleted);
-        }
-
-        if (onError) {
-          embedInstance.on(
-            "navi.session.error",
-            (event: SessionEvent<{ error: string }>) => {
-              onError({ message: event.data?.error || "Unknown error" });
-            }
-          );
-        }
-
-        if (onClose) {
-          embedInstance.on("navi.iframe.close", onClose);
-        }
-
         setInstance(embedInstance);
         console.log("✅ NaviEmbed instance created:", embedInstance.instanceId);
       } catch (err) {
@@ -185,7 +148,6 @@ export function NaviEmbed({
           data: { error: errorMessage },
           timestamp: Date.now(),
         });
-        onError?.({ message: errorMessage });
       } finally {
         setIsEmbedLoading(false);
         isRenderingRef.current = false;

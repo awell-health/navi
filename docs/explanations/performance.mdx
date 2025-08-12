@@ -1,12 +1,24 @@
 ---
 title: Performance principles
-description: What we optimize for and why (FCP, bundle size, latency).
+description: What we optimize for and how we keep embeds fast.
 ---
 
-# Performance principles
+### Goals
 
-Key principles and trade‑offs for performance.
+- Sub‑1s First Contentful Paint (mobile)
+- Smooth interactions under poor networks
+- Minimal CPU/memory overhead on host pages
 
-- Rendering strategy and caching.
-- Network optimization.
-- Measuring and regression testing.
+### Techniques
+
+- CDN delivery and long‑term caching for the loader
+- Lazy/async iframe creation; defer heavy work to the portal
+- PostMessage batching for fewer layout thrashes
+- Automatic height updates to avoid jank
+- Minimal bundle surface for the loader; most UI ships in the iframe
+
+### Measuring
+
+- RUM hooks in the portal (TTFB, FCP, CLS)
+- Synthetic checks on critical flows
+- Budget checks in CI for loader size
