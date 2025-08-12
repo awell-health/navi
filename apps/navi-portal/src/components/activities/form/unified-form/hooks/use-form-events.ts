@@ -42,9 +42,25 @@ export function useFormEvents({
   useEffect(() => {
     const subscription = watch((data, { name, type }) => {
       if (name && type === "change") {
+        // Find the question to get field metadata
+        const question = allQuestions.find((q) => q.id === name);
+        const currentValue = data[name];
+
         loggedEmitActivityEvent("activity-data-change", {
           field: name,
-          value: "***",
+          fieldType: question?.user_question_type?.toLowerCase() as
+            | "text"
+            | "number"
+            | "select"
+            | "checkbox"
+            | "date"
+            | "textarea"
+            | "file",
+          hasValue:
+            currentValue !== undefined &&
+            currentValue !== null &&
+            currentValue !== "",
+          isRequired: question?.is_required || false,
         });
 
         // Calculate progress across all questions

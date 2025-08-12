@@ -22,14 +22,14 @@ export default function PatientIntakePage() {
             system: "https://www.medplum.com/docs/api/fhir/resources/patient",
             value: "fake_medplum_jb",
           }}
-          onReady={() => {
+          onSessionReady={() => {
             console.log("✅ Navi embed is ready");
           }}
-          onError={(error: any) => {
-            console.error("❌ Navi embed error:", error);
+          onSessionError={(event) => {
+            console.error("❌ Navi embed error:", event);
           }}
-          onActivityCompleted={(data: any) => {
-            console.log("🎉 Activity completed:", data);
+          onActivityCompleted={(event) => {
+            console.log("🎉 Activity completed:", event);
           }}
         />
       </NaviProvider>

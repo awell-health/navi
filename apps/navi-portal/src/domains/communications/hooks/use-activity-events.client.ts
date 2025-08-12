@@ -4,64 +4,66 @@ import type {
   ActivityEventHandlers,
   FormFieldEvent,
   UntypedData,
+  // Import the specific event types and data types
+  ActivityReadyEvent,
+  ActivityActivateEvent,
+  ActivityProgressEvent,
+  ActivityDataChangeEvent,
+  ActivityDataChangeData,
+  ActivityCompleteEvent,
+  ActivityErrorEvent,
+  ActivityFocusEvent,
+  ActivityBlurEvent,
 } from "@awell-health/navi-core";
-
-type DataChangeEventData = {
-  field?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  currentData: any;
-};
 
 /**
  * Type guards for activity events
  */
 export function isActivityReadyEvent(
   event: ActivityEvent
-): event is ActivityEvent<void> {
+): event is ActivityReadyEvent {
   return event.type === "activity-ready";
 }
 
 export function isActivityActivateEvent(
   event: ActivityEvent
-): event is ActivityEvent<void> {
+): event is ActivityActivateEvent {
   return event.type === "activity-activate";
 }
 
 export function isActivityProgressEvent(
   event: ActivityEvent
-): event is ActivityEvent<{ progress: number; total: number }> {
+): event is ActivityProgressEvent {
   return event.type === "activity-progress";
 }
 
 export function isActivityDataChangeEvent(
   event: ActivityEvent
-): event is ActivityEvent<DataChangeEventData> {
+): event is ActivityDataChangeEvent {
   return event.type === "activity-data-change";
 }
 
 export function isActivityCompleteEvent(
   event: ActivityEvent
-): event is ActivityEvent<{ submissionData: UntypedData }> {
+): event is ActivityCompleteEvent {
   return event.type === "activity-complete";
 }
 
 export function isActivityErrorEvent(
   event: ActivityEvent
-): event is ActivityEvent<{ error: string; field?: string }> {
+): event is ActivityErrorEvent {
   return event.type === "activity-error";
 }
 
 export function isActivityFocusEvent(
   event: ActivityEvent
-): event is ActivityEvent<void> {
+): event is ActivityFocusEvent {
   return event.type === "activity-focus";
 }
 
 export function isActivityBlurEvent(
   event: ActivityEvent
-): event is ActivityEvent<void> {
+): event is ActivityBlurEvent {
   return event.type === "activity-blur";
 }
 

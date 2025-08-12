@@ -45,12 +45,12 @@ const getCDNConfig = (options?: NaviLoadOptions) => {
 // Production: will use versioned URLs later
 const getNaviJSUrl = (options?: NaviLoadOptions) => {
   const config = getCDNConfig(options);
-  return `${config.origin}/alpha/navi.js`;
+  return `${config.origin}/beta/navi.js`;
 };
 
 // Updated regex patterns for GCP CDN
 const PRODUCTION_CDN_REGEX =
-  /^https:\/\/cdn\.awellhealth\.com\/(alpha|v\d+.*\/)?navi\.js(\?.*)?$/;
+  /^https:\/\/cdn\.awellhealth\.com\/(alpha|beta|v\d+.*\/)?navi\.js(\?.*)?$/;
 const LOCALHOST_REGEX = /^http:\/\/localhost:3000\/(v1\/)?navi\.js(\?.*)?$/;
 
 const isNaviJSURL = (url: string): boolean =>

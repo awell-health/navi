@@ -57,6 +57,50 @@ export type SessionEventType =
 export type NaviEventType = ActivityEventType | SessionEventType;
 
 /**
+ * Event Data Types
+ * Named types for event payloads - can be imported and used by consumers
+ */
+export interface ActivityProgressData {
+  progress: number;
+  total: number;
+}
+
+export interface ActivityDataChangeData {
+  field: string;
+  fieldType?: "text" | "number" | "select" | "checkbox" | "date" | "textarea" | "file";
+  hasValue: boolean;
+  isRequired?: boolean;
+  validationState?: "valid" | "invalid" | "pending";
+}
+
+export interface ActivityCompleteData {
+  submissionData: UntypedData;
+}
+
+export interface ActivityErrorData {
+  error: string;
+  field?: string;
+}
+
+export interface SessionReadyData {
+  sessionId: string;
+  environment: string;
+}
+
+export interface SessionErrorData {
+  error: string;
+}
+
+export interface HeightChangeData {
+  height: number;
+  activityId?: string;
+}
+
+export interface WidthChangeData {
+  width: number;
+}
+
+/**
  * Activity-level Events (External API - Stripe Elements pattern)
  * These are the events that consumers (navi-portal, navi.js, navi-react) will handle
  */
@@ -88,45 +132,104 @@ export type NaviEvent<T = UntypedData | void> =
   | SessionEvent<T>;
 
 /**
+ * Specific Activity Event Types
+ * Strongly typed events for each activity event type
+ */
+export interface ActivityReadyEvent extends ActivityEvent<void> {
+  type: "activity-ready";
+}
+
+export interface ActivityActivateEvent extends ActivityEvent<void> {
+  type: "activity-activate";
+}
+
+export interface ActivityProgressEvent extends ActivityEvent<ActivityProgressData> {
+  type: "activity-progress";
+  data: ActivityProgressData;
+}
+
+export interface ActivityDataChangeEvent extends ActivityEvent<ActivityDataChangeData> {
+  type: "activity-data-change";
+  data: ActivityDataChangeData;
+}
+
+export interface ActivityCompleteEvent extends ActivityEvent<ActivityCompleteData> {
+  type: "activity-complete";
+  data: ActivityCompleteData;
+}
+
+export interface ActivityErrorEvent extends ActivityEvent<ActivityErrorData> {
+  type: "activity-error";
+  data: ActivityErrorData;
+}
+
+export interface ActivityFocusEvent extends ActivityEvent<void> {
+  type: "activity-focus";
+}
+
+export interface ActivityBlurEvent extends ActivityEvent<void> {
+  type: "activity-blur";
+}
+
+/**
+ * Specific Session Event Types
+ * Strongly typed events for each session event type
+ */
+export interface SessionReadyEvent extends SessionEvent<SessionReadyData> {
+  type: "navi.session.ready";
+  data: SessionReadyData;
+}
+
+export interface SessionCompletedEvent extends SessionEvent<void> {
+  type: "navi.session.completed";
+}
+
+export interface SessionErrorEvent extends SessionEvent<SessionErrorData> {
+  type: "navi.session.error";
+  data: SessionErrorData;
+}
+
+export interface IframeCloseEvent extends SessionEvent<void> {
+  type: "navi.iframe.close";
+}
+
+export interface HeightChangeEvent extends SessionEvent<HeightChangeData> {
+  type: "navi.height.changed";
+  data: HeightChangeData;
+}
+
+export interface WidthChangeEvent extends SessionEvent<WidthChangeData> {
+  type: "navi.width.changed";
+  data: WidthChangeData;
+}
+
+/**
  * Activity Event Handlers (Similar to Stripe Elements API)
+ * Using strongly typed event interfaces
  */
 export interface ActivityEventHandlers {
-  onActivityReady?: (event: ActivityEvent) => void;
-  onActivityActivate?: (event: ActivityEvent) => void;
-  onActivityProgress?: (
-    event: ActivityEvent<{ progress: number; total: number }>
-  ) => void;
-  onActivityDataChange?: (
-    event: ActivityEvent<{
-      field?: string;
-      value: UntypedData;
-      currentData: UntypedData;
-    }>
-  ) => void;
-  onActivityComplete?: (
-    event: ActivityEvent<{ submissionData: UntypedData }>
-  ) => void;
-  onActivityError?: (
-    event: ActivityEvent<{ error: string; field?: string }>
-  ) => void;
-  onActivityFocus?: (event: ActivityEvent) => void;
-  onActivityBlur?: (event: ActivityEvent) => void;
+  onActivityReady?: (event: ActivityReadyEvent) => void;
+  onActivityActivate?: (event: ActivityActivateEvent) => void;
+  onActivityProgress?: (event: ActivityProgressEvent) => void;
+  onActivityDataChange?: (event: ActivityDataChangeEvent) => void;
+  onActivityComplete?: (event: ActivityCompleteEvent) => void;
+  onActivityError?: (event: ActivityErrorEvent) => void;
+  onActivityFocus?: (event: ActivityFocusEvent) => void;
+  onActivityBlur?: (event: ActivityBlurEvent) => void;
 }
 
 /**
  * Session Event Handlers
  * Handlers for session-level events (iframe lifecycle, completion, etc.)
+ * Using strongly typed event interfaces
  */
 export interface SessionEventHandlers {
-  onSessionReady?: (
-    event: SessionEvent<{ sessionId: string; environment: string }>
-  ) => void;
-  onSessionCompleted?: (event: SessionEvent) => void;
-  onSessionError?: (event: SessionEvent<{ error: string }>) => void;
-  onIframeClose?: (event: SessionEvent) => void;
-  onHeightChange?: (
-    event: SessionEvent<{ height: number; activityId?: string }>
-  ) => void;
+  onSessionReady?: (event: SessionReadyEvent) => void;
+  onSessionCompleted?: (event: SessionCompletedEvent) => void;
+  onSessionError?: (event: SessionErrorEvent) => void;
+  onIframeClose?: (event: IframeCloseEvent) => void;
+  onHeightChange?: (event: HeightChangeEvent) => void;
+  onWidthChange?: (event: WidthChangeEvent) => void;
 }
 
 /**

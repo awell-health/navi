@@ -14,7 +14,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 BUCKET="gs://navi-js"
-CDN_URL="https://cdn.awellhealth.com/alpha/navi.js"
+CDN_URL="https://cdn.awellhealth.com/beta/navi.js"
 NAVI_JS_PATH="packages/navi.js/dist/navi.js"
 
 echo -e "${BLUE}🚀 Deploying navi.js to GCP CDN${NC}"
