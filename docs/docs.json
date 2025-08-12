@@ -5,48 +5,31 @@
   "favicon": "/public/favicon.ico",
   "colors": { "primary": "#A45128" },
   "navigation": {
-    "pages": ["index"],
+    "pages": ["index", "what-is-navi"],
     "groups": [
       {
         "group": "Tutorials",
         "icon": "play",
-        "pages": [
-          "tutorials/quickstart",
-          "tutorials/setup-sandbox",
-          "tutorials/first-activity"
-        ]
+        "pages": ["tutorials/quickstart"]
       },
       {
         "group": "How‑to guides",
         "icon": "wrench",
-        "pages": [
-          "how-to/install-navi-js",
-          "how-to/authentication-and-session-refresh",
-          "how-to/branding-and-theming",
-          "how-to/file-uploads",
-          "how-to/i18n",
-          "how-to/accessibility"
-        ]
+        "pages": ["how-to/branding-and-theming"]
       },
       {
         "group": "Explanation",
         "icon": "lightbulb",
         "pages": [
-          "explanations/architecture-and-security",
           "explanations/activity-model-and-lifecycle",
-          "explanations/sessions-and-jwts",
-          "explanations/performance"
+          "explanations/architecture-overview",
+          "explanations/sessions-and-jwts"
         ]
       },
       {
         "group": "Reference",
         "icon": "book",
-        "pages": [
-          "reference/loader",
-          "reference/sdk/navi-js",
-          "reference/sdk/navi-react",
-          "reference/sdk/navi-core"
-        ]
+        "pages": ["reference/events"]
       }
     ]
   }
