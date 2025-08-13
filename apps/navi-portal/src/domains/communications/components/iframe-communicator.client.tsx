@@ -94,6 +94,10 @@ export function IframeCommunicator({
       value={{
         createActivityEventHandlers,
         calculateHeight,
+        requestHeightUpdate: () => {
+          const h = calculateHeight();
+          sendHeightChange(h, "Manual");
+        },
         sendSessionCompleted,
         sendIframeClose,
         isReady: !!instanceId,
@@ -111,6 +115,7 @@ interface CommunicationsContextType {
     activityType: UserActivityType
   ) => any;
   calculateHeight: () => number;
+  requestHeightUpdate: () => void;
   sendSessionCompleted: () => void;
   sendIframeClose: () => void;
   isReady: boolean;

@@ -64,12 +64,12 @@ echo -e "${GREEN}📦 Bundle size: $BUNDLE_SIZE${NC}"
 # Deploy to GCP bucket
 echo -e "${BLUE}📡 Uploading to GCP bucket...${NC}"
 
-gsutil cp $NAVI_JS_PATH $BUCKET/alpha/navi.js
+gsutil cp $NAVI_JS_PATH $BUCKET/beta/navi.js
 
 # Set cache headers for development (shorter cache time)
 echo -e "${BLUE}⚙️ Setting cache headers...${NC}"
-gsutil setmeta -h "Cache-Control:public,max-age=300" $BUCKET/alpha/navi.js
-gsutil setmeta -h "Content-Type:application/javascript" $BUCKET/alpha/navi.js
+gsutil setmeta -h "Cache-Control:public,max-age=300" $BUCKET/beta/navi.js
+gsutil setmeta -h "Content-Type:application/javascript" $BUCKET/beta/navi.js
 
 echo ""
 echo -e "${GREEN}✅ Deployment complete!${NC}"
@@ -101,5 +101,5 @@ else
     echo -e "   3. Wait for CDN propagation"
     echo ""
     echo -e "${BLUE}🧪 Test direct storage access:${NC}"
-    echo -e "   curl -I https://cdn.awellhealth.com/alpha/navi.js"
+    echo -e "   curl -I https://cdn.awellhealth.com/beta/navi.js"
 fi 

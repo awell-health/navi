@@ -1,22 +1,36 @@
 "use client";
 
-import React, { useState } from "react";
-import { Button } from "../ui";
+import React, { useMemo, useState } from "react";
+import { Button, Input } from "../ui";
 
 interface OtcVerificationCardProps {
   onVerified: () => void;
 }
 
 export function OtcVerificationCard({ onVerified }: OtcVerificationCardProps) {
-  const [isVerifying, setIsVerifying] = useState<boolean>(false);
+  type OtcFlowState =
+    | "idle" // user has not started authentication
+    | "requesting" // sending request to start OTC
+    | "awaitingCode" // code sent, awaiting input
+    | "verifying" // sending verification request
+    | "verified"; // verification completed
+
+  const [flowState, setFlowState] = useState<OtcFlowState>("idle");
   const [otp, setOtp] = useState<string>("");
   const [otcError, setOtcError] = useState<string>("");
   const [otcInfo, setOtcInfo] = useState<string>("");
 
+  const isLoading = useMemo(
+    () => flowState === "requesting" || flowState === "verifying",
+    [flowState]
+  );
+
   async function startOtc(): Promise<void> {
+    if (isLoading) return;
     setOtcError("");
     setOtcInfo("");
     try {
+      setFlowState("requesting");
       const res = await fetch("/api/otc/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -34,15 +48,20 @@ export function OtcVerificationCard({ onVerified }: OtcVerificationCardProps) {
         return;
       }
       setOtcInfo("Code sent. Please enter it below.");
-      setIsVerifying(true);
+      setFlowState("awaitingCode");
     } catch (_e) {
       setOtcError("Failed to start verification");
+    } finally {
+      // If we are still in requesting due to an early return, go back to idle
+      setFlowState((prev) => (prev === "requesting" ? "idle" : prev));
     }
   }
 
   async function verifyOtc(): Promise<void> {
+    if (isLoading) return;
     setOtcError("");
     try {
+      setFlowState("verifying");
       const res = await fetch("/api/otc/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -66,29 +85,37 @@ export function OtcVerificationCard({ onVerified }: OtcVerificationCardProps) {
         return;
       }
       onVerified();
-      setIsVerifying(false);
+      setFlowState("verified");
       setOtcInfo("");
       setOtp("");
     } catch (_e) {
       setOtcError("Verification failed");
+    } finally {
+      // If verification did not complete, return to awaitingCode
+      setFlowState((prev) => (prev === "verifying" ? "awaitingCode" : prev));
     }
   }
 
   return (
-    <div className="mb-4 rounded-md border p-4">
-      {!isVerifying ? (
+    <div className="mb-4 p-4 border-b border-border bg-accent/10">
+      {flowState === "idle" || flowState === "requesting" ? (
         <div className="flex items-center justify-between gap-3">
           <div className="text-sm">
             Please complete verification to view previous activities.
           </div>
-          <Button onClick={startOtc} type="button" className="text-sm">
+          <Button
+            onClick={startOtc}
+            type="button"
+            className="text-sm"
+            disabled={isLoading}
+          >
             Authenticate
           </Button>
         </div>
       ) : (
         <div className="space-y-3">
           <div className="flex gap-2">
-            <input
+            <Input
               inputMode="numeric"
               pattern="[0-9]*"
               maxLength={6}
@@ -96,9 +123,14 @@ export function OtcVerificationCard({ onVerified }: OtcVerificationCardProps) {
               onChange={(e) =>
                 setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
               }
-              className="w-full rounded-md border p-2 tracking-widest text-center"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  if (!isLoading) verifyOtc();
+                }
+              }}
               placeholder="Enter code"
               aria-label="Verification code"
+              disabled={isLoading}
             />
           </div>
           {otcInfo && (
@@ -106,24 +138,28 @@ export function OtcVerificationCard({ onVerified }: OtcVerificationCardProps) {
           )}
           {otcError && <div className="text-xs text-red-600">{otcError}</div>}
           <div className="flex items-center justify-between gap-3">
-            <button
-              className="px-3 py-2 rounded-md border text-sm"
+            <Button
+              type="button"
+              variant="outline"
+              className="text-sm"
               onClick={() => {
-                setIsVerifying(false);
+                setFlowState("idle");
                 setOtp("");
                 setOtcError("");
                 setOtcInfo("");
               }}
+              disabled={isLoading}
             >
               Cancel
-            </button>
-            <button
-              className="px-3 py-2 rounded-md bg-amber-500 text-white text-sm disabled:opacity-50"
+            </Button>
+            <Button
               onClick={verifyOtc}
-              disabled={otp.length < 4}
+              disabled={otp.length < 4 || isLoading}
+              type="button"
+              className="text-sm"
             >
               Verify
-            </button>
+            </Button>
           </div>
         </div>
       )}

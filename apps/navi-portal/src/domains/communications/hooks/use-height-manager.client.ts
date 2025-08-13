@@ -32,13 +32,50 @@ export function useHeightManager({
     const body = document.body;
     const html = document.documentElement;
 
-    // Use offsetHeight instead of scrollHeight to handle shrinking content better
-    const bodyHeight = body.offsetHeight;
-    const htmlHeight = html.offsetHeight;
+    // Collect multiple height sources. Avoid using viewport height to prevent
+    // feedback loops with the parent-managed iframe height.
+    const bodyOffsetHeight = body.offsetHeight;
+    const bodyScrollHeight = body.scrollHeight;
 
-    // Take the larger of the two, but don't include clientHeight which can be stale
-    const finalHeight = Math.max(bodyHeight, htmlHeight);
-    return finalHeight + 20; // Add padding to prevent scrollbars
+    // Measure the left drawer (Radix Sheet) if present. It's positioned fixed
+    // and therefore not part of document scroll metrics. We want the TOTAL
+    // height of the sheet content (header + scrollable list), not just its
+    // visible height. This lets the iframe grow to avoid inner scrolling if
+    // the list of activities is long.
+    const sheetContent = document.querySelector(
+      '[data-slot="sheet-content"]'
+    ) as HTMLElement | null;
+    let sheetHeight = 0;
+    if (sheetContent) {
+      const sheetHeader = sheetContent.querySelector(
+        '[data-slot="sheet-header"]'
+      ) as HTMLElement | null;
+      const sheetScrollArea = sheetContent.querySelector(
+        ".overflow-y-auto"
+      ) as HTMLElement | null;
+      const headerHeight = sheetHeader?.getBoundingClientRect().height ?? 0;
+      const scrollContentHeight = sheetScrollArea?.scrollHeight ?? 0;
+      sheetHeight = headerHeight + scrollContentHeight + 20;
+    }
+
+    // Prefer measuring our main layout container so we include the scrollable
+    // activity area instead of creating internal scrollbars.
+    const mainEl = document.querySelector("main");
+    const mainScrollHeight = (mainEl as HTMLElement | null)?.scrollHeight ?? 0;
+
+    // Final height must accommodate whichever is tallest.
+    // To avoid feedback loops, do NOT consider html heights (they reflect the
+    // current iframe size). Prefer the content container height, then fall back
+    // to body scroll/offset. Drawer height is only relevant if it's taller than
+    // the content (e.g., during animations), but it will usually equal the
+    // viewport which is the current iframe height, so it won't force growth.
+    const finalHeight = Math.max(
+      mainScrollHeight,
+      bodyScrollHeight,
+      bodyOffsetHeight,
+      sheetHeight
+    );
+    return finalHeight;
   }, []);
 
   const calculateWidth = useCallback(() => {
@@ -89,22 +126,33 @@ export function useHeightManager({
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
         const currentHeight = calculateHeight();
-
-        // Only emit if height changed significantly (>5px)
         if (Math.abs(currentHeight - lastHeight) > 5) {
-          console.log(
-            "📏 ResizeObserver height change:",
-            lastHeight,
-            "→",
-            currentHeight
-          );
           lastHeight = currentHeight;
           emitHeightChange("ResizeObserver");
         }
       }, 50);
     });
 
-    resizeObserver.observe(document.body);
+    // Observe the main content area primarily; fall back to body.
+    const mainEl = document.querySelector("main") as HTMLElement | null;
+    if (mainEl) resizeObserver.observe(mainEl);
+    else resizeObserver.observe(document.body);
+
+    // Also observe the drawer content when it exists (header + scroll area).
+    const sheetContent = document.querySelector(
+      '[data-slot="sheet-content"]'
+    ) as HTMLElement | null;
+    if (sheetContent) {
+      resizeObserver.observe(sheetContent);
+      const sheetHeader = sheetContent.querySelector(
+        '[data-slot="sheet-header"]'
+      ) as HTMLElement | null;
+      const sheetScrollArea = sheetContent.querySelector(
+        ".overflow-y-auto"
+      ) as HTMLElement | null;
+      if (sheetHeader) resizeObserver.observe(sheetHeader);
+      if (sheetScrollArea) resizeObserver.observe(sheetScrollArea);
+    }
 
     return () => {
       clearTimeout(resizeTimeout);

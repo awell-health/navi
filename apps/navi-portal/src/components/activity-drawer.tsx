@@ -12,8 +12,8 @@ import { ArrowLeftToLine } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useActivity } from "@/lib/activity-provider";
 import { ActivityFragment } from "@/lib/awell-client/generated/graphql";
-import { Button } from "./ui";
 import { OtcVerificationCard } from "./auth/otc-verification";
+import { useCommunications } from "@/domains/communications/components/iframe-communicator.client";
 
 interface ActivityDrawerProps {
   open: boolean;
@@ -60,6 +60,7 @@ export function ActivityDrawer({
 }: ActivityDrawerProps) {
   const { activities, newActivities, setActiveActivity, activeActivity } =
     useActivity();
+  const { requestHeightUpdate } = useCommunications();
 
   type AuthenticationState = "unauthenticated" | "verified" | "authenticated";
   const [authState, setAuthState] =
@@ -123,7 +124,16 @@ export function ActivityDrawer({
       onActivityClick(clickedActivity);
     }
     onOpenChange(false); // Close the sheet
+    // After the drawer closes, request a height update (allow animation to finish)
+    setTimeout(() => requestHeightUpdate(), 350);
   };
+
+  // When drawer opens/closes, recalculate height after transition ends
+  useEffect(() => {
+    const delay = open ? 550 : 350; // match Sheet transition durations
+    const id = setTimeout(() => requestHeightUpdate(), delay);
+    return () => clearTimeout(id);
+  }, [open, requestHeightUpdate]);
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <CustomSheetContent side="left" className="p-0">
@@ -165,7 +175,7 @@ export function ActivityDrawer({
               </p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="divide-y divide-border">
               {activities.map((activity) => {
                 const isActive = activeActivity?.id === activity.id;
                 const isNew = newActivities.has(activity.id);
@@ -174,11 +184,10 @@ export function ActivityDrawer({
                   <div
                     key={activity.id}
                     onClick={() => handleActivityClick(activity.id)}
-                    className={`px-6 py-4 rounded-lg border transition-colors cursor-pointer ${
-                      isActive
-                        ? "border-primary bg-primary/10"
-                        : "border-border hover:bg-muted/50"
-                    }`}
+                    className={cn(
+                      "px-6 py-4 cursor-pointer transition-colors",
+                      isActive ? "bg-primary/10" : "hover:bg-muted/50"
+                    )}
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-medium text-sm truncate">
