@@ -51,15 +51,27 @@ function Element({ node }: { node: any }) {
     case "media_embed":
       return (
         <div style={{ margin: "1em 0" }}>
-          <iframe
-            src={node.url}
-            width="560"
-            height="315"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            title="Embedded media"
-          />
+          <div
+            style={{
+              width: "100%",
+              aspectRatio: "16 / 9",
+              position: "relative",
+            }}
+          >
+            <iframe
+              src={node.url}
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+              }}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              title="Embedded media"
+            />
+          </div>
         </div>
       );
     case "img":

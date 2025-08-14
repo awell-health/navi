@@ -4,7 +4,14 @@ import {
   InMemoryCache,
   createHttpLink,
   NormalizedCacheObject,
+  ApolloLink,
+  Observable,
+  split,
+  type FetchResult,
 } from "@apollo/client";
+import { getMainDefinition } from "@apollo/client/utilities";
+import { print, type DocumentNode } from "graphql";
+import { createClient } from "graphql-sse";
 import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
 import { TokenEnvironment } from "@awell-health/navi-core";
@@ -163,6 +170,14 @@ async function getJWTToken(): Promise<{
 }
 
 function createApolloClient(): ApolloClient<NormalizedCacheObject> {
+  const DEBUG_SSE = process.env.NEXT_PUBLIC_DEBUG_SSE === "true";
+
+  function buildSSEUrl(endpoint: string): string {
+    const normalized = endpoint.replace(/\/$/, "");
+    return normalized.endsWith("/graphql")
+      ? `${normalized}/stream`
+      : `${normalized}/graphql/stream`;
+  }
   // Handle authentication errors by clearing token cache and retrying
   const errorLink = onError(
     ({ graphQLErrors, networkError, operation, forward }) => {
@@ -225,8 +240,96 @@ function createApolloClient(): ApolloClient<NormalizedCacheObject> {
   });
   const httpLink = createHttpLink();
 
+  // SSE link for GraphQL subscriptions (Server-Sent Events via graphql-yoga)
+  // We construct the client per-request to ensure we use the correct
+  // environment-specific endpoint and fresh Authorization header.
+  const sseLink = new ApolloLink((operation) => {
+    return new Observable((sink) => {
+      (async () => {
+        try {
+          const tokenResult = await getJWTToken();
+          // Always resolve a concrete endpoint; do NOT rely on context for subscriptions
+          const resolvedEnvironment: TokenEnvironment =
+            (tokenResult?.environment as TokenEnvironment) ?? "development";
+          const endpoint = getEndpoint(resolvedEnvironment);
+
+          const sseClient = createClient({
+            url: buildSSEUrl(endpoint),
+            headers: async (): Promise<Record<string, string>> => {
+              const headers: Record<string, string> = {};
+              if (tokenResult?.jwt) {
+                headers.Authorization = `Bearer ${tokenResult.jwt}`;
+              }
+              return headers;
+            },
+          });
+
+          const dispose = sseClient.subscribe(
+            { ...operation, query: print(operation.query) },
+            {
+              next: (value: unknown) => {
+                if (DEBUG_SSE) {
+                  const withData = value as { data?: Record<string, unknown> };
+                  const dataKeys =
+                    value &&
+                    typeof value === "object" &&
+                    "data" in withData &&
+                    withData.data
+                      ? Object.keys(withData.data)
+                      : [];
+                  console.debug("🔔 SSE message", {
+                    operationName: operation.operationName,
+                    dataKeys,
+                  });
+                }
+                sink.next(value as FetchResult<Record<string, unknown>>);
+              },
+              error: (err) => {
+                if (DEBUG_SSE) {
+                  console.error("❌ SSE error", {
+                    operationName: operation.operationName,
+                    error: err,
+                  });
+                }
+                sink.error(err);
+              },
+              complete: () => {
+                if (DEBUG_SSE) {
+                  console.debug("✅ SSE complete", {
+                    operationName: operation.operationName,
+                  });
+                }
+                sink.complete();
+              },
+            }
+          );
+
+          return () => {
+            dispose();
+          };
+        } catch (error) {
+          sink.error(error);
+        }
+      })();
+    });
+  });
+
+  const isSubscriptionOperation = ({ query }: { query: DocumentNode }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === "OperationDefinition" &&
+      definition.operation === "subscription"
+    );
+  };
+
+  const httpChain = from([authLink, uriLink, httpLink]);
+  const link = from([
+    errorLink,
+    split(isSubscriptionOperation, sseLink, httpChain),
+  ]);
+
   return new ApolloClient({
-    link: from([errorLink, authLink, uriLink, httpLink]),
+    link,
     cache: new InMemoryCache(),
     defaultOptions: {
       watchQuery: {

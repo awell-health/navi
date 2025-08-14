@@ -6,6 +6,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useMemo,
 } from "react";
 import { useSessionId } from "@/hooks/use-session-id";
 import {
@@ -253,6 +254,23 @@ export function ActivityProvider({
   // =================== SUBSCRIPTION HANDLERS ===================
 
   // These could be extracted to a custom hook: useActivitySubscriptions
+  function shouldReplaceActivity(
+    existing: ActivityFragment,
+    incoming: ActivityFragment
+  ): boolean {
+    // Compare only fields that affect rendering in our UI
+    if (existing.status !== incoming.status) return true;
+    if (existing.resolution !== incoming.resolution) return true;
+    if (existing.date !== incoming.date) return true;
+    if (existing.is_user_activity !== incoming.is_user_activity) return true;
+    const exObj = existing.object;
+    const inObj = incoming.object;
+    if (exObj?.id !== inObj?.id) return true;
+    if (exObj?.name !== inObj?.name) return true;
+    if (exObj?.type !== inObj?.type) return true;
+    // Default: keep existing reference
+    return false;
+  }
   useOnActivityCreatedSubscription({
     variables: { careflow_id: careflowId },
     onData: ({ data }) => {
@@ -290,11 +308,19 @@ export function ActivityProvider({
         // Emit event
         service.emit("activity.updated", { activity: updatedActivity });
 
-        setActivities((prev) =>
-          prev.map((activity) =>
-            activity.id === updatedActivity.id ? updatedActivity : activity
-          )
-        );
+        setActivities((previousActivities) => {
+          const index = previousActivities.findIndex(
+            (a) => a.id === updatedActivity.id
+          );
+          if (index === -1) return previousActivities;
+          const current = previousActivities[index];
+          if (!shouldReplaceActivity(current, updatedActivity)) {
+            return previousActivities; // no-op; preserve reference to avoid unnecessary re-renders
+          }
+          const next = previousActivities.slice();
+          next[index] = updatedActivity;
+          return next;
+        });
 
         if (activeActivity?.id === updatedActivity.id) {
           setActiveActivityState(updatedActivity);
@@ -321,10 +347,19 @@ export function ActivityProvider({
         });
 
         // Update activities state
-        const updatedActivities = activities.map((activity) =>
-          activity.id === completedActivity.id ? completedActivity : activity
-        );
-        setActivities(updatedActivities);
+        setActivities((previousActivities) => {
+          const index = previousActivities.findIndex(
+            (a) => a.id === completedActivity.id
+          );
+          if (index === -1) return previousActivities;
+          const current = previousActivities[index];
+          if (!shouldReplaceActivity(current, completedActivity)) {
+            return previousActivities;
+          }
+          const next = previousActivities.slice();
+          next[index] = completedActivity;
+          return next;
+        });
 
         // Auto-advance to next activity if the completed one was active
         if (activeActivity?.id === completedActivity.id) {
@@ -342,7 +377,10 @@ export function ActivityProvider({
           // Find next completable activity using business logic
           const nextActivity = service.getNextCompletableActivity(
             completedActivity.id,
-            updatedActivities
+            // Use the latest activities list including the completed update
+            activities.map((a) =>
+              a.id === completedActivity.id ? completedActivity : a
+            )
           );
 
           if (nextActivity) {
@@ -380,11 +418,19 @@ export function ActivityProvider({
         // service.updateCache(expiredActivity); // No longer needed
         service.emit("activity.expired", { activity: expiredActivity });
 
-        setActivities((prev) =>
-          prev.map((activity) =>
-            activity.id === expiredActivity.id ? expiredActivity : activity
-          )
-        );
+        setActivities((previousActivities) => {
+          const index = previousActivities.findIndex(
+            (a) => a.id === expiredActivity.id
+          );
+          if (index === -1) return previousActivities;
+          const current = previousActivities[index];
+          if (!shouldReplaceActivity(current, expiredActivity)) {
+            return previousActivities;
+          }
+          const next = previousActivities.slice();
+          next[index] = expiredActivity;
+          return next;
+        });
 
         if (activeActivity?.id === expiredActivity.id) {
           setActiveActivityState(expiredActivity);
@@ -608,31 +654,46 @@ export function ActivityProvider({
 
   const error = gqlError?.message || null;
 
-  const contextValue: ActivityContextType = {
-    // Data (from Apollo cache)
-    activities,
-    activeActivity,
+  const contextValue: ActivityContextType = useMemo(
+    () => ({
+      // Data (from Apollo cache)
+      activities,
+      activeActivity,
 
-    // State
-    isLoading,
-    error,
+      // State
+      isLoading,
+      error,
 
-    // UI-specific state (not in GraphQL)
-    visitedActivities,
-    newActivities,
+      // UI-specific state (not in GraphQL)
+      visitedActivities,
+      newActivities,
 
-    // Actions
-    setActiveActivity,
-    markActivityAsViewed,
-    refetchActivities,
-    completeActivity,
+      // Actions
+      setActiveActivity,
+      markActivityAsViewed,
+      refetchActivities,
+      completeActivity,
 
-    // Service instance
-    service,
+      // Service instance
+      service,
 
-    // Computed values
-    progress: service.calculateProgress(activities),
-  };
+      // Computed values
+      progress: service.calculateProgress(activities),
+    }),
+    [
+      activities,
+      activeActivity,
+      isLoading,
+      error,
+      visitedActivities,
+      newActivities,
+      setActiveActivity,
+      markActivityAsViewed,
+      refetchActivities,
+      completeActivity,
+      service,
+    ]
+  );
 
   return (
     <ActivityContext.Provider value={contextValue}>

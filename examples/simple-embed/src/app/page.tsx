@@ -10,9 +10,8 @@ export default function PatientIntakePage() {
         // publishableKey="pk_test-sXbLlQC3cgLxpAMGCtuCK" // baker-pro
         publishableKey="pk_test-EFlZSnSvIzc67Lnx8HZW6" // awell dev
         config={{
-          alwaysFetch: true,
-          embedOrigin: "http://localhost:3000",
           origin: "http://localhost:3000",
+          embedOrigin: "http://localhost:3000",
         }}
       >
         <NaviEmbed

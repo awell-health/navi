@@ -88,6 +88,10 @@ export function DescriptionQuestion({
         "[&_h3]:text-xl [&_h3]:font-medium [&_h3]:leading-tight [&_h3]:mb-2",
         "[&_p]:leading-relaxed [&_p]:mb-6",
         "[&_a]:text-primary [&_a]:underline hover:[&_a]:text-primary/80",
+        // Make images and embeds responsive within the prose content
+        "[&_img]:max-w-full [&_img]:h-auto [&_img]:block",
+        "[&_figure]:m-0 [&_figure]:w-full",
+        "[&_iframe]:w-full [&_iframe]:h-auto",
         disabled && "opacity-50",
         className
       )}

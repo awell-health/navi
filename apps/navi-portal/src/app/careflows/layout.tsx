@@ -4,6 +4,7 @@ import { BrandingProvider } from "@/lib/branding-provider";
 import "../globals.css";
 import { cn } from "@/lib/utils";
 import { loadOrgFontConfig } from "@/lib/branding/fonts/dynamic-fonts";
+import Head from "next/head";
 
 export const dynamic = "force-dynamic";
 
@@ -24,8 +25,8 @@ export default async function RootLayout({
   const fontConfig = await loadOrgFontConfig(orgId);
   const fontVariables = fontConfig?.variables ?? "";
   return (
-    <html lang="en">
-      <head>
+    <div>
+      <Head>
         <style dangerouslySetInnerHTML={{ __html: `${themeCSS}` }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" />
@@ -33,8 +34,8 @@ export default async function RootLayout({
         {fontConfig?.googleFontsUrl && (
           <link href={fontConfig.googleFontsUrl} rel="stylesheet" as="font" />
         )}
-      </head>
-      <body className={cn(fontVariables, "antialiased w-full h-full")}>
+      </Head>
+      <div className={cn(fontVariables, "antialiased w-full h-full")}>
         <BrandingProvider
           branding={branding ?? {}}
           orgId={orgId}
@@ -42,7 +43,7 @@ export default async function RootLayout({
         >
           <div className="p-6 w-full h-full">{children}</div>
         </BrandingProvider>
-      </body>
-    </html>
+      </div>
+    </div>
   );
 }

@@ -11,6 +11,10 @@ import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { ArrowLeftToLine } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useActivity } from "@/lib/activity-provider";
+import {
+  clearAuthenticationCache,
+  apolloClient,
+} from "@/lib/awell-client/client";
 import { ActivityFragment } from "@/lib/awell-client/generated/graphql";
 import { OtcVerificationCard } from "./auth/otc-verification";
 import { useCommunications } from "@/domains/communications/components/iframe-communicator.client";
@@ -58,8 +62,13 @@ export function ActivityDrawer({
   onOpenChange,
   onActivityClick,
 }: ActivityDrawerProps) {
-  const { activities, newActivities, setActiveActivity, activeActivity } =
-    useActivity();
+  const {
+    activities,
+    newActivities,
+    setActiveActivity,
+    activeActivity,
+    refetchActivities,
+  } = useActivity();
   const { requestHeightUpdate } = useCommunications();
 
   type AuthenticationState = "unauthenticated" | "verified" | "authenticated";
@@ -111,8 +120,12 @@ export function ActivityDrawer({
     };
   }, []);
 
-  function handleVerified() {
+  async function handleVerified() {
+    // Use the freshly minted JWT (set by /api/otc/verify) immediately
+    await clearAuthenticationCache(false);
+    await apolloClient.resetStore(); // re-run queries and re-establish subscriptions with new token
     setAuthState("verified");
+    await refetchActivities();
   }
 
   const handleActivityClick = (activityId: string) => {

@@ -118,17 +118,19 @@ export function UnifiedFormRenderer({
       >
         {/* Questions for current page */}
         <div className="space-y-6">
-          {currentPage.questions.map((question) => (
-            <div key={question.id} className="space-y-3">
-              <QuestionRenderer
-                question={question}
-                control={control}
-                errors={formState.errors}
-                disabled={disabled}
-                isVisible={isQuestionVisible(question.id)}
-              />
-            </div>
-          ))}
+          {currentPage.questions &&
+            currentPage.questions.length > 0 &&
+            currentPage.questions.map((question) => (
+              <div key={question.id} className="space-y-3">
+                <QuestionRenderer
+                  question={question}
+                  control={control}
+                  errors={formState.errors}
+                  disabled={disabled}
+                  isVisible={isQuestionVisible(question.id)}
+                />
+              </div>
+            ))}
         </div>
 
         {/* Navigation - only show for active forms */}
