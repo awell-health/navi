@@ -33,6 +33,33 @@ export class NaviLoader {
       render: async (containerId: string, renderOptions: RenderOptions) => {
         return this.render(publishableKey, containerId, renderOptions);
       },
+      logout: async () => {
+        // Clear client session cookie
+        this.clearSessionCookie();
+        // Call server-side logout to clear HttpOnly cookies and KV
+        try {
+          const baseUrl = this.getEmbedOrigin();
+          await fetch(`${baseUrl}/api/session/logout`, {
+            method: "POST",
+            credentials: "include",
+          });
+          this.maybeLog("🧹 Navi.js: Server-side logout completed via API");
+        } catch (error) {
+          console.warn("⚠️ Navi.js: logout() API call failed", error);
+        }
+      },
+      clearJwt: async () => {
+        try {
+          const baseUrl = this.getEmbedOrigin();
+          await fetch(`${baseUrl}/api/session/clear-jwt`, {
+            method: "POST",
+            credentials: "include",
+          });
+          this.maybeLog("🧹 Navi.js: JWT cleared via API");
+        } catch (error) {
+          console.warn("⚠️ Navi.js: clearJwt() API call failed", error);
+        }
+      },
     };
   }
 
@@ -353,7 +380,7 @@ export class NaviLoader {
       environment: data.environment,
     });
 
-    // Store session ID in a cookie on the client side
+    // Store session ID in a cookie on the client side (URL is source of truth; cookie is auxiliary)
     if (data.sessionId) {
       this.setSessionCookie(data.sessionId);
       this.maybeLog("✅ Navi.js: Session cookie stored:", data.sessionId);

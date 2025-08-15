@@ -1,5 +1,10 @@
 import { z } from "zod/v4";
 
+const PatientIdentifierSchema = z.object({
+  system: z.string().min(1, "System is required"),
+  value: z.string().min(1, "Value is required"),
+});
+
 /**
  * Zod schema for validating SessionTokenData structure at runtime
  */
@@ -23,7 +28,24 @@ export const SessionTokenDataSchema = z.object({
     .string()
     .min(1, "Navi Stytch User ID is required")
     .optional(),
+  createdAt: z
+    .number()
+    .positive("Created at must be a positive number")
+    .default(0)
+    .describe("The timestamp (in ms) when the session was created"),
   exp: z.number().positive("Expiration must be a positive number"),
+  state: z.enum(["created", "active", "error"]).default("created"),
+  errorMessage: z.string().optional(),
+  careflowDefinitionId: z.string().optional(),
+  patientIdentifier: PatientIdentifierSchema.optional(),
+  trackId: z.string().optional(),
+  activityId: z.string().optional(),
+  careflowData: z
+    .object({
+      id: z.string().min(1, "Careflow ID is required"),
+      releaseId: z.string().min(1, "Release ID is required"),
+    })
+    .optional(),
 });
 
 /**
@@ -53,6 +75,10 @@ export const JWTPayloadSchema = z.object({
   ]),
   navi_stytch_user_id: z.string().min(1).optional(),
   iss: z.string().min(1, "Issuer is required"),
+  createdAt: z
+    .number()
+    .positive("Created at must be a positive number")
+    .default(0),
   exp: z.number().positive("Expiration must be a positive number"),
   iat: z.number().positive("Issued at must be a positive number"),
 });

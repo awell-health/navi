@@ -1,5 +1,14 @@
 # @awell-health/navi-js-react
 
+## 0.0.8
+
+### Patch Changes
+
+- updates to navi-core type; add optional values to session schema
+- Updated dependencies
+  - @awell-health/navi-core@0.0.8
+  - @awell-health/navi-js@0.0.8
+
 ## 0.0.7
 
 ### Patch Changes

@@ -1,0 +1,20 @@
+---
+description: When working with Vercel, deployment questions, or a request to analyze the build logs.
+alwaysApply: false
+---
+
+Awell Health team ID: team_zmInQ2q5T149EOKGuA1jQZQ5
+Navi project ID: prj_uC6CDdSGX0vB8XObUJWTiktx7g7f
+
+## When analyzing logs
+
+First, call vercel's `list_deployments` function using params:
+
+```
+{
+  "projectId": "prj_uC6CDdSGX0vB8XObUJWTiktx7g7f",
+  "teamId": "team_zmInQ2q5T149EOKGuA1jQZQ5"
+}
+```
+
+Once you've found the correct deployment (likely the first one, unless i give you a deployment ID), use the deployment id (not url) and get the deployment. from there, you should have the ability to fetch build logs if there is a problem with the build.

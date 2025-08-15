@@ -53,16 +53,22 @@ export async function createSession(
     exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
     state: "created",
     patientIdentifier: input.patientIdentifier,
-    track_id: input.trackId,
-    activity_id: input.activityId,
-    stakeholder_id: input.stakeholderId,
+    trackId: input.trackId,
+    activityId: input.activityId,
+    stakeholderId: input.stakeholderId,
   };
   await setSession(sessionId, embedSessionData);
 
   return { success: true, embedUrl: `/embed/${sessionId}`, branding };
 }
 
-export async function initializeCookies(sessionId: string) {
+export async function initializeCookies(
+  sessionId: string,
+  authOverride?: {
+    authenticationState: "unauthenticated" | "verified" | "authenticated";
+    naviStytchUserId?: string;
+  }
+) {
   const session = (await getSession(sessionId)) as
     | SessionData
     | EmbedSessionData
@@ -84,7 +90,11 @@ export async function initializeCookies(sessionId: string) {
     tokenData,
     sessionId,
     env.JWT_KEY_ID,
-    { authenticationState: "unauthenticated" }
+    {
+      authenticationState:
+        authOverride?.authenticationState ?? "unauthenticated",
+      naviStytchUserId: authOverride?.naviStytchUserId,
+    }
   );
 
   const response = new NextResponse(null, { status: 204 });

@@ -1,6 +1,6 @@
 {
   "name": "@awell-health/navi-js-react",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "type": "module",
   "description": "React components and hooks for integrating Navi care flows",
   "main": "dist/index.esm.js",

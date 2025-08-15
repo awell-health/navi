@@ -40,4 +40,8 @@ export interface NaviInstance {
     containerId: string,
     options: RenderOptions
   ) => Promise<NaviEmbedInstance>;
+  /** Fully logs out: clears session cookie on parent domain and requests server-side logout (clears awell.sid and awell.jwt). */
+  logout: () => Promise<void>;
+  /** Clears only the JWT on the server, preserving the long-lived session cookie. */
+  clearJwt: () => Promise<void>;
 }

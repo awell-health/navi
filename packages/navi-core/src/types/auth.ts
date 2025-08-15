@@ -85,14 +85,13 @@ export interface EmbedSessionData extends SessionTokenData {
   // Additional fields for new careflow creation
   careflowDefinitionId?: string;
   patientIdentifier?: PatientIdentifier;
-  track_id?: string;
-  activity_id?: string;
-  stakeholder_id?: string;
+  trackId?: string;
+  activityId?: string;
 
   // Careflow data populated after creation/activation
   careflowData?: {
     id: string;
-    release_id: string;
+    releaseId: string;
   };
 }
 

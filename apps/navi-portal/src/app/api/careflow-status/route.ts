@@ -169,14 +169,13 @@ async function createNewCareflow({
       stakeholderId,
       careflowData: {
         id: careflowId,
-        release_id: careflowResult.careflow.release_id,
+        releaseId: careflowResult.careflow.release_id,
       },
       // Include embed-specific fields if they exist
       careflowDefinitionId: embedFields?.careflowDefinitionId,
       patientIdentifier: embedFields?.patientIdentifier,
-      track_id: embedFields?.track_id,
-      activity_id: embedFields?.activity_id,
-      stakeholder_id: embedFields?.stakeholder_id,
+      trackId: embedFields?.trackId,
+      activityId: embedFields?.activityId,
     };
 
     await setSession(sessionId, activeSession);

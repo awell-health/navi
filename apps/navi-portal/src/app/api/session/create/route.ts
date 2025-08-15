@@ -16,7 +16,11 @@ export const runtime = "edge";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const sessionData = SessionTokenDataSchema.parse(body);
+    const sessionData = SessionTokenDataSchema.parse({
+      state: "active",
+      createdAt: Date.now(),
+      ...body,
+    });
 
     // Deterministic, order-insensitive session id based on payload
     const sessionId = await shortDeterministicId(sessionData);
