@@ -7,6 +7,7 @@ import type {
   EmbedSessionData,
   ActiveSessionTokenData,
 } from "@awell-health/navi-core";
+import { shortDeterministicId } from "@awell-health/navi-core/helpers";
 
 type AnySession = SessionData | EmbedSessionData | ActiveSessionTokenData;
 const keyFor = (id: string) => `session:${id}`;
@@ -14,7 +15,7 @@ const keyFor = (id: string) => `session:${id}`;
 export async function setSession(sessionId: string, data: AnySession) {
   // Respect the session exp if provided; otherwise apply default 30-day TTL
   const nowSeconds = Math.floor(Date.now() / 1000);
-  const ttlFromExp = (data as { exp?: number }).exp
+  const ttlFromExp = (data as Pick<AnySession, "exp">).exp
     ? Math.max(1, (data as { exp: number }).exp - nowSeconds)
     : NaviSession.DEFAULT_SESSION_TTL_SECONDS;
   await kv.set(keyFor(sessionId), data, { ex: ttlFromExp });

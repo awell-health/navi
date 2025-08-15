@@ -1,7 +1,11 @@
 "use server";
 
 import { print } from "graphql";
-import { AuthService, SessionData } from "@awell-health/navi-core";
+import {
+  AuthService,
+  SessionData,
+  SessionTokenDataSchema,
+} from "@awell-health/navi-core";
 import { NaviSession } from "@/domains/session/navi-session";
 import { env } from "@/env";
 import {
@@ -50,15 +54,11 @@ async function executeGraphQL<T = unknown>(
   // Create JWT from session data using helper (no auth state in tokenData)
   const jwt = await authService.createJWTFromSession(
     NaviSession.renewJwtExpiration(
-      NaviSession.deriveTokenDataFromSession(
-        sessionData as Parameters<
-          typeof NaviSession.deriveTokenDataFromSession
-        >[0]
-      ),
+      SessionTokenDataSchema.parse(sessionData),
       NaviSession.DEFAULT_JWT_TTL_SECONDS
     ),
     sessionData.sessionId,
-    "navi-portal.awellhealth.com",
+    env.JWT_KEY_ID,
     { authenticationState: "unauthenticated" }
   );
 

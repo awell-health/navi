@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { getSession, setSession } from "./store";
 import { validateKey } from "@/domains/auth/publishable-key-store";
 import { getBrandingByOrgId } from "@/lib/edge-config";
-import { AuthService } from "@awell-health/navi-core";
+import { AuthService, SessionTokenDataSchema } from "@awell-health/navi-core";
 import { NaviSession } from "@/domains/session/navi-session";
 import type {
   BrandingConfig,
@@ -77,9 +77,7 @@ export async function initializeCookies(sessionId: string) {
   const authService = new AuthService();
   await authService.initialize(env.JWT_SIGNING_KEY);
   const tokenData = NaviSession.renewJwtExpiration(
-    NaviSession.deriveTokenDataFromSession(
-      session as Parameters<typeof NaviSession.deriveTokenDataFromSession>[0]
-    ),
+    SessionTokenDataSchema.parse(session),
     NaviSession.DEFAULT_JWT_TTL_SECONDS
   );
   const jwt = await authService.createJWTFromSession(

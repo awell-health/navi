@@ -8,7 +8,7 @@ import {
   getSession,
 } from "@/domains/session/store";
 import { createStytchClient } from "@/lib/stytch";
-import { AuthService } from "@awell-health/navi-core";
+import { AuthService, SessionTokenDataSchema } from "@awell-health/navi-core";
 import { env } from "@/env";
 import type { SessionTokenData } from "@awell-health/navi-core";
 import { NaviSession } from "@/domains/session/navi-session";
@@ -114,11 +114,7 @@ export async function POST(request: NextRequest) {
     const authService = new AuthService();
     await authService.initialize(env.JWT_SIGNING_KEY);
     // Derive token data from session and ensure stytch user id exists, then renew exp
-    let tokenData: SessionTokenData = NaviSession.deriveTokenDataFromSession(
-      session as unknown as Parameters<
-        typeof NaviSession.deriveTokenDataFromSession
-      >[0]
-    );
+    let tokenData = SessionTokenDataSchema.parse(session);
     if (!tokenData.naviStytchUserId && challenge.stytchUserId) {
       tokenData = NaviSession.attachStytchUserIdToToken(
         tokenData,

@@ -16,23 +16,6 @@ export class NaviSession {
   static readonly DEFAULT_SESSION_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
   static readonly DEFAULT_JWT_TTL_SECONDS = 15 * 60; // 15 minutes
 
-  static deriveTokenDataFromSession(session: AnySession): SessionTokenData {
-    // Avoid leaking optional props; keep exact mapping
-    const tokenData: SessionTokenData = {
-      patientId: (session as { patientId?: string }).patientId,
-      careflowId: (session as { careflowId?: string }).careflowId,
-      stakeholderId: (session as { stakeholderId?: string }).stakeholderId,
-      orgId: (session as { orgId: string }).orgId,
-      tenantId: (session as { tenantId: string }).tenantId,
-      environment: (session as { environment: SessionTokenData["environment"] })
-        .environment,
-      naviStytchUserId: (session as { naviStytchUserId?: string })
-        .naviStytchUserId,
-      exp: (session as { exp: number }).exp,
-    };
-    return tokenData;
-  }
-
   static renewJwtExpiration(
     tokenData: SessionTokenData,
     ttlSeconds = NaviSession.DEFAULT_JWT_TTL_SECONDS

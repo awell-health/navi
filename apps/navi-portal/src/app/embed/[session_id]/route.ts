@@ -4,6 +4,7 @@ import {
   EmbedSessionData,
   ActiveSessionTokenData,
   AuthService,
+  SessionTokenDataSchema,
 } from "@awell-health/navi-core";
 import { NaviSession } from "@/domains/session/navi-session";
 import { getBrandingByOrgId } from "@/lib/edge-config";
@@ -128,9 +129,7 @@ export async function GET(
     await authService.initialize(env.JWT_SIGNING_KEY);
 
     const jwt = await authService.createJWTFromSession(
-      NaviSession.renewJwtExpiration(
-        NaviSession.deriveTokenDataFromSession(embedSession)
-      ),
+      SessionTokenDataSchema.parse(embedSession),
       sessionId,
       env.JWT_KEY_ID,
       { authenticationState: "unauthenticated" }

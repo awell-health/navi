@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AuthService } from "@awell-health/navi-core";
+import { AuthService, SessionTokenDataSchema } from "@awell-health/navi-core";
 import { env } from "@/env";
 import { getSession, setSession } from "@/domains/session/store";
 import { NaviSession } from "@/domains/session/navi-session";
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     // Create fresh token data from session and renew token exp (15 minutes)
     const tokenData = NaviSession.renewJwtExpiration(
-      NaviSession.deriveTokenDataFromSession(updatedSession)
+      SessionTokenDataSchema.parse(updatedSession)
     );
 
     const jwt = await authService.createJWTFromSession(
