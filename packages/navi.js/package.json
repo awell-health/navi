@@ -1,6 +1,6 @@
 {
   "name": "@awell-health/navi-dot-js",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "navi.js file that will be hosted on the awell-health CDN",
   "main": "dist/navi.js",
   "private": true,

@@ -1,5 +1,13 @@
 # @awell-health/navi-dot-js
 
+## 0.0.7
+
+### Patch Changes
+
+- Add deterministic session id creation from session token data
+- Updated dependencies
+  - @awell-health/navi-core@0.0.7
+
 ## 0.0.6
 
 ### Patch Changes

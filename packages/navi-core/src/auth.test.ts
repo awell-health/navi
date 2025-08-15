@@ -15,7 +15,6 @@ const VALID_SESSION_DATA: SessionTokenData = {
   orgId: "org_abc",
   tenantId: "tenant_def",
   environment: "test",
-  authenticationState: "authenticated",
   exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
 };
 
@@ -27,7 +26,7 @@ const EXPECTED_JWT_PAYLOAD: Omit<JWTPayload, "iat"> = {
   tenant_id: VALID_SESSION_DATA.tenantId,
   org_id: VALID_SESSION_DATA.orgId,
   environment: VALID_SESSION_DATA.environment,
-  authentication_state: VALID_SESSION_DATA.authenticationState,
+  authentication_state: "unauthenticated",
   iss: MOCK_ISSUER,
   exp: VALID_SESSION_DATA.exp,
 };
@@ -179,14 +178,16 @@ describe("AuthService", () => {
     it("should throw SESSION_CONVERSION_FAILED for invalid authentication state", () => {
       const invalidSessionData = {
         ...VALID_SESSION_DATA,
-        authenticationState: "invalid" as any,
       };
 
       expect(() =>
         authService.convertSessionToJWTPayload(
           invalidSessionData,
           MOCK_SESSION_ID,
-          MOCK_ISSUER
+          MOCK_ISSUER,
+          {
+            authenticationState: "invalid" as any,
+          }
         )
       ).toThrow(NaviAuthError);
     });
@@ -439,7 +440,10 @@ describe("AuthService", () => {
         const jwt = await authService.createJWTFromSession(
           sessionData,
           MOCK_SESSION_ID,
-          MOCK_ISSUER
+          MOCK_ISSUER,
+          {
+            authenticationState: authState,
+          }
         );
 
         const payload = await authService.verifyToken(jwt);
@@ -462,9 +466,6 @@ describe("AuthService", () => {
       expect(payload.patient_id).toBe(VALID_SESSION_DATA.patientId);
       expect(payload.tenant_id).toBe(VALID_SESSION_DATA.tenantId);
       expect(payload.org_id).toBe(VALID_SESSION_DATA.orgId);
-      expect(payload.authentication_state).toBe(
-        VALID_SESSION_DATA.authenticationState
-      );
     });
   });
 });

@@ -1,5 +1,11 @@
 # @awell-health/navi-core
 
+## 0.0.7
+
+### Patch Changes
+
+- Add deterministic session id creation from session token data
+
 ## 0.0.6
 
 ### Patch Changes
