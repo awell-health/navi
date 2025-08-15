@@ -18,6 +18,14 @@ export default function DirectSessionClient({
   const eventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
+    // If the server switched sessions to honor an existing valid JWT, notify via console
+    if (searchParams.get("session_switched") === "1") {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "[Navi] Using existing session from JWT; switched sessions to keep you signed in."
+      );
+    }
+
     // Ensure server sets HttpOnly cookies before establishing SSE
     const initialize = async () => {
       try {
@@ -36,6 +44,8 @@ export default function DirectSessionClient({
     params.set("session_id", sessionId);
     const instanceId = searchParams.get("instance_id");
     if (instanceId) params.set("instance_id", instanceId);
+    const switched = searchParams.get("session_switched");
+    if (switched === "1") params.set("session_switched", "1");
     if (careflowDefinitionId) {
       params.set("careflow_definition_id", careflowDefinitionId);
     }

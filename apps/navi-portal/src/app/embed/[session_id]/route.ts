@@ -15,6 +15,7 @@ import {
 import { renderGoogleFontLinks } from "./fonts";
 import { env } from "@/env";
 import { BrandingConfig } from "@awell-health/navi-core";
+import { EmbedSessionStrategy } from "@/domains/session/strategies";
 
 export const runtime = "edge";
 
@@ -28,6 +29,27 @@ export async function GET(
     const instanceId = request.nextUrl.searchParams.get("instance_id");
     console.debug("🔍 GET /embed/[session_id]", { sessionId, instanceId });
 
+    // URL is source of truth. Detect if cookies/JWT reference a different session for logging purposes only.
+    let switched = false;
+    try {
+      const sidCookie = request.cookies.get("awell.sid");
+      if (sidCookie?.value && sidCookie.value !== sessionId) {
+        switched = true;
+      }
+      const jwtCookie = request.cookies.get("awell.jwt");
+      if (jwtCookie?.value) {
+        const auth = new AuthService();
+        await auth.initialize(env.JWT_SIGNING_KEY);
+        const payload = await auth.verifyToken(jwtCookie.value);
+        const jwtSessionId = payload.sub;
+        if (jwtSessionId && jwtSessionId !== sessionId) {
+          switched = true;
+        }
+      }
+    } catch {
+      // ignore
+    }
+
     // Check for existing session cookie (same-domain persistence)
     const existingSessionCookie = request.cookies.get("awell.sid");
     if (existingSessionCookie && existingSessionCookie.value !== sessionId) {
@@ -36,40 +58,8 @@ export async function GET(
         // Validate existing session is not expired
         const now = Math.floor(Date.now() / 1000);
         if (existingSessionData.exp && existingSessionData.exp > now) {
-          console.log(
-            "🔄 Found valid existing session, checking org compatibility"
-          );
-
-          // Get new session to compare organizations
-          const newSessionData = await getSession(sessionId);
-          if (
-            newSessionData &&
-            "orgId" in newSessionData &&
-            "orgId" in existingSessionData
-          ) {
-            if (existingSessionData.orgId === newSessionData.orgId) {
-              console.log(
-                "✅ Reusing existing session:",
-                existingSessionCookie.value
-              );
-              await deleteSession(sessionId);
-              // Redirect to existing session instead
-              const url = new URL(request.url);
-              url.pathname = `/embed/${existingSessionCookie.value}`;
-
-              // Ensure we maintain the correct hostname for mobile devices
-              const host = request.headers.get("host");
-              if (host) {
-                url.host = host;
-              }
-
-              return NextResponse.redirect(url, 302);
-            } else {
-              console.log(
-                "⚠️ Existing session for different org, proceeding with new session"
-              );
-            }
-          }
+          // We'll honor the URL session and simply log via client script
+          switched = true;
         } else {
           console.log(
             "⏰ Existing session expired, proceeding with new session"
@@ -124,15 +114,22 @@ export async function GET(
       };
     }
 
-    // Generate JWT for the session
+    // Generate JWT for the session, preserving any existing auth context
     const authService = new AuthService();
     await authService.initialize(env.JWT_SIGNING_KEY);
+
+    const existingJwtCookie = request.cookies.get("awell.jwt");
+    const { authenticationState, naviStytchUserId } =
+      await NaviSession.extractAuthContextFromJwt(
+        authService,
+        existingJwtCookie?.value
+      );
 
     const jwt = await authService.createJWTFromSession(
       SessionTokenDataSchema.parse(embedSession),
       sessionId,
       env.JWT_KEY_ID,
-      { authenticationState: "unauthenticated" }
+      { authenticationState, naviStytchUserId }
     );
 
     // Generate theme and favicon
@@ -156,6 +153,7 @@ export async function GET(
         themeStyle,
         faviconHTML,
         instanceId,
+        switched,
       });
     } else if (isActiveCareflow) {
       // Active careflow (redirect to existing careflow activities)
@@ -166,6 +164,7 @@ export async function GET(
         themeStyle,
         faviconHTML,
         instanceId,
+        switched,
       });
     } else {
       // Session in created state - show loading/preparation
@@ -176,6 +175,7 @@ export async function GET(
         themeStyle,
         faviconHTML,
         instanceId,
+        switched,
       });
     }
 
@@ -226,6 +226,7 @@ function renderNewCareflowPage({
   themeStyle,
   faviconHTML,
   instanceId,
+  switched,
 }: {
   sessionData: EmbedSessionData;
   sessionId: string;
@@ -233,6 +234,7 @@ function renderNewCareflowPage({
   themeStyle: string;
   faviconHTML: string;
   instanceId: string | null;
+  switched: boolean;
 }) {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -248,12 +250,17 @@ function renderNewCareflowPage({
   
   ${themeStyle}
   ${renderCommonStyles()}
-</head>
-<body>
-  ${renderNewCareflowBody(branding)}
-  ${renderNewCareflowScript(sessionData, sessionId, instanceId)}
-</body>
-</html>`;
+ </head>
+ <body>
+   ${
+     switched
+       ? "<script>console.warn('[Navi] Using existing session from JWT; switched sessions to keep you signed in. Use naviInstance.logout() to clear sessions if needed.')</script>"
+       : ""
+   }
+   ${renderNewCareflowBody(branding)}
+   ${renderNewCareflowScript(sessionData, sessionId, instanceId)}
+ </body>
+ </html>`;
 }
 
 // Page for active careflow (session in active state)
@@ -264,6 +271,7 @@ function renderActiveCareflowPage({
   themeStyle,
   faviconHTML,
   instanceId,
+  switched,
 }: {
   sessionData: ActiveSessionTokenData;
   sessionId: string;
@@ -271,6 +279,7 @@ function renderActiveCareflowPage({
   themeStyle: string;
   faviconHTML: string;
   instanceId: string | null;
+  switched: boolean;
 }) {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -287,12 +296,17 @@ function renderActiveCareflowPage({
 
   ${themeStyle}
   ${renderCommonStyles()}
-</head>
-<body>
-  ${renderActiveCareflowBody(branding)}
-  ${renderActiveCareflowScript(sessionData, sessionId, instanceId)}
-</body>
-</html>`;
+ </head>
+ <body>
+   ${
+     switched
+       ? "<script>console.warn('[Navi] Using existing session from JWT; switched sessions to keep you signed in. Use naviInstance.logout() to clear sessions if needed.')</script>"
+       : ""
+   }
+   ${renderActiveCareflowBody(branding)}
+   ${renderActiveCareflowScript(sessionData, sessionId, instanceId)}
+ </body>
+ </html>`;
 }
 
 // Page for preparation state (session created but not yet active)
@@ -303,6 +317,7 @@ function renderPreparationPage({
   themeStyle,
   faviconHTML,
   instanceId,
+  switched,
 }: {
   sessionData: EmbedSessionData;
   sessionId: string;
@@ -310,6 +325,7 @@ function renderPreparationPage({
   themeStyle: string;
   faviconHTML: string;
   instanceId: string | null;
+  switched: boolean;
 }) {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -325,12 +341,17 @@ function renderPreparationPage({
   
   ${themeStyle}
   ${renderCommonStyles()}
-</head>
-<body>
-  ${renderPreparationBody(branding)}
-  ${renderPreparationScript(sessionData, sessionId, instanceId)}
-</body>
-</html>`;
+ </head>
+ <body>
+   ${
+     switched
+       ? "<script>console.warn('[Navi] Using existing session from JWT; switched sessions to keep you signed in. Use naviInstance.logout() to clear sessions if needed.')</script>"
+       : ""
+   }
+   ${renderPreparationBody(branding)}
+   ${renderPreparationScript(sessionData, sessionId, instanceId)}
+ </body>
+ </html>`;
 }
 
 // Body for new careflow creation
@@ -438,7 +459,7 @@ function renderNewCareflowScript(
       patientIdentifier: ${JSON.stringify(
         sessionData.patientIdentifier || null
       )},
-      stakeholderId: '${sessionData.stakeholder_id || ""}',
+      stakeholderId: '${sessionData.stakeholderId || ""}',
       mode: 'new-careflow',
       instanceId: '${instanceId}',
       environment: '${sessionData.environment}'
@@ -460,8 +481,8 @@ function renderActiveCareflowScript(
     window.embedConfig = {
       careflowId: '${sessionData.careflowId}',
       sessionId: '${sessionId}',
-      trackId: '${sessionData.track_id || ""}',
-      activityId: '${sessionData.activity_id || ""}',
+      trackId: '${sessionData.trackId || ""}',
+      activityId: '${sessionData.activityId || ""}',
       stakeholderId: '${sessionData.stakeholderId}',
       patientId: '${sessionData.patientId}',
       instanceId: '${instanceId}',

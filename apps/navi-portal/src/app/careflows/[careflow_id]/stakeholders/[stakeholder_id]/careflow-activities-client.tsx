@@ -79,6 +79,16 @@ export default function CareflowActivitiesClient({
   const searchParams = useSearchParams();
   const instanceId = searchParams.get("instance_id");
 
+  // If the session was switched upstream to honor an existing valid JWT, surface a notification
+  useEffect(() => {
+    if (searchParams.get("session_switched") === "1") {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "[Navi] Using existing session from JWT; switched sessions to keep you signed in."
+      );
+    }
+  }, [searchParams]);
+
   console.debug("🔍 CareflowActivitiesClient Debug:", {
     careflowId,
     stakeholderId,

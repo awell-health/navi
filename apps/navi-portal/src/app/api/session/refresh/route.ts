@@ -14,13 +14,35 @@ export const runtime = "edge";
  */
 export async function POST(request: NextRequest) {
   try {
-    // Extract session ID from cookie
-    const sessionCookie = request.cookies.get("awell.sid");
-    if (!sessionCookie) {
-      return NextResponse.json({ error: "No session found" }, { status: 401 });
+    // Resolve session ID from cookie or Authorization header (fallback for cookie-blocked iframes)
+    let sessionId: string | null =
+      request.cookies.get("awell.sid")?.value ?? null;
+
+    const authService = new AuthService();
+    await authService.initialize(env.JWT_SIGNING_KEY);
+
+    let authHeaderState:
+      | "unauthenticated"
+      | "verified"
+      | "authenticated"
+      | undefined;
+    if (!sessionId) {
+      const authHeader = request.headers.get("authorization");
+      const bearer = authHeader?.match(/^Bearer\s+(.+)$/i)?.[1];
+      if (bearer) {
+        try {
+          const payload = await authService.verifyToken(bearer);
+          sessionId = (payload.sub as string) ?? null;
+          authHeaderState = payload.authentication_state;
+        } catch {
+          // ignore invalid header token
+        }
+      }
     }
 
-    const sessionId = sessionCookie.value;
+    if (!sessionId) {
+      return NextResponse.json({ error: "No session found" }, { status: 401 });
+    }
 
     // Get session data from KV store
     const session = await getSession(sessionId);
@@ -33,15 +55,14 @@ export async function POST(request: NextRequest) {
     const updatedSession = NaviSession.extendSessionExpiration(session);
     await setSession(sessionId, updatedSession);
 
-    // Generate fresh JWT using AuthService, preserving current auth state from existing jwt
-    const authService = new AuthService();
-    await authService.initialize(env.JWT_SIGNING_KEY);
+    // Generate fresh JWT using AuthService, preserving current auth state
     const existingJwtCookie = request.cookies.get("awell.jwt");
-
-    const { authenticationState } = await NaviSession.extractAuthContextFromJwt(
-      authService,
-      existingJwtCookie?.value
-    );
+    const { authenticationState } = authHeaderState
+      ? { authenticationState: authHeaderState }
+      : await NaviSession.extractAuthContextFromJwt(
+          authService,
+          existingJwtCookie?.value
+        );
 
     // Create fresh token data from session and renew token exp (15 minutes)
     const tokenData = NaviSession.renewJwtExpiration(

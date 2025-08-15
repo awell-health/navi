@@ -1,10 +1,13 @@
 import { notFound, redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { getSession } from "@/domains/session/store";
 import type {
   ActiveSessionTokenData,
   EmbedSessionData,
   SessionData,
 } from "@awell-health/navi-core";
+import { AuthService } from "@awell-health/navi-core";
+import { env } from "@/env";
 import DirectSessionClient from "./DirectSessionClient";
 
 type Params = Promise<{ session_id: string }>;
@@ -17,6 +20,24 @@ export default async function DirectSessionPage({
   params: Params;
 }) {
   const { session_id: sessionId } = await params;
+
+  // URL is source of truth: if cookies reference a different session, surface notification only
+  try {
+    const cookieStore = await cookies();
+    const jwtCookie = cookieStore.get("awell.jwt");
+    if (jwtCookie?.value) {
+      const auth = new AuthService();
+      await auth.initialize(env.JWT_SIGNING_KEY);
+      const payload = await auth.verifyToken(jwtCookie.value);
+      const jwtSessionId = payload.sub as string | undefined;
+      if (jwtSessionId && jwtSessionId !== sessionId) {
+        // Do not redirect; the URL wins. Append notification param for client log.
+        redirect(`/direct/${sessionId}?session_switched=1`);
+      }
+    }
+  } catch {
+    // Ignore and continue with requested session
+  }
 
   const session = (await getSession(sessionId)) as
     | SessionData

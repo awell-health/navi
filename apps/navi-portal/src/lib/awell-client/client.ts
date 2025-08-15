@@ -104,6 +104,9 @@ function scheduleTokenRefresh(expiresAt: number): void {
         const response = await fetch("/api/session/refresh", {
           method: "POST",
           credentials: "include",
+          headers: _jwtCache?.token
+            ? { Authorization: `Bearer ${_jwtCache.token}` }
+            : undefined,
         });
 
         if (response.ok) {
@@ -147,6 +150,9 @@ async function getJWTToken(): Promise<{
     // Fetch fresh token from session endpoint
     const response = await fetch("/api/session/jwt", {
       credentials: "include", // Include cookies for session validation
+      headers: _jwtCache?.token
+        ? { Authorization: `Bearer ${_jwtCache.token}` }
+        : undefined,
     });
 
     if (!response.ok) {
