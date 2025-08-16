@@ -1,9 +1,9 @@
-npm # @awell-health/navi-react
+# @awell-health/navi-js-react
 
 > React components and hooks for integrating Navi care flows
 
-[![npm version](https://badge.fury.io/js/@awell-health%2Fnavi-react.svg)](https://www.npmjs.com/package/@awell-health/navi-react)
-[![Bundle Size](https://img.shields.io/bundlephobia/minzip/@awell-health/navi-react)](https://bundlephobia.com/package/@awell-health/navi-react)
+[![npm version](https://badge.fury.io/js/@awell-health%2Fnavi-js-react.svg)](https://www.npmjs.com/package/@awell-health/navi-js-react)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/@awell-health/navi-js-react)](https://bundlephobia.com/package/@awell-health/navi-js-react)
 
 ## What is this package?
 
@@ -20,14 +20,14 @@ This is the **React SDK** for Navi care flows. Instead of using the iframe-based
 
 ## When to use this package?
 
-Choose `@awell-health/navi-react` when:
+Choose `@awell-health/navi-js-react` when:
 
 - ✅ You're building a React/Next.js application
 - ✅ You want native React components instead of iframes
 - ✅ You need tight integration with React state/lifecycle
 - ✅ You want TypeScript support out of the box
 
-Use [`@awell-health/navi`](../navi-loader) (the loader script) when:
+Use [`@awell-health/navi-dot-js`](../navi.js) (the loader script) when:
 
 - ❌ You're not using React
 - ❌ You want the simplest possible integration
@@ -36,11 +36,11 @@ Use [`@awell-health/navi`](../navi-loader) (the loader script) when:
 ## Installation
 
 ```bash
-npm install @awell-health/navi-react
+npm install @awell-health/navi-js-react @awell-health/navi-js
 # or
-yarn add @awell-health/navi-react
+yarn add @awell-health/navi-js-react @awell-health/navi-js
 # or
-pnpm add @awell-health/navi-react
+pnpm add @awell-health/navi-js-react @awell-health/navi-js
 ```
 
 ## Quick Start
@@ -48,7 +48,7 @@ pnpm add @awell-health/navi-react
 ### 1. Wrap your app with NaviProvider
 
 ```jsx
-import { NaviProvider } from "@awell-health/navi-react";
+import { NaviProvider } from "@awell-health/navi-js-react";
 
 function App() {
   return (
@@ -59,125 +59,33 @@ function App() {
 }
 ```
 
-### 2. Use the FlowEmbed component
+### 2. Use the NaviEmbed component
 
 ```jsx
-import { FlowEmbed } from "@awell-health/navi-react";
+import { NaviEmbed } from "@awell-health/navi-js-react";
 
 function OnboardingPage() {
   return (
     <div>
       <h1>Complete Your Health Assessment</h1>
-      <FlowEmbed
-        flowId="health_assessment_123"
-        onFlowCompleted={(data) => {
-          console.log("Assessment completed!", data);
-          // Redirect or update UI
+      <NaviEmbed
+        careflowDefinitionId="cfdef_12345"
+        // Optional:
+        // stakeholderId="stk_abc"
+        // branding={{ primary: "#3b82f6" }}
+        onSessionCompleted={(event) => {
+          console.log("Session completed!", event);
+        }}
+        onActivityCompleted={(event) => {
+          console.log("Activity completed!", event);
+        }}
+        onSessionError={(event) => {
+          console.error("Session error", event);
         }}
       />
     </div>
   );
 }
-```
-
-## Complete Example
-
-```jsx
-import React, { useState } from "react";
-import {
-  NaviProvider,
-  FlowEmbed,
-  useFlowEmbed,
-} from "@awell-health/navi-react";
-
-// Component using FlowEmbed
-function HealthScreening() {
-  const [isCompleted, setIsCompleted] = useState(false);
-
-  const handleActivityCompleted = (data) => {
-    console.log("Activity completed:", data.activityId);
-  };
-
-  const handleFlowCompleted = (data) => {
-    console.log("Screening completed!");
-    setIsCompleted(true);
-  };
-
-  const handleError = (error) => {
-    console.error("Screening error:", error);
-    alert("Something went wrong. Please try again.");
-  };
-
-  if (isCompleted) {
-    return <div>✅ Health screening completed!</div>;
-  }
-
-  return (
-    <FlowEmbed
-      flowId="health_screening_456"
-      className="my-flow-styles"
-      options={{
-        context: {
-          patientId: "patient_123",
-          source: "react-app",
-        },
-      }}
-      onActivityCompleted={handleActivityCompleted}
-      onFlowCompleted={handleFlowCompleted}
-      onError={handleError}
-    />
-  );
-}
-
-// Component using useFlowEmbed hook
-function DynamicFlow() {
-  const [flowId, setFlowId] = useState("");
-  const { embed, destroy, isEmbedded, error } = useFlowEmbed();
-
-  const handleEmbed = () => {
-    embed(flowId, "#dynamic-container", {
-      context: { timestamp: Date.now() },
-    });
-  };
-
-  return (
-    <div>
-      <input
-        value={flowId}
-        onChange={(e) => setFlowId(e.target.value)}
-        placeholder="Enter flow ID"
-      />
-      <button onClick={handleEmbed} disabled={!flowId}>
-        Embed Flow
-      </button>
-      <button onClick={destroy} disabled={!isEmbedded}>
-        Remove Flow
-      </button>
-
-      {error && <div>Error: {error.message}</div>}
-
-      <div id="dynamic-container" style={{ minHeight: 300 }} />
-    </div>
-  );
-}
-
-// Main App
-function App() {
-  return (
-    <NaviProvider
-      publishableKey="pk_test_your_key_here"
-      debug={true} // Enable debug mode in development
-    >
-      <div className="app">
-        <h1>My Healthcare App</h1>
-        <HealthScreening />
-        <DynamicFlow />
-      </div>
-    </NaviProvider>
-  );
-}
-
-export default App;
 ```
 
 ## API Reference
@@ -189,75 +97,87 @@ Provides Navi context to all child components. Must wrap any components using Na
 ```jsx
 <NaviProvider
   publishableKey="pk_test_your_key"
-  apiUrl="https://api.navi.awell.com" // optional
-  debug={false} // optional
+  branding={{ primary: "#3b82f6" }}
+  config={{
+    verbose: true,
+    // Advanced overrides (optional)
+    // origin: "https://cdn.awellhealth.com", // loader script origin
+    // embedOrigin: "https://navi-portal.awellhealth.com", // iframe origin
+    // alwaysFetch: false,
+  }}
 >
-  <App />
+  <NaviEmbed careflowDefinitionId="cfdef_12345" />
+  {/* children... */}
 </NaviProvider>
 ```
 
 **Props:**
 
 - `publishableKey` (string, required) - Your Navi publishable key
-- `apiUrl` (string, optional) - Custom API URL (for testing)
-- `debug` (boolean, optional) - Enable debug logging
-- `children` (ReactNode, required) - Your app components
+- `config` (object, optional) - Advanced configurations for debugging or custom domains
 
-### `<FlowEmbed>`
+### `<NaviEmbed>`
 
 Renders a care flow as a React component.
 
 ```jsx
-<FlowEmbed
-  flowId="flow_123"
-  className="my-styles"
-  options={{ context: { userId: "123" } }}
-  onActivityLoaded={(data) => {}}
-  onActivityCompleted={(data) => {}}
-  onFlowCompleted={(data) => {}}
-  onError={(error) => {}}
+<NaviEmbed
+  careflowDefinitionId="cfdef_12345"
+  stakeholderId="stk_abc"
+  branding={{ primary: "#3b82f6" }}
+  onActivityCompleted={(event) => {
+    /* ... */
+  }}
+  onSessionReady={(event) => {
+    /* ... */
+  }}
+  onSessionCompleted={(event) => {
+    /* ... */
+  }}
+  onSessionError={(event) => {
+    /* ... */
+  }}
+  onIframeClose={(event) => {
+    /* ... */
+  }}
 />
 ```
 
-**Props:**
+Render options (selected):
 
-- `flowId` (string, required) - The care flow ID to render
-- `className` (string, optional) - CSS class for styling
-- `options` (object, optional) - Flow configuration
-  - `context` (object) - Additional context data
-- `onActivityLoaded` (function, optional) - Called when activity loads
-- `onActivityCompleted` (function, optional) - Called when activity completes
-- `onFlowCompleted` (function, optional) - Called when entire flow completes
-- `onError` (function, optional) - Called when errors occur
+- careflowDefinitionId | careflowId | sessionId | trackId | activityId
+- patientIdentifier | awellPatientId
+- stakeholderId
+- branding
+- width | height | minWidth | minHeight
+
+Event handlers:
+
+- onActivityCompleted(event)
+- onSessionReady(event)
+- onSessionCompleted(event)
+- onSessionError(event)
+- onIframeClose(event)
 
 ### `useNavi()`
 
 Hook to access Navi context and loading state.
 
 ```jsx
-const { config, isLoaded, error } = useNavi();
+const { branding, initialized, loading, error, publishableKey, navi } =
+  useNavi();
 ```
 
-**Returns:**
+Fields:
 
-- `config` - The Navi configuration (publishableKey, apiUrl, debug)
-- `isLoaded` - Boolean indicating if Navi script is loaded
-- `error` - Any loading errors
+- branding
+- initialized
+- loading
+- error
+- publishableKey
+- navi (loaded SDK instance)
 
-### `useFlowEmbed()`
-
-Hook for programmatic flow embedding and management.
-
-```jsx
-const { embed, destroy, isEmbedded, error } = useFlowEmbed();
-```
-
-**Returns:**
-
-- `embed(flowId, container, options)` - Function to embed a flow
-- `destroy()` - Function to remove the embedded flow
-- `isEmbedded` - Boolean indicating if a flow is currently embedded
-- `error` - Any embedding errors
+<!-- Removed deprecated useFlowEmbed docs. -->
 
 ## Integration Patterns
 
@@ -265,7 +185,7 @@ const { embed, destroy, isEmbedded, error } = useFlowEmbed();
 
 ```jsx
 // app/layout.tsx
-import { NaviProvider } from '@awell-health/navi-react';
+import { NaviProvider } from '@awell-health/navi-js-react';
 
 export default function RootLayout({ children }) {
   return (
@@ -280,13 +200,13 @@ export default function RootLayout({ children }) {
 }
 
 // app/onboarding/page.tsx
-import { FlowEmbed } from '@awell-health/navi-react';
+import { NaviEmbed } from '@awell-health/navi-js-react';
 
 export default function OnboardingPage() {
   return (
     <div>
       <h1>Welcome!</h1>
-      <FlowEmbed flowId="onboarding_flow" />
+      <NaviEmbed careflowDefinitionId="cfdef_onboarding" />
     </div>
   );
 }
@@ -303,10 +223,9 @@ function PatientDashboard({ patient }) {
       <h1>Dashboard</h1>
 
       {showHealthCheck && (
-        <FlowEmbed
-          flowId="daily_health_check"
-          options={{ context: { patientId: patient.id } }}
-          onFlowCompleted={() => {
+        <NaviEmbed
+          careflowDefinitionId="cfdef_daily_health_check"
+          onSessionCompleted={() => {
             // Refresh patient data
             mutate(`/api/patients/${patient.id}`);
           }}
@@ -335,10 +254,10 @@ function RobustFlow() {
   }
 
   return (
-    <FlowEmbed
-      flowId="sensitive_flow"
-      onError={(error) => {
-        console.error("Flow error:", error);
+    <NaviEmbed
+      careflowDefinitionId="cfdef_sensitive"
+      onSessionError={(event) => {
+        console.error("Session error:", event);
         setHasError(true);
       }}
     />
@@ -349,12 +268,7 @@ function RobustFlow() {
 ### TypeScript Usage
 
 ```tsx
-import {
-  NaviProvider,
-  FlowEmbed,
-  FlowEmbedProps,
-  useNavi,
-} from "@awell-health/navi-react";
+import { NaviProvider, NaviEmbed, useNavi } from "@awell-health/navi-js-react";
 
 interface CustomFlowProps {
   patientId: string;
@@ -362,23 +276,20 @@ interface CustomFlowProps {
 }
 
 const CustomFlow: React.FC<CustomFlowProps> = ({ patientId, flowType }) => {
-  const { isLoaded } = useNavi();
+  const { initialized } = useNavi();
 
   const handleCompleted = (data: { flowId: string; completedAt: string }) => {
     console.log("Flow completed:", data);
   };
 
-  if (!isLoaded) {
+  if (!initialized) {
     return <div>Loading Navi...</div>;
   }
 
   return (
-    <FlowEmbed
-      flowId={`${flowType}_flow`}
-      options={{
-        context: { patientId },
-      }}
-      onFlowCompleted={handleCompleted}
+    <NaviEmbed
+      careflowDefinitionId={`cfdef_${flowType}`}
+      onSessionCompleted={handleCompleted}
     />
   );
 };

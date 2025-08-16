@@ -10,6 +10,7 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
+    "docs": "mint dev",
     "lint": "turbo lint",
     "test": "turbo test",
     "clean": "turbo clean",
@@ -31,16 +32,16 @@
     "node": ">=22"
   },
   "packageManager": "pnpm@10.12.1",
-  "dependencies": {},
   "devDependencies": {
     "@changesets/cli": "^2.27.9",
-    "turbo": "^2.3.4",
-    "typescript": "^5",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.3",
     "@types/node": "^20",
     "dotenv": "^16.5.0",
-    "tsx": "^4.20.3"
+    "eslint": "^9",
+    "eslint-config-next": "15.3.3",
+    "mint": "^4.2.64",
+    "tsx": "^4.20.3",
+    "turbo": "^2.3.4",
+    "typescript": "^5"
   },
   "eslintConfig": {
     "extends": [

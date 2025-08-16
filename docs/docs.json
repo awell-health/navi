@@ -1,0 +1,36 @@
+{
+  "name": "Awell Navi Docs",
+  "logo": "/public/logo.svg",
+  "theme": "willow",
+  "favicon": "/public/favicon.ico",
+  "colors": { "primary": "#A45128" },
+  "navigation": {
+    "pages": ["index", "what-is-navi"],
+    "groups": [
+      {
+        "group": "Tutorials",
+        "icon": "play",
+        "pages": ["tutorials/quickstart"]
+      },
+      {
+        "group": "How‑to guides",
+        "icon": "wrench",
+        "pages": ["how-to/branding-and-theming"]
+      },
+      {
+        "group": "Explanation",
+        "icon": "lightbulb",
+        "pages": [
+          "explanations/activity-model-and-lifecycle",
+          "explanations/architecture-overview",
+          "explanations/sessions-and-jwts"
+        ]
+      },
+      {
+        "group": "Reference",
+        "icon": "book",
+        "pages": ["reference/events"]
+      }
+    ]
+  }
+}
