@@ -77,30 +77,50 @@ export type EmbedSessionState = "created" | "active" | "error";
  * Comprehensive session data for embed flows that includes all necessary
  * information for both new and existing careflow workflows.
  */
-export interface EmbedSessionData extends SessionTokenData {
+// Discriminated union for embed sessions (pre-activation)
+// WHY: Model created vs error states explicitly so error sessions require
+// an errorMessage and consumers can narrow by `state` safely.
+interface BaseSessionWithId extends SessionTokenData {
   sessionId: string;
-  state: EmbedSessionState;
-  errorMessage?: string;
+}
 
+export interface EmbedSessionCreated extends BaseSessionWithId {
+  state: "created";
+  errorMessage?: never;
   // Additional fields for new careflow creation
   careflowDefinitionId?: string;
   patientIdentifier?: PatientIdentifier;
   trackId?: string;
   activityId?: string;
-
-  // Careflow data populated after creation/activation
+  // Careflow data populated after creation (optional until activation)
   careflowData?: {
     id: string;
     releaseId: string;
   };
 }
 
+export interface EmbedSessionError extends BaseSessionWithId {
+  state: "error";
+  errorMessage: string;
+  // Preserve embed fields for context, though not required for error rendering
+  careflowDefinitionId?: string;
+  patientIdentifier?: PatientIdentifier;
+  trackId?: string;
+  activityId?: string;
+  careflowData?: {
+    id: string;
+    releaseId: string;
+  };
+}
+
+export type EmbedSessionData = EmbedSessionCreated | EmbedSessionError;
+
 /**
  * An active session is a session that has been created and is ready to be used.
  * It is used to track the state of the session and the careflow data. and should
  * be able to be used to create JWTs to interact with activities.
  */
-export interface ActiveSessionTokenData extends EmbedSessionData {
+export interface ActiveSessionTokenData extends BaseSessionWithId {
   state: "active";
   careflowId: string;
   stakeholderId: string;

@@ -1,5 +1,11 @@
 # @awell-health/navi-core
 
+## 0.0.9
+
+### Patch Changes
+
+- updated session schema
+
 ## 0.0.8
 
 ### Patch Changes

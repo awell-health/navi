@@ -1,5 +1,13 @@
 # @awell-health/navi-js
 
+## 0.0.9
+
+### Patch Changes
+
+- updated session schema
+- Updated dependencies
+  - @awell-health/navi-core@0.0.9
+
 ## 0.0.8
 
 ### Patch Changes
