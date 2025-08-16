@@ -12,6 +12,7 @@ import { AuthService, SessionTokenDataSchema } from "@awell-health/navi-core";
 import { env } from "@/env";
 import type { SessionTokenData } from "@awell-health/navi-core";
 import { NaviSession } from "@/domains/session/navi-session";
+import { SessionService } from "@/domains/session/service";
 
 export const runtime = "edge";
 
@@ -96,16 +97,13 @@ export async function POST(request: NextRequest) {
       !(session as { naviStytchUserId?: string }).naviStytchUserId &&
       challenge.stytchUserId
     ) {
-      const { setSession, getSession } = await import(
-        "@/domains/session/store"
-      );
       const latest = await getSession(sessionId);
       if (latest) {
         const updated = NaviSession.attachStytchUserIdToSession(
           latest,
           challenge.stytchUserId
         );
-        await setSession(sessionId, updated as never);
+        await SessionService.set(sessionId, updated);
       }
     }
 

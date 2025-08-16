@@ -1,21 +1,22 @@
 "use server";
 
 import { NextResponse } from "next/server";
-import { getSession, setSession } from "./store";
 import { validateKey } from "@/domains/auth/publishable-key-store";
 import { getBrandingByOrgId } from "@/lib/edge-config";
-import { AuthService, SessionTokenDataSchema } from "@awell-health/navi-core";
+import {
+  AuthService,
+  SessionTokenDataSchema,
+  SessionValueSchema,
+} from "@awell-health/navi-core";
 import { NaviSession } from "@/domains/session/navi-session";
 import type {
   BrandingConfig,
   CreateCareFlowSessionRequest,
   CreateCareFlowSessionResponse,
-  EmbedSessionData,
-  ActiveSessionTokenData,
-  SessionData,
   CreateCareFlowSessionResponseError,
 } from "@awell-health/navi-core";
 import { env } from "@/env";
+import { SessionService } from "./service";
 
 export type CreateSessionInput = CreateCareFlowSessionRequest & {
   origin?: string | null;
@@ -42,7 +43,7 @@ export async function createSession(
   }
 
   const sessionId = crypto.randomUUID();
-  const embedSessionData: EmbedSessionData = {
+  const embedSessionData = SessionValueSchema.parse({
     sessionId,
     patientId: input.awellPatientId,
     careflowId: input.careflowId,
@@ -56,8 +57,8 @@ export async function createSession(
     trackId: input.trackId,
     activityId: input.activityId,
     stakeholderId: input.stakeholderId,
-  };
-  await setSession(sessionId, embedSessionData);
+  });
+  await SessionService.set(sessionId, embedSessionData);
 
   return { success: true, embedUrl: `/embed/${sessionId}`, branding };
 }
@@ -69,11 +70,7 @@ export async function initializeCookies(
     naviStytchUserId?: string;
   }
 ) {
-  const session = (await getSession(sessionId)) as
-    | SessionData
-    | EmbedSessionData
-    | ActiveSessionTokenData
-    | null;
+  const session = await SessionService.get(sessionId);
   if (!session)
     return NextResponse.json({ error: "Session not found" }, { status: 404 });
   if (session.exp && session.exp <= Math.floor(Date.now() / 1000)) {
@@ -117,7 +114,7 @@ export async function initializeCookies(
 }
 
 export async function refreshJwt(sessionId: string) {
-  const session = (await getSession(sessionId)) as SessionData | null;
+  const session = await SessionService.get(sessionId);
   if (!session)
     return NextResponse.json({ error: "Session not found" }, { status: 401 });
 

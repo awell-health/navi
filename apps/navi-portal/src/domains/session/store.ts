@@ -6,27 +6,42 @@ import type {
   SessionData,
   EmbedSessionData,
   ActiveSessionTokenData,
+  ParsedSessionValue,
 } from "@awell-health/navi-core";
-import { shortDeterministicId } from "@awell-health/navi-core/helpers";
+import { SessionValueSchema } from "@awell-health/navi-core";
 
 type AnySession = SessionData | EmbedSessionData | ActiveSessionTokenData;
 const keyFor = (id: string) => `session:${id}`;
 
 export async function setSession(sessionId: string, data: AnySession) {
-  // Respect the session exp if provided; otherwise apply default 30-day TTL
-  const nowSeconds = Math.floor(Date.now() / 1000);
-  const ttlFromExp = (data as Pick<AnySession, "exp">).exp
-    ? Math.max(1, (data as { exp: number }).exp - nowSeconds)
-    : NaviSession.DEFAULT_SESSION_TTL_SECONDS;
-  await kv.set(keyFor(sessionId), data, { ex: ttlFromExp });
+  const sessionData = SessionValueSchema.parse(data);
+  console.log("🔍 setSession", {
+    sessionId,
+    data,
+    sessionData,
+    exp: new Date(sessionData.exp * 1000).toISOString(),
+  });
+  await kv.set(keyFor(sessionId), sessionData, { ex: sessionData.exp });
 }
 
 export async function getSession(
   sessionId: string
-): Promise<AnySession | null> {
-  const data = (await kv.get(keyFor(sessionId))) as AnySession | null;
-  if (!data) return null;
+): Promise<ParsedSessionValue | null> {
+  const rawData = await kv.get(keyFor(sessionId));
+  if (!rawData) return null;
+  const parsed = SessionValueSchema.safeParse(rawData);
+  if (!parsed.success) {
+    console.warn("🔍 getSession: invalid session data", rawData, parsed.error);
+    return null;
+  }
+  const data = parsed.data;
   if (data.exp * 1000 < Date.now()) {
+    console.warn("🔍 getSession: session expired", {
+      data,
+      sessionId,
+      exp: new Date(data.exp * 1000).toISOString(),
+      now: new Date().toISOString(),
+    });
     await deleteSession(sessionId);
     return null;
   }

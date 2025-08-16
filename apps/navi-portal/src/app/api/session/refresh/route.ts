@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AuthService, SessionTokenDataSchema } from "@awell-health/navi-core";
-import { env } from "@/env";
-import { getSession, setSession } from "@/domains/session/store";
-import { NaviSession } from "@/domains/session/navi-session";
+import { SessionService } from "@/domains/session/service";
 
 export const runtime = "edge";
 
@@ -14,103 +11,15 @@ export const runtime = "edge";
  */
 export async function POST(request: NextRequest) {
   try {
-    // Resolve session ID from cookie or Authorization header (fallback for cookie-blocked iframes)
-    let sessionId: string | null =
-      request.cookies.get("awell.sid")?.value ?? null;
+    const { jwt, sessionId, sessionExpiresAtIso } =
+      await SessionService.refreshSessionAndMintJwt(request);
 
-    const authService = new AuthService();
-    await authService.initialize(env.JWT_SIGNING_KEY);
-
-    let authHeaderState:
-      | "unauthenticated"
-      | "verified"
-      | "authenticated"
-      | undefined;
-    if (!sessionId) {
-      const authHeader = request.headers.get("authorization");
-      const bearer = authHeader?.match(/^Bearer\s+(.+)$/i)?.[1];
-      if (bearer) {
-        try {
-          const payload = await authService.verifyToken(bearer);
-          sessionId = (payload.sub as string) ?? null;
-          authHeaderState = payload.authentication_state;
-        } catch {
-          // ignore invalid header token
-        }
-      }
-    }
-
-    if (!sessionId) {
-      return NextResponse.json({ error: "No session found" }, { status: 401 });
-    }
-
-    // Get session data from KV store
-    const session = await getSession(sessionId);
-    if (!session) {
-      console.log("🔍 Session not found for refresh:", sessionId);
-      return NextResponse.json({ error: "Session expired" }, { status: 401 });
-    }
-
-    // Extend session expiry (30 days from now) and persist
-    const updatedSession = NaviSession.extendSessionExpiration(session);
-    await setSession(sessionId, updatedSession);
-
-    // Generate fresh JWT using AuthService, preserving current auth state
-    const existingJwtCookie = request.cookies.get("awell.jwt");
-    const { authenticationState } = authHeaderState
-      ? { authenticationState: authHeaderState }
-      : await NaviSession.extractAuthContextFromJwt(
-          authService,
-          existingJwtCookie?.value
-        );
-
-    // Create fresh token data from session and renew token exp (15 minutes)
-    const tokenData = NaviSession.renewJwtExpiration(
-      SessionTokenDataSchema.parse(updatedSession)
-    );
-
-    const jwt = await authService.createJWTFromSession(
-      tokenData,
-      sessionId,
-      env.JWT_KEY_ID,
-      { authenticationState }
-    );
-
-    console.log("🔄 Session refreshed:", {
-      sessionId,
-      careflowId: (updatedSession as { careflowId?: string }).careflowId,
-      newExpiresAt: new Date(
-        (updatedSession as { exp: number }).exp * 1000
-      ).toISOString(),
-    });
-
-    // Return new JWT and update cookies
     const response = NextResponse.json({
       jwt,
-      expiresAt: Math.floor(Date.now() / 1000) + 15 * 60, // 15 minutes from now
-      sessionExpiresAt: new Date(
-        (updatedSession as { exp: number }).exp * 1000
-      ).toISOString(),
+      expiresAt: Math.floor(Date.now() / 1000) + 15 * 60,
+      sessionExpiresAt: sessionExpiresAtIso,
     });
-
-    // Refresh session cookie (30 days)
-    response.cookies.set("awell.sid", sessionId, {
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 30 * 24 * 60 * 60, // 30 days
-      path: "/",
-    });
-
-    // Refresh JWT cookie (15 minutes)
-    response.cookies.set("awell.jwt", jwt, {
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 15 * 60, // 15 minutes
-      path: "/",
-    });
-
+    SessionService.setAuthCookies(response, { sessionId, jwt });
     return response;
   } catch (error) {
     console.error("Session refresh error:", error);

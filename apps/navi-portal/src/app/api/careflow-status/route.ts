@@ -1,10 +1,11 @@
-import { getSession, setSession } from "@/domains/session/store";
+import { SessionService } from "@/domains/session/service";
 import { NextRequest } from "next/server";
 import { patientMatch, startCareflow } from "@/lib/api/mutations";
 import {
   EmbedSessionData,
   ActiveSessionTokenData,
   SessionData,
+  ParsedSessionValue,
 } from "@awell-health/navi-core";
 
 interface ProgressMessage {
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
     return new Response("Missing session_id", { status: 400 });
   }
 
-  const originalSession = await getSession(sessionId);
+  const originalSession = await SessionService.get(sessionId);
   if (!originalSession) {
     return new Response("Session not found", { status: 404 });
   }
@@ -94,7 +95,7 @@ async function createNewCareflow({
   sessionId: string;
   careflowDefinitionId: string;
   instanceId: string | null;
-  originalSession: SessionData | EmbedSessionData | ActiveSessionTokenData;
+  originalSession: ParsedSessionValue;
   send: (data: ProgressMessage) => void;
   controller: ReadableStreamDefaultController;
 }) {
@@ -107,14 +108,13 @@ async function createNewCareflow({
       timestamp: Date.now(),
     });
 
-    const embedFields = "state" in originalSession ? originalSession : null;
     const patientResult = await patientMatch(
       {
         patient_id: originalSession.patientId,
-        patient_identifier: embedFields?.patientIdentifier,
+        patient_identifier: originalSession.patientIdentifier,
         allow_anonymous_creation: true,
       },
-      originalSession as SessionData
+      originalSession
     );
 
     send({
@@ -157,28 +157,16 @@ async function createNewCareflow({
 
     // Step 3: Update session to active state
     const careflowId = careflowResult.careflow.id;
-    const activeSession: ActiveSessionTokenData = {
+    await SessionService.upgradeToActive({
       sessionId,
-      orgId: originalSession.orgId,
-      tenantId: originalSession.tenantId,
-      environment: originalSession.environment,
-      exp: originalSession.exp,
-      state: "active",
-      patientId,
       careflowId,
       stakeholderId,
+      patientId,
       careflowData: {
         id: careflowId,
         releaseId: careflowResult.careflow.release_id,
       },
-      // Include embed-specific fields if they exist
-      careflowDefinitionId: embedFields?.careflowDefinitionId,
-      patientIdentifier: embedFields?.patientIdentifier,
-      trackId: embedFields?.trackId,
-      activityId: embedFields?.activityId,
-    };
-
-    await setSession(sessionId, activeSession);
+    });
 
     // Step 4: Complete
     setTimeout(() => {
@@ -214,20 +202,12 @@ async function createNewCareflow({
     console.error("❌ Error creating careflow:", error);
 
     // Set session to error state
-    const errorSession: EmbedSessionData = {
+    await SessionService.set(sessionId, {
+      ...originalSession,
       sessionId,
-      orgId: originalSession.orgId,
-      tenantId: originalSession.tenantId,
-      environment: originalSession.environment,
-      exp: originalSession.exp,
       state: "error",
       errorMessage: error instanceof Error ? error.message : "Unknown error",
-      patientId: originalSession.patientId,
-      careflowId: originalSession.careflowId,
-      stakeholderId: originalSession.stakeholderId,
-    };
-
-    await setSession(sessionId, errorSession);
+    });
     controller.close();
   }
 }

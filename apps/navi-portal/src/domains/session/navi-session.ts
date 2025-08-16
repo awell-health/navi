@@ -4,10 +4,16 @@ import type {
   ActiveSessionTokenData,
   AuthenticationState,
   EmbedSessionData,
+  ParsedSessionTokenData,
+  ParsedSessionValue,
   SessionData,
   SessionTokenData,
 } from "@awell-health/navi-core";
-import { AuthService } from "@awell-health/navi-core";
+import {
+  AuthService,
+  SessionTokenDataSchema,
+  SessionValueSchema,
+} from "@awell-health/navi-core";
 
 type AnySession = SessionData | EmbedSessionData | ActiveSessionTokenData;
 
@@ -19,44 +25,50 @@ export class NaviSession {
   static renewJwtExpiration(
     tokenData: SessionTokenData,
     ttlSeconds = NaviSession.DEFAULT_JWT_TTL_SECONDS
-  ): SessionTokenData {
+  ): ParsedSessionTokenData {
     const exp = Math.floor(Date.now() / 1000) + ttlSeconds;
     // eslint-disable-next-line no-console
     console.log("[NaviSession] renewing JWT exp", { exp });
-    return { ...tokenData, exp };
+    return SessionTokenDataSchema.parse({ ...tokenData, exp });
   }
 
   static extendSessionExpiration<T extends AnySession = AnySession>(
     session: T,
     ttlSeconds: number = NaviSession.DEFAULT_SESSION_TTL_SECONDS
-  ): T {
+  ): ParsedSessionValue {
     const exp = Math.floor(Date.now() / 1000) + ttlSeconds;
     // eslint-disable-next-line no-console
     console.log("[NaviSession] extending session exp", {
       sessionId: (session as { sessionId?: string }).sessionId,
       exp,
     });
-    return { ...session, exp } as T;
+    return SessionValueSchema.parse({ ...session, exp });
   }
 
   static attachStytchUserIdToSession<T extends AnySession = AnySession>(
     session: T,
     stytchUserId: string
-  ): T {
+  ): ParsedSessionValue {
     // eslint-disable-next-line no-console
     console.log("[NaviSession] attaching Stytch user id to session", {
       sessionId: (session as { sessionId?: string }).sessionId,
     });
-    return { ...session, naviStytchUserId: stytchUserId } as T;
+    return SessionValueSchema.parse({
+      ...session,
+      naviStytchUserId: stytchUserId,
+    });
   }
 
   static attachStytchUserIdToToken(
     tokenData: SessionTokenData,
     stytchUserId: string
-  ): SessionTokenData {
+  ): ParsedSessionTokenData {
     // eslint-disable-next-line no-console
     console.log("[NaviSession] attaching Stytch user id to token data");
-    return { ...tokenData, naviStytchUserId: stytchUserId };
+    return SessionTokenDataSchema.parse({
+      ...tokenData,
+      naviStytchUserId: stytchUserId,
+    });
   }
 
   static async extractAuthContextFromJwt(

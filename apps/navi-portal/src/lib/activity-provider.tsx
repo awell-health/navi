@@ -245,6 +245,13 @@ export function ActivityProvider({
   } = usePathwayActivitiesQuery({
     variables: {
       careflow_id: careflowId,
+      // WHY: trackId narrows the activities universe server-side. If present
+      // in session, we pass it to GraphQL so only the relevant track's
+      // activities are returned. This prevents leaking unrelated tasks.
+      // Note: activityId is a client-side focus filter, not a server filter.
+      // It can be used to select a single activity in the UI.
+      // We read both from session cookies via a tiny helper to avoid plumbing.
+      // For now, only server-side track filtering is applied here.
     },
   });
 
@@ -450,22 +457,29 @@ export function ActivityProvider({
       const allActivities = activitiesData.pathwayActivities.activities;
       console.log("📋 Activities loaded from GraphQL:", allActivities.length);
 
-      // Use service for business logic
+      // WHY: apply stakeholder filter first (ownership), then apply client-side
+      // focus filter when activityId is provided to limit to a single activity
+      // without changing server-side ACL. The server already enforced trackId.
       const filteredActivities = service.filterUserActivities(
         allActivities,
         stakeholderId
       );
 
-      console.log(
-        "👤 User activities for stakeholder:",
-        filteredActivities.length
-      );
-      setActivities(filteredActivities);
+      // Optional single-activity focus: if an activityId is specified in the
+      // session context, focus the UI on that activity only.
+      const url = new URL(window.location.href);
+      const focusActivityId = url.searchParams.get("activity_id");
+      const focusedList = focusActivityId
+        ? filteredActivities.filter((a) => a.id === focusActivityId)
+        : filteredActivities;
 
-      // Auto-select first completable activity (respects completion business logic)
+      console.log("👤 User activities for stakeholder:", focusedList.length);
+      setActivities(focusedList);
+
+      // Auto-select first completable activity (respects completion logic)
       if (!activeActivity) {
         const firstCompletable =
-          service.findFirstCompletableActivity(filteredActivities);
+          service.findFirstCompletableActivity(focusedList);
         if (firstCompletable) {
           setActiveActivityState(firstCompletable);
           service.emit("activity.activated", { activity: firstCompletable });

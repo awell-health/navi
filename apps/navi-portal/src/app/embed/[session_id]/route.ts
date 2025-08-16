@@ -1,21 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession, deleteSession } from "@/domains/session/store";
 import {
   EmbedSessionData,
   ActiveSessionTokenData,
-  AuthService,
-  SessionTokenDataSchema,
 } from "@awell-health/navi-core";
-import { NaviSession } from "@/domains/session/navi-session";
 import { getBrandingByOrgId } from "@/lib/edge-config";
 import {
   generateInlineThemeStyle,
   generateFaviconHTML,
 } from "@/lib/branding/theme/generator";
 import { renderGoogleFontLinks } from "./fonts";
-import { env } from "@/env";
+import { SessionService } from "@/domains/session/service";
+import { SessionError, SessionErrorCode } from "@/domains/session/error";
 import { BrandingConfig } from "@awell-health/navi-core";
-import { EmbedSessionStrategy } from "@/domains/session/strategies";
 
 export const runtime = "edge";
 
@@ -29,75 +25,18 @@ export async function GET(
     const instanceId = request.nextUrl.searchParams.get("instance_id");
     console.debug("🔍 GET /embed/[session_id]", { sessionId, instanceId });
 
-    // URL is source of truth. Detect if cookies/JWT reference a different session for logging purposes only.
-    let switched = false;
-    try {
-      const sidCookie = request.cookies.get("awell.sid");
-      if (sidCookie?.value && sidCookie.value !== sessionId) {
-        switched = true;
-      }
-      const jwtCookie = request.cookies.get("awell.jwt");
-      if (jwtCookie?.value) {
-        const auth = new AuthService();
-        await auth.initialize(env.JWT_SIGNING_KEY);
-        const payload = await auth.verifyToken(jwtCookie.value);
-        const jwtSessionId = payload.sub;
-        if (jwtSessionId && jwtSessionId !== sessionId) {
-          switched = true;
-        }
-      }
-    } catch {
-      // ignore
-    }
+    // WHY: URL session is authoritative on this route. Normalize any cookie/JWT
+    // mismatch and capture the previousSession for logging/UI notice.
+    const { authenticationState, naviStytchUserId, previousSession } =
+      await SessionService.resolveAndNormalizeSessionForUrl(request, sessionId);
+    const switched = Boolean(previousSession);
 
-    // Check for existing session cookie (same-domain persistence)
-    const existingSessionCookie = request.cookies.get("awell.sid");
-    if (existingSessionCookie && existingSessionCookie.value !== sessionId) {
-      const existingSessionData = await getSession(existingSessionCookie.value);
-      if (existingSessionData && "state" in existingSessionData) {
-        // Validate existing session is not expired
-        const now = Math.floor(Date.now() / 1000);
-        if (existingSessionData.exp && existingSessionData.exp > now) {
-          // We'll honor the URL session and simply log via client script
-          switched = true;
-        } else {
-          console.log(
-            "⏰ Existing session expired, proceeding with new session"
-          );
-        }
-      }
-    }
-
-    // Retrieve session data from KV store
-    const sessionData = await getSession(sessionId);
-
-    if (!sessionData) {
-      console.error("❌ Session not found:", sessionId);
-      return new NextResponse("Session not found", { status: 404 });
-    }
-
-    // Check if this is an EmbedSessionData or ActiveSessionTokenData (has state field)
-    if (!("state" in sessionData)) {
-      console.error("❌ Not an embed session:", sessionId);
-      return new NextResponse("Invalid session type", { status: 400 });
-    }
-
-    const embedSession = sessionData as
-      | EmbedSessionData
-      | ActiveSessionTokenData;
-    console.log("✅ Session retrieved:", {
-      sessionId,
-      state: embedSession.state,
-    });
-
-    // Check session state
-    if (embedSession.state === "error") {
-      console.error("❌ Session is in error state:", embedSession.errorMessage);
-      return new NextResponse(
-        `Session error: ${embedSession.errorMessage || "Unknown error"}`,
-        { status: 400 }
-      );
-    }
+    // Generate JWT for the session from store (single roundtrip) and get the validated session
+    const { jwt, session: embedSession } =
+      await SessionService.getEmbedSessionAndMintJwt(sessionId, {
+        authenticationState,
+        naviStytchUserId,
+      });
 
     // Get organization branding
     let branding: BrandingConfig = {};
@@ -114,33 +53,16 @@ export async function GET(
       };
     }
 
-    // Generate JWT for the session, preserving any existing auth context
-    const authService = new AuthService();
-    await authService.initialize(env.JWT_SIGNING_KEY);
-
-    const existingJwtCookie = request.cookies.get("awell.jwt");
-    const { authenticationState, naviStytchUserId } =
-      await NaviSession.extractAuthContextFromJwt(
-        authService,
-        existingJwtCookie?.value
-      );
-
-    const jwt = await authService.createJWTFromSession(
-      SessionTokenDataSchema.parse(embedSession),
-      sessionId,
-      env.JWT_KEY_ID,
-      { authenticationState, naviStytchUserId }
-    );
-
     // Generate theme and favicon
     const themeStyle = generateInlineThemeStyle(branding as BrandingConfig);
     const faviconHTML = generateFaviconHTML(branding as BrandingConfig);
 
+    console.log("🔍 embedSession", embedSession);
     // Determine if this is a new careflow or existing careflow
     const isNewCareflow =
-      !embedSession.careflowId && embedSession.careflowDefinitionId;
-    const isActiveCareflow =
-      embedSession.state === "active" && embedSession.careflowId;
+      embedSession.state === "created" &&
+      Boolean(embedSession.careflowDefinitionId);
+    const isActiveCareflow = embedSession.state === "active";
 
     let html: string;
 
@@ -189,25 +111,26 @@ export async function GET(
       },
     });
 
-    // Set cookies
-    response.cookies.set("awell.sid", sessionId, {
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: NaviSession.DEFAULT_SESSION_TTL_SECONDS, // 30 days
-      path: "/",
-    });
-
-    response.cookies.set("awell.jwt", jwt, {
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: NaviSession.DEFAULT_JWT_TTL_SECONDS, // 15 minutes
-      path: "/",
-    });
+    // Set cookies (centralized policy)
+    SessionService.setAuthCookies(response, { sessionId, jwt });
 
     return response;
   } catch (error) {
+    if (error instanceof SessionError) {
+      switch (error.code) {
+        case SessionErrorCode.NO_SESSION_FOUND:
+          return new NextResponse("Session not found", { status: 404 });
+        case SessionErrorCode.SESSION_EXPIRED:
+          return new NextResponse("Session expired", { status: 401 });
+        case SessionErrorCode.INVALID_SESSION_TYPE:
+          return new NextResponse("Invalid session type", { status: 400 });
+        case SessionErrorCode.SESSION_IN_ERROR_STATE:
+          return new NextResponse(error.message || error.code, { status: 400 });
+        default:
+          return new NextResponse("Internal server error", { status: 500 });
+      }
+    }
+
     console.error("❌ Error in /embed/[session_id]:", error);
     return new NextResponse("Internal server error", { status: 500 });
   }
@@ -481,10 +404,8 @@ function renderActiveCareflowScript(
     window.embedConfig = {
       careflowId: '${sessionData.careflowId}',
       sessionId: '${sessionId}',
-      trackId: '${sessionData.trackId || ""}',
-      activityId: '${sessionData.activityId || ""}',
       stakeholderId: '${sessionData.stakeholderId}',
-      patientId: '${sessionData.patientId}',
+      patientId: '${sessionData.patientId || ""}',
       instanceId: '${instanceId}',
       mode: 'active-careflow',
       environment: '${sessionData.environment}'

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SessionTokenDataSchema } from "@awell-health/navi-core";
-import { shortDeterministicId } from "@awell-health/navi-core/helpers";
-import { setSession } from "@/domains/session/store";
+import { SessionService } from "@/domains/session/service";
 
 export const runtime = "edge";
 
@@ -16,18 +14,7 @@ export const runtime = "edge";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const sessionData = SessionTokenDataSchema.parse({
-      state: "active",
-      createdAt: Date.now(),
-      ...body,
-    });
-
-    // Deterministic, order-insensitive session id based on payload
-    const sessionId = await shortDeterministicId(sessionData);
-
-    // Persist session (respecting TTL from exp inside setSession)
-    await setSession(sessionId, { ...sessionData, sessionId });
-
+    const { sessionId } = await SessionService.createEmbedSession(body);
     return NextResponse.json({ session_id: sessionId }, { status: 201 });
   } catch (error) {
     return NextResponse.json(
