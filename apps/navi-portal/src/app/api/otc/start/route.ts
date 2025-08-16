@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  getSession,
-  setOtcChallenge,
-  deleteOtcChallenge,
-} from "@/domains/session/store";
+import { setOtcChallenge, deleteOtcChallenge } from "@/domains/session/store";
 import { createStytchClient } from "@/lib/stytch";
 import { z } from "zod";
 import { OTCStartFactory } from "@/domains/auth/otc/strategy";
+import { SessionService } from "@/domains/session/service";
 
 export const runtime = "edge";
 
@@ -26,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
     const sessionId = sessionCookie.value;
 
-    const session = await getSession(sessionId);
+    const session = await SessionService.get(sessionId);
     if (!session) {
       return NextResponse.json({ error: "Session expired" }, { status: 401 });
     }

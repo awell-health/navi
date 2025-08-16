@@ -2,11 +2,11 @@
 
 import { cookies } from "next/headers";
 import { cache } from "react";
-import { getSession } from "@/domains/session/store";
 import { getBrandingByOrgId } from "@/lib/edge-config";
 import { generateThemeCSS } from "@/lib/branding/theme/generator";
 import { awellDefaultBranding } from "@/lib/branding/defaults";
 import type { OrgBranding } from "@/lib/branding/types";
+import { SessionService } from "@/domains/session/service";
 
 interface BrandingResult {
   themeCSS: string;
@@ -32,7 +32,7 @@ export const getBrandingAction = cache(async (): Promise<BrandingResult> => {
       console.log("🔍 Server Action: Looking up session:", sessionCookie.value);
 
       // Get session data
-      const session = await getSession(sessionCookie.value);
+      const session = await SessionService.get(sessionCookie.value);
 
       if (session) {
         console.log(

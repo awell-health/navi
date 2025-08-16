@@ -27,7 +27,6 @@ export class NaviSession {
     ttlSeconds = NaviSession.DEFAULT_JWT_TTL_SECONDS
   ): ParsedSessionTokenData {
     const exp = Math.floor(Date.now() / 1000) + ttlSeconds;
-    // eslint-disable-next-line no-console
     console.log("[NaviSession] renewing JWT exp", { exp });
     return SessionTokenDataSchema.parse({ ...tokenData, exp });
   }
@@ -37,7 +36,6 @@ export class NaviSession {
     ttlSeconds: number = NaviSession.DEFAULT_SESSION_TTL_SECONDS
   ): ParsedSessionValue {
     const exp = Math.floor(Date.now() / 1000) + ttlSeconds;
-    // eslint-disable-next-line no-console
     console.log("[NaviSession] extending session exp", {
       sessionId: (session as { sessionId?: string }).sessionId,
       exp,
@@ -49,7 +47,6 @@ export class NaviSession {
     session: T,
     stytchUserId: string
   ): ParsedSessionValue {
-    // eslint-disable-next-line no-console
     console.log("[NaviSession] attaching Stytch user id to session", {
       sessionId: (session as { sessionId?: string }).sessionId,
     });
@@ -63,7 +60,6 @@ export class NaviSession {
     tokenData: SessionTokenData,
     stytchUserId: string
   ): ParsedSessionTokenData {
-    // eslint-disable-next-line no-console
     console.log("[NaviSession] attaching Stytch user id to token data");
     return SessionTokenDataSchema.parse({
       ...tokenData,

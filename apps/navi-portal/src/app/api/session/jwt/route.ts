@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AuthService, SessionTokenDataSchema } from "@awell-health/navi-core";
 import { env } from "@/env";
-import { getSession } from "@/domains/session/store";
 import { NaviSession } from "@/domains/session/navi-session";
+import { SessionService } from "@/domains/session/service";
 
 export const runtime = "edge";
 
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
         const payload = await authService.verifyToken(bearer);
         const sessionIdFromJwt = payload.sub;
         if (sessionIdFromJwt) {
-          const session = await getSession(sessionIdFromJwt);
+          const session = await SessionService.get(sessionIdFromJwt);
           if (session) {
             const tokenData = NaviSession.renewJwtExpiration(
               SessionTokenDataSchema.parse(session),
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
     const sessionId = sessionCookie.value;
 
     // Get session data from KV store via helper (applies expiration semantics)
-    const session = await getSession(sessionId);
+    const session = await SessionService.get(sessionId);
     if (!session) {
       console.log("🔍 Session not found:", sessionId);
       return NextResponse.json({ error: "Session expired" }, { status: 401 });

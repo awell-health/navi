@@ -6,15 +6,10 @@ import type { NextRequest, NextResponse } from "next/server";
 import {
   AuthenticationState,
   AuthService,
-  EmbedSessionData,
   ParsedSessionValue,
-  SessionData,
   SessionTokenDataSchema,
 } from "@awell-health/navi-core";
-import {
-  ActiveSessionTokenDataSchema,
-  SessionValueSchema,
-} from "@awell-health/navi-core";
+import { SessionValueSchema } from "@awell-health/navi-core";
 import { shortDeterministicId } from "@awell-health/navi-core/helpers";
 import { env } from "@/env";
 import { getSession, setSession, deleteSession } from "./store";

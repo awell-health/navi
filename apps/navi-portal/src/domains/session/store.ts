@@ -1,7 +1,6 @@
 "use server";
 
 import { kv } from "@vercel/kv";
-import { NaviSession } from "@/domains/session/navi-session";
 import type {
   SessionData,
   EmbedSessionData,
@@ -21,7 +20,7 @@ export async function setSession(sessionId: string, data: AnySession) {
     sessionData,
     exp: new Date(sessionData.exp * 1000).toISOString(),
   });
-  await kv.set(keyFor(sessionId), sessionData, { ex: sessionData.exp });
+  await kv.set(keyFor(sessionId), sessionData, { exat: sessionData.exp });
 }
 
 export async function getSession(
@@ -37,8 +36,8 @@ export async function getSession(
   const data = parsed.data;
   if (data.exp * 1000 < Date.now()) {
     console.warn("🔍 getSession: session expired", {
-      data,
       sessionId,
+      data,
       exp: new Date(data.exp * 1000).toISOString(),
       now: new Date().toISOString(),
     });

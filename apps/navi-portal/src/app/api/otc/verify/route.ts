@@ -5,12 +5,10 @@ import {
   getOtcChallenge,
   incrementOtcAttempts,
   deleteOtcChallenge,
-  getSession,
 } from "@/domains/session/store";
 import { createStytchClient } from "@/lib/stytch";
 import { AuthService, SessionTokenDataSchema } from "@awell-health/navi-core";
 import { env } from "@/env";
-import type { SessionTokenData } from "@awell-health/navi-core";
 import { NaviSession } from "@/domains/session/navi-session";
 import { SessionService } from "@/domains/session/service";
 
@@ -28,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
     const sessionId = sessionCookie.value;
 
-    const session = await getSession(sessionId);
+    const session = await SessionService.get(sessionId);
     if (!session) {
       return NextResponse.json({ error: "Session expired" }, { status: 401 });
     }
@@ -97,7 +95,7 @@ export async function POST(request: NextRequest) {
       !(session as { naviStytchUserId?: string }).naviStytchUserId &&
       challenge.stytchUserId
     ) {
-      const latest = await getSession(sessionId);
+      const latest = await SessionService.get(sessionId);
       if (latest) {
         const updated = NaviSession.attachStytchUserIdToSession(
           latest,

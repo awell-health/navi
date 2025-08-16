@@ -1,14 +1,13 @@
 import { notFound, redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { getSession } from "@/domains/session/store";
 import type {
   ActiveSessionTokenData,
   EmbedSessionData,
-  SessionData,
 } from "@awell-health/navi-core";
 import { AuthService } from "@awell-health/navi-core";
 import { env } from "@/env";
 import DirectSessionClient from "./DirectSessionClient";
+import { SessionService } from "@/domains/session/service";
 
 type Params = Promise<{ session_id: string }>;
 
@@ -38,13 +37,7 @@ export default async function DirectSessionPage({
   } catch {
     // Ignore and continue with requested session
   }
-
-  const session = (await getSession(sessionId)) as
-    | SessionData
-    | EmbedSessionData
-    | ActiveSessionTokenData
-    | null;
-
+  const session = await SessionService.get(sessionId);
   if (!session) {
     notFound();
   }
