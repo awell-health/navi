@@ -143,7 +143,7 @@ export const SessionService = {
     );
 
     const sessionExpiresAtIso = new Date(
-      (updatedSession as { exp: number }).exp * 1000
+      updatedSession.exp * 1000
     ).toISOString();
 
     return { jwt, sessionId, sessionExpiresAtIso };
@@ -243,7 +243,10 @@ export const SessionService = {
     // Validate against the union to ensure a recognized session shape
     const parsedSession = SessionValueSchema.safeParse(stored);
     if (!parsedSession.success) {
-      throw new SessionError(SessionErrorCode.INVALID_SESSION_TYPE);
+      throw new SessionError(
+        SessionErrorCode.INVALID_SESSION_TYPE,
+        JSON.stringify(parsedSession.error, null, 2)
+      );
     }
     const validated = parsedSession.data;
 
@@ -260,7 +263,10 @@ export const SessionService = {
 
     const parsedToken = SessionTokenDataSchema.safeParse(validated);
     if (!parsedToken.success) {
-      throw new SessionError(SessionErrorCode.INVALID_SESSION_TYPE);
+      throw new SessionError(
+        SessionErrorCode.INVALID_SESSION_TYPE,
+        JSON.stringify(parsedToken.error, null, 2)
+      );
     }
     const tokenData = NaviSession.renewJwtExpiration(parsedToken.data);
 

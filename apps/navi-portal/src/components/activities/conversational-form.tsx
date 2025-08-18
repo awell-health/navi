@@ -178,7 +178,6 @@ export function ConversationalForm({
   };
 
   const renderField = (field: FormField) => {
-    console.log("Rendering field:", field);
     const value = formData[field.id] || "";
     const error = errors[field.id];
 

@@ -36,10 +36,7 @@ export class NaviSession {
     ttlSeconds: number = NaviSession.DEFAULT_SESSION_TTL_SECONDS
   ): ParsedSessionValue {
     const exp = Math.floor(Date.now() / 1000) + ttlSeconds;
-    console.log("[NaviSession] extending session exp", {
-      sessionId: (session as { sessionId?: string }).sessionId,
-      exp,
-    });
+    console.log("[NaviSession] extending session exp", { session, exp });
     return SessionValueSchema.parse({ ...session, exp });
   }
 
@@ -48,7 +45,7 @@ export class NaviSession {
     stytchUserId: string
   ): ParsedSessionValue {
     console.log("[NaviSession] attaching Stytch user id to session", {
-      sessionId: (session as { sessionId?: string }).sessionId,
+      session: { ...session, naviStytchUserId: stytchUserId },
     });
     return SessionValueSchema.parse({
       ...session,

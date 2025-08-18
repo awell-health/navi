@@ -18,6 +18,7 @@ import {
 import { ActivityFragment } from "@/lib/awell-client/generated/graphql";
 import { OtcVerificationCard } from "./auth/otc-verification";
 import { useCommunications } from "@/domains/communications/components/iframe-communicator.client";
+import { useAuthState } from "@/domains/session/hooks/use-auth-state";
 
 interface ActivityDrawerProps {
   open: boolean;
@@ -71,10 +72,7 @@ export function ActivityDrawer({
   } = useActivity();
   const { requestHeightUpdate } = useCommunications();
 
-  type AuthenticationState = "unauthenticated" | "verified" | "authenticated";
-  const [authState, setAuthState] =
-    useState<AuthenticationState>("unauthenticated");
-  const [isLoadingAuth, setIsLoadingAuth] = useState<boolean>(true);
+  const { authState, isLoadingAuth, refreshAuth } = useAuthState();
   // OTC UI moved to OtcVerificationCard
   const isVerified = useMemo(
     () => authState === "verified" || authState === "authenticated",
@@ -82,49 +80,16 @@ export function ActivityDrawer({
   );
 
   useEffect(() => {
-    let cancelled = false;
-    async function fetchAuth() {
-      try {
-        const res = await fetch("/api/session/jwt", { credentials: "include" });
-        if (!res.ok) {
-          if (!cancelled) setIsLoadingAuth(false);
-          return;
-        }
-        const { jwt } = (await res.json()) as { jwt?: string };
-        if (!jwt) {
-          if (!cancelled) setIsLoadingAuth(false);
-          return;
-        }
-        const payloadPart = jwt.split(".")[1];
-        if (!payloadPart) {
-          if (!cancelled) setIsLoadingAuth(false);
-          return;
-        }
-        const decoded = JSON.parse(
-          atob(payloadPart.replace(/-/g, "+").replace(/_/g, "/"))
-        ) as { authentication_state?: AuthenticationState };
-        if (!cancelled) {
-          setAuthState(
-            decoded.authentication_state ??
-              ("unauthenticated" as AuthenticationState)
-          );
-          setIsLoadingAuth(false);
-        }
-      } catch {
-        if (!cancelled) setIsLoadingAuth(false);
-      }
-    }
-    fetchAuth();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    // initial auth fetch
+    void refreshAuth();
+  }, [refreshAuth]);
 
   async function handleVerified() {
     // Use the freshly minted JWT (set by /api/otc/verify) immediately
     await clearAuthenticationCache(false);
     await apolloClient.resetStore(); // re-run queries and re-establish subscriptions with new token
-    setAuthState("verified");
+    // Refresh auth state so UI reflects updated token
+    await refreshAuth();
     await refetchActivities();
   }
 

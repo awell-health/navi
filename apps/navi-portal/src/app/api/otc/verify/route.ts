@@ -91,10 +91,7 @@ export async function POST(request: NextRequest) {
     // Success: delete challenge, mint fresh JWT with upgraded auth state
     await deleteOtcChallenge(sessionId);
     // Persist durable Stytch user id on session if missing
-    if (
-      !(session as { naviStytchUserId?: string }).naviStytchUserId &&
-      challenge.stytchUserId
-    ) {
+    if (!session.naviStytchUserId && challenge.stytchUserId) {
       const latest = await SessionService.get(sessionId);
       if (latest) {
         const updated = NaviSession.attachStytchUserIdToSession(

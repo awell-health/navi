@@ -13,9 +13,15 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Map the package root to the source directory so subpath imports work in tests
       "@awell-health/navi-core": path.resolve(
         __dirname,
-        "../../packages/navi-core/src/index.ts"
+        "../../packages/navi-core/src"
+      ),
+      // Explicit subpath alias for helpers for clarity (optional when root maps to src)
+      "@awell-health/navi-core/helpers": path.resolve(
+        __dirname,
+        "../../packages/navi-core/src/helpers.ts"
       ),
     },
   },
