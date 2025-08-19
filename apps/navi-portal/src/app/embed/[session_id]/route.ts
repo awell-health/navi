@@ -312,7 +312,7 @@ function renderNewCareflowBody(branding: BrandingConfig) {
 // Body for active careflow
 function renderActiveCareflowBody(branding: BrandingConfig) {
   return `<div class="embed-container">
-    <div class="activity-container" style="margin: auto;">
+    <div class="activity-container">
       <div class="welcome-message">
         <h1 class="welcome-title">${
           branding?.welcomeTitle || "Welcome Back"

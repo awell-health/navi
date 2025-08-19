@@ -17,6 +17,7 @@ import {
   PatientMatchDocument,
 } from "../awell-client/generated/graphql";
 import { ENDPOINTS } from "./environments";
+import z from "zod";
 
 /**
  * GraphQL mutations for care flow operations
@@ -157,6 +158,19 @@ export async function startCareflow(
   }
 }
 
+const PatientMatchInputSchema = z.object({
+  patient_id: z.string().optional().nullable().default(null),
+  patient_identifier: z
+    .object({
+      system: z.string(),
+      value: z.string(),
+    })
+    .optional()
+    .nullable()
+    .default(null),
+  allow_anonymous_creation: z.boolean().default(true),
+});
+
 /**
  * Find or create a patient using the new patientMatch mutation
  * Handles patient identification by ID or external identifier
@@ -177,7 +191,9 @@ export async function patientMatch(
       await executeGraphQL(
         {
           query: print(PatientMatchDocument),
-          variables: { input },
+          variables: {
+            input: PatientMatchInputSchema.parse(input),
+          },
         },
         sessionData
       );

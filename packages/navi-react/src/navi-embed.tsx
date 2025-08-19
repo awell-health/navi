@@ -225,7 +225,6 @@ export function NaviEmbed({
       <div
         className={className}
         style={{
-          margin: "auto",
           padding: "2rem",
           background: branding.destructive ?? "#fef2f2",
           borderRadius: "8px",

@@ -1,7 +1,8 @@
 import React, { useMemo, useCallback } from "react";
 import { ControlledQuestionProps } from "./types";
 import type { Question } from "@/lib/awell-client/generated/graphql";
-import { PhoneInput, Label, Typography } from "@/components/ui";
+import { Label, Typography } from "@/components/ui";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { cn } from "@/lib/utils";
 import { isValidPhoneNumber, parsePhoneNumber } from "react-phone-number-input";
 import type { Country, Value as PhoneValue } from "react-phone-number-input";

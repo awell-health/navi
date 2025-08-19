@@ -2,6 +2,12 @@
 
 import React, { useMemo, useState } from "react";
 import { Button, Input } from "../ui";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "../ui/input-otp";
 
 interface OtcVerificationCardProps {
   onVerified: () => void;
@@ -95,9 +101,10 @@ export function OtcVerificationCard({ onVerified }: OtcVerificationCardProps) {
       setFlowState((prev) => (prev === "verifying" ? "awaitingCode" : prev));
     }
   }
+  const otpSlotClassName = "bg-white rounded-md text-lg font-mono";
 
   return (
-    <div className="mb-4 p-4 border-b border-border bg-accent/10">
+    <div className="mb-4 p-4 border-1 rounded-md border-primary bg-primary/10">
       {flowState === "idle" || flowState === "requesting" ? (
         <div className="flex items-center justify-between gap-3">
           <div className="text-sm">
@@ -114,24 +121,25 @@ export function OtcVerificationCard({ onVerified }: OtcVerificationCardProps) {
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="flex gap-2">
-            <Input
-              inputMode="numeric"
+          <div className="flex gap-2 w-full justify-center">
+            <InputOTP
               pattern="[0-9]*"
               maxLength={6}
-              value={otp}
-              onChange={(e) =>
-                setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
-              }
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  if (!isLoading) verifyOtc();
-                }
-              }}
-              placeholder="Enter code"
-              aria-label="Verification code"
               disabled={isLoading}
-            />
+              onChange={(value) => {
+                setOtp(value);
+              }}
+              value={otp}
+            >
+              <InputOTPGroup className="gap-2">
+                <InputOTPSlot index={0} className={otpSlotClassName} />
+                <InputOTPSlot index={1} className={otpSlotClassName} />
+                <InputOTPSlot index={2} className={otpSlotClassName} />
+                <InputOTPSlot index={3} className={otpSlotClassName} />
+                <InputOTPSlot index={4} className={otpSlotClassName} />
+                <InputOTPSlot index={5} className={otpSlotClassName} />
+              </InputOTPGroup>
+            </InputOTP>
           </div>
           {otcInfo && (
             <div className="text-xs text-muted-foreground">{otcInfo}</div>

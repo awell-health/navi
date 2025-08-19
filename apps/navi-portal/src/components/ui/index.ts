@@ -17,7 +17,8 @@ export {
 export { Slider } from "./slider";
 export { Popover, PopoverContent, PopoverTrigger } from "./popover";
 export { Calendar } from "./calendar";
-export { PhoneInput } from "./phone-input";
+// Avoid re-exporting client-only components here to prevent server-side import
+// of dependencies like react-phone-number-input in RSC. Import directly where needed.
 export {
   Command,
   CommandDialog,
