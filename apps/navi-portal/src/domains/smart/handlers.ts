@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { decryptObject } from "./crypto";
+import type { SmartPreAuth } from "./types";
 import { getClientIdForHost } from "@/domains/smart/store";
-import { decryptObject, SmartPreAuth } from "@/lib/smart";
 
 export function getIssuerHost(iss: string): string {
   try {

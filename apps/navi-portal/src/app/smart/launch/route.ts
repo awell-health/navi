@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { env } from "@/env";
 import {
-  discoverSmartConfiguration,
   encryptObject,
   generatePKCE,
-  SmartPreAuth,
-} from "@/lib/smart";
-import {
+  type SmartPreAuth,
+  discoverSmartConfiguration,
   resolveClientId,
   errorRedirect,
   getIssuerHost,
-} from "@/lib/smart/handlers";
+} from "@/domains/smart";
 
 export const runtime = "edge";
 

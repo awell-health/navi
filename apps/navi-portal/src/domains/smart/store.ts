@@ -1,7 +1,7 @@
 "use server";
 
 import { kv } from "@vercel/kv";
-import type { SmartSessionData } from "@/lib/smart";
+import type { SmartSessionData } from "./types";
 
 const CLIENT_ID_PREFIX = "smart:client-id:";
 const TICKET_PREFIX = "smart:ticket:";

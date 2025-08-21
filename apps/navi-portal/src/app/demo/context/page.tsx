@@ -1,11 +1,11 @@
 import {
-  decryptObject,
   type SmartPreAuth,
   type SmartSessionData,
-} from "@/lib/smart";
+  decryptObject,
+  consumeSmartTicket,
+} from "@/domains/smart";
 import { env } from "@/env";
 import { redirect } from "next/navigation";
-import { consumeSmartTicket } from "@/domains/smart/store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -118,7 +118,7 @@ export default async function Page({
   if (sp?.code && sp?.state) {
     try {
       const pre = await decryptObject<SmartPreAuth>(sp.state);
-      const { resolveClientId } = await import("@/lib/smart/handlers");
+      const { resolveClientId } = await import("@/domains/smart");
       const clientId = await resolveClientId(pre.iss);
       const body = new URLSearchParams();
       body.set("grant_type", "authorization_code");
@@ -163,7 +163,7 @@ export default async function Page({
           tokenType: tokenJson.token_type,
         };
 
-        const { createSmartTicket } = await import("@/domains/smart/store");
+        const { createSmartTicket } = await import("@/domains/smart");
         const ticket = await createSmartTicket(sessionData, 120);
         redirect(`/demo/context?ticket=${encodeURIComponent(ticket)}`);
         return null as never;

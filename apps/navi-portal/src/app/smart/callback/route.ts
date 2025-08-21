@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { env } from "@/env";
-import { SmartSessionData } from "@/lib/smart";
 import {
   errorRedirect,
   decodeState,
   resolveClientId,
-} from "@/lib/smart/handlers";
-import { createSmartTicket } from "@/domains/smart/store";
+  type SmartSessionData,
+  createSmartTicket,
+} from "@/domains/smart";
 
 export const runtime = "edge";
 
