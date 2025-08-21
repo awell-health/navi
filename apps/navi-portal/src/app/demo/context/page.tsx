@@ -5,7 +5,7 @@ import {
 } from "@/lib/smart";
 import { env } from "@/env";
 import { redirect } from "next/navigation";
-import { kv } from "@vercel/kv";
+import { consumeSmartTicket } from "@/domains/smart/store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,11 +14,7 @@ async function getSession(
   ticket?: string | null
 ): Promise<SmartSessionData | null> {
   if (!ticket) return null;
-  const key = `smart:ticket:${ticket}`;
-  const data = await kv.get<SmartSessionData>(key);
-  if (!data) return null;
-  await kv.del(key);
-  return data;
+  return await consumeSmartTicket(ticket);
 }
 
 type HumanName = {
@@ -122,7 +118,8 @@ export default async function Page({
   if (sp?.code && sp?.state) {
     try {
       const pre = await decryptObject<SmartPreAuth>(sp.state);
-      const clientId = await kv.get<string>(`smart:client-id:${pre.iss}`);
+      const { resolveClientId } = await import("@/lib/smart/handlers");
+      const clientId = await resolveClientId(pre.iss);
       const body = new URLSearchParams();
       body.set("grant_type", "authorization_code");
       body.set("code", sp.code);
@@ -166,8 +163,8 @@ export default async function Page({
           tokenType: tokenJson.token_type,
         };
 
-        const ticket = crypto.randomUUID();
-        await kv.set(`smart:ticket:${ticket}`, sessionData, { ex: 120 });
+        const { createSmartTicket } = await import("@/domains/smart/store");
+        const ticket = await createSmartTicket(sessionData, 120);
         redirect(`/demo/context?ticket=${encodeURIComponent(ticket)}`);
         return null as never;
       }

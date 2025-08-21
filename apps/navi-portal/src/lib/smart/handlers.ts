@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { kv } from "@vercel/kv";
+import { getClientIdForHost } from "@/domains/smart/store";
 import { decryptObject, SmartPreAuth } from "@/lib/smart";
 
 export function getIssuerHost(iss: string): string {
@@ -38,7 +38,7 @@ export function errorRedirect(
 
 export async function resolveClientId(iss: string): Promise<string | null> {
   const host = getIssuerHost(iss);
-  const fromKv = await kv.get<string>(`smart:client-id:${host}`);
+  const fromKv = await getClientIdForHost(host);
   return fromKv ?? null;
 }
 

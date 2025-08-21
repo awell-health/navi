@@ -6,7 +6,7 @@ import {
   decodeState,
   resolveClientId,
 } from "@/lib/smart/handlers";
-import { kv } from "@vercel/kv";
+import { createSmartTicket } from "@/domains/smart/store";
 
 export const runtime = "edge";
 
@@ -260,9 +260,7 @@ export async function GET(request: NextRequest) {
   };
 
   // Store one-time ticket in KV (short TTL)
-  const ticket = crypto.randomUUID();
-  // 120s TTL for demo; adjust as needed
-  await kv.set(`smart:ticket:${ticket}`, sessionData, { ex: 120 });
+  const ticket = await createSmartTicket(sessionData, 120);
   // Build absolute redirect URL that respects reverse proxy / ngrok headers
   const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
   const forwardedHost =
