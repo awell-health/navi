@@ -46,6 +46,12 @@ export const env = createEnv({
       .describe(
         "Stytch environment: test or live (optional, defaults to test)"
       ),
+    SMART_REDIRECT_URI: z
+      .url()
+      .optional()
+      .describe(
+        "Redirect URI for SMART callback (e.g. https://app.example.com/smart/callback)"
+      ),
   },
   client: {
     NEXT_PUBLIC_GRAPHQL_ENDPOINT: z
