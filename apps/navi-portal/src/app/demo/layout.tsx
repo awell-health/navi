@@ -4,6 +4,8 @@ import { BrandingProvider } from "@/lib/branding-provider";
 import "../globals.css";
 import { cn } from "@/lib/utils";
 import { loadOrgFontConfig } from "@/lib/branding/fonts/dynamic-fonts";
+import { Bootstrap } from "./_components/Bootstrap";
+import { env } from "@/env";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +21,7 @@ export default async function RootLayout({
 }>) {
   const { themeCSS, orgId, hasCustomBranding, branding } =
     await getBrandingAction();
-
+  const stytchPublicToken = env.STYTCH_B2B_PUBLIC_TOKEN!;
   // Load font configuration dynamically for this organization
   const fontConfig = await loadOrgFontConfig(orgId);
   const fontVariables = fontConfig?.variables ?? "";
@@ -40,7 +42,9 @@ export default async function RootLayout({
           orgId={orgId}
           hasCustomBranding={hasCustomBranding}
         >
-          <div className="p-6 w-full h-full">{children}</div>
+          <Bootstrap stytchPublicToken={stytchPublicToken}>
+            <div className="p-6 w-full h-full">{children}</div>
+          </Bootstrap>
         </BrandingProvider>
       </body>
     </html>

@@ -1,11 +1,6 @@
-import {
-  type SmartPreAuth,
-  type SmartSessionData,
-  decryptObject,
-  consumeSmartTicket,
-} from "@/domains/smart";
-import { env } from "@/env";
-import { redirect } from "next/navigation";
+import { type SmartSessionData, consumeSmartTicket } from "@/domains/smart";
+
+import { SampleComponent } from "../_components/SampleComponent";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -111,68 +106,12 @@ async function fetchEncounter(
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ ticket?: string; code?: string; state?: string }>;
+  searchParams: Promise<{
+    ticket?: string;
+    stytchSession?: string;
+  }>;
 }) {
   const sp = await searchParams;
-  // Fallback: if redirected here directly by the OAuth server, complete the exchange inline
-  if (sp?.code && sp?.state) {
-    try {
-      const pre = await decryptObject<SmartPreAuth>(sp.state);
-      const { resolveClientId } = await import("@/domains/smart");
-      const clientId = await resolveClientId(pre.iss);
-      const body = new URLSearchParams();
-      body.set("grant_type", "authorization_code");
-      body.set("code", sp.code);
-      body.set("redirect_uri", env.SMART_REDIRECT_URI ?? "");
-      body.set("client_id", clientId ?? "");
-      body.set("code_verifier", pre.codeVerifier);
-
-      const tokenRes = await fetch(pre.tokenEndpoint, {
-        method: "POST",
-        headers: {
-          "content-type": "application/x-www-form-urlencoded",
-          accept: "application/json",
-        },
-        body,
-        cache: "no-store",
-      });
-
-      if (tokenRes.ok) {
-        const tokenJson = (await tokenRes.json()) as {
-          access_token: string;
-          token_type?: string;
-          scope?: string;
-          expires_in?: number;
-          id_token?: string;
-          patient?: string;
-          encounter?: string;
-          fhirUser?: string;
-        };
-
-        const sessionData: SmartSessionData = {
-          sid: crypto.randomUUID(),
-          iss: pre.iss,
-          tokenEndpoint: pre.tokenEndpoint,
-          accessToken: tokenJson.access_token,
-          idToken: tokenJson.id_token,
-          scope: tokenJson.scope,
-          patient: tokenJson.patient,
-          encounter: tokenJson.encounter,
-          fhirUser: tokenJson.fhirUser,
-          expiresIn: tokenJson.expires_in,
-          tokenType: tokenJson.token_type,
-        };
-
-        const { createSmartTicket } = await import("@/domains/smart");
-        const ticket = await createSmartTicket(sessionData, 120);
-        redirect(`/demo/context?ticket=${encodeURIComponent(ticket)}`);
-        return null as never;
-      }
-    } catch {
-      // fall through to "no session" UI
-    }
-  }
-
   const session = await getSession(sp?.ticket ?? null);
   if (!session) {
     return (
@@ -183,24 +122,36 @@ export default async function Page({
     );
   }
 
-  const patient = await fetchPatient(
-    session.iss,
-    session.accessToken,
-    session.patient
-  );
-  const provider = await fetchProvider(
-    session.iss,
-    session.accessToken,
-    session.fhirUser
-  );
-  const encounter = await fetchEncounter(
-    session.iss,
-    session.accessToken,
-    session.encounter
-  );
+  const [patient, provider, encounter] = await Promise.all([
+    fetchPatient(session.iss, session.accessToken, session.patient),
+    fetchProvider(session.iss, session.accessToken, session.fhirUser),
+    fetchEncounter(session.iss, session.accessToken, session.encounter),
+  ]);
+  if (!provider) {
+    return (
+      <div style={{ padding: 24 }}>
+        <h1>No recognized clinician</h1>
+        <p>
+          When launching this application, the clinician must be recognizable
+          and a clinician email must be included in the provider resource
+          returned by the EHR.
+        </p>
+      </div>
+    );
+  }
+
+  if (!session.idToken) {
+    return (
+      <div>
+        <h1>missing id token</h1>
+        <pre>{JSON.stringify(session, null, 2)}</pre>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: 24, fontFamily: "Inter, system-ui, sans-serif" }}>
+      <SampleComponent />
       <h1>SMART Context</h1>
       <pre
         style={{

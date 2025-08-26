@@ -46,6 +46,25 @@ export const env = createEnv({
       .describe(
         "Stytch environment: test or live (optional, defaults to test)"
       ),
+    STYTCH_B2B_PROJECT_ID: z.string().describe("Stytch B2B Project ID"),
+    STYTCH_B2B_PUBLIC_TOKEN: z
+      .string()
+      .describe("Stytch B2B Project Public Token"),
+    STYTCH_B2B_SECRET: z.string().describe("Stytch B2B Project Secret"),
+    STYTCH_B2B_BASE_URL: z
+      .string()
+      .default("https://test-api.stytch.awellhealth.com")
+      .describe("Stytch B2B Base URL"),
+    STYTCH_TRUSTED_TOKEN_PRIVATE_KEY_B64: z
+      .string()
+      .optional()
+      .describe(
+        "Stytch Trusted Token Private Key (optional for OTC POC, base64 encoded)"
+      ),
+    STYTCH_TRUSTED_TOKEN_KID: z
+      .string()
+      .optional()
+      .describe("Stytch Trusted Token KID (optional for OTC POC)"),
     SMART_REDIRECT_URI: z
       .url()
       .optional()
@@ -53,17 +72,6 @@ export const env = createEnv({
         "Redirect URI for SMART callback (e.g. https://app.example.com/smart/callback)"
       ),
   },
-  client: {
-    NEXT_PUBLIC_GRAPHQL_ENDPOINT: z
-      .url()
-      .optional()
-      .default("http://localhost:4000/graphql")
-      .describe(
-        "GraphQL API endpoint (defaults to http://localhost:4000/graphql)"
-      ),
-  },
-  experimental__runtimeEnv: {
-    NEXT_PUBLIC_GRAPHQL_ENDPOINT: process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT,
-  },
+  experimental__runtimeEnv: {},
   extends: [vercel()],
 });

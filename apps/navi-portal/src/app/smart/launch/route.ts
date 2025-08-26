@@ -5,9 +5,9 @@ import {
   generatePKCE,
   type SmartPreAuth,
   discoverSmartConfiguration,
-  resolveClientId,
   errorRedirect,
   getIssuerHost,
+  getClientConfigForHost,
 } from "@/domains/smart";
 
 export const runtime = "edge";
@@ -83,7 +83,8 @@ export async function GET(request: NextRequest) {
 
   // Resolve client_id from KV mapping (fallback to env)
   const issuerKey = getIssuerHost(iss);
-  const clientId = await resolveClientId(iss);
+  const clientConfig = await getClientConfigForHost(issuerKey);
+  const clientId = clientConfig?.client_id ?? null;
   if (!clientId) {
     return errorRedirect(request, {
       code: "missing_client_id",

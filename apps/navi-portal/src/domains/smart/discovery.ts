@@ -6,6 +6,7 @@ export async function discoverSmartConfiguration(iss: string): Promise<{
   const wellKnownUrls = [
     `${base}/.well-known/smart-configuration`,
     `${base}/.well-known/oauth-authorization-server`,
+    `${base}/keys`,
   ];
   let lastError: unknown;
   for (const url of wellKnownUrls) {

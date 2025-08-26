@@ -17,7 +17,19 @@ export interface SmartSessionData {
   scope?: string;
   patient?: string;
   encounter?: string;
-  fhirUser?: string;
+  fhirUser: string;
   expiresIn?: number;
   tokenType?: string;
+  stytchOrganizationId: string;
 }
+
+export type SmartErrorCode =
+  | "discovery_failed"
+  | "missing_client_id"
+  | "token_request_failed"
+  | "token_exchange_failed"
+  | "simulated_error"
+  | "expired_token"
+  | "invalid_state"
+  | "missing_fhir_user"
+  | "missing_stytch_organization_id";

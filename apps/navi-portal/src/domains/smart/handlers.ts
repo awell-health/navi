@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { decryptObject } from "./crypto";
 import type { SmartPreAuth } from "./types";
-import { getClientIdForHost } from "@/domains/smart/store";
 
 export function getIssuerHost(iss: string): string {
   try {
@@ -35,12 +34,6 @@ export function errorRedirect(
     url.searchParams.set("status", String(params.status));
   if (params.iss) url.searchParams.set("iss", params.iss);
   return NextResponse.redirect(url.toString(), 302);
-}
-
-export async function resolveClientId(iss: string): Promise<string | null> {
-  const host = getIssuerHost(iss);
-  const fromKv = await getClientIdForHost(host);
-  return fromKv ?? null;
 }
 
 export async function decodeState(
