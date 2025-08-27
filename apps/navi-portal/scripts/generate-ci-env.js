@@ -22,6 +22,14 @@ NODE_ENV=production
 JWT_KEY_ID=abcdefghijklm012345nopqrstuvwxyz
 JWT_SIGNING_KEY=abcdefghijklmnopqrstuvwxyz012345
 TOKEN_ENCRYPTION_KEY=012345abcdefghijklmnopqrstuvwxyz
+STYTCH_B2B_PROJECT_ID=stytch-project-id
+STYTCH_B2B_SECRET=stytch-secret
+STYTCH_B2B_BASE_URL=https://api.stytch.com
+STYTCH_B2B_PUBLIC_TOKEN=stytch-b2b-public-token
+STYTCH_ENV=test
+STYTCH_TRUSTED_TOKEN_PROFILE_ID=stytch-trusted-token-profile-id
+STYTCH_TRUSTED_TOKEN_PRIVATE_KEY_B64=stytch-trusted-token-private-key-b64
+STYTCH_TRUSTED_TOKEN_KID=stytch-trusted-token-kid
 `;
 
   const envPath = path.join(process.cwd(), "apps", "navi-portal", ".env.test");
@@ -33,6 +41,18 @@ TOKEN_ENCRYPTION_KEY=012345abcdefghijklmnopqrstuvwxyz
   console.log("   JWT_KEY_ID=abcdefghijklm012345nopqrstuvwxyz");
   console.log("   JWT_SIGNING_KEY=abcdefghijklmnopqrstuvwxyz012345");
   console.log("   TOKEN_ENCRYPTION_KEY=012345abcdefghijklmnopqrstuvwxyz");
+  console.log("   STYTCH_B2B_PROJECT_ID=stytch-project-id");
+  console.log("   STYTCH_B2B_SECRET=stytch-secret");
+  console.log("   STYTCH_B2B_BASE_URL=https://api.stytch.com");
+  console.log("   STYTCH_B2B_PUBLIC_TOKEN=stytch-b2b-public-token");
+  console.log("   STYTCH_ENV=test");
+  console.log(
+    "   STYTCH_TRUSTED_TOKEN_PROFILE_ID=stytch-trusted-token-profile-id"
+  );
+  console.log(
+    "   STYTCH_TRUSTED_TOKEN_PRIVATE_KEY_B64=stytch-trusted-token-private-key-b64"
+  );
+  console.log("   STYTCH_TRUSTED_TOKEN_KID=stytch-trusted-token-kid");
   console.log("");
   console.log("⚠️  These are test keys only - NOT for production use");
 }
