@@ -4,7 +4,7 @@ import { env } from "@/env";
 import { SignJWT, importPKCS8 } from "jose";
 import { B2BClient } from "stytch";
 
-const TRUSTED_ISS = "https://navi-portal.awellhealth.com";
+const TRUSTED_ISS = env.BASE_URL ?? "https://navi-portal.awellhealth.com";
 const TRUSTED_AUD = "navi-stytch-attest";
 
 export async function mintTrustedTokenForStytch(params: {

@@ -11,7 +11,7 @@ import {
   attestTrustedToken,
 } from "@/domains/smart";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 type TokenResponse = {
   access_token: string;
