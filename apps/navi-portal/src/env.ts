@@ -38,6 +38,14 @@ export const env = createEnv({
       .string()
       .optional()
       .describe("Vercel team ID (optional, for team-scoped configs)"),
+    MEDPLUM_CLIENT_ID: z
+      .string()
+      .optional()
+      .describe("Medplum OAuth2 Client ID for backend authentication"),
+    MEDPLUM_CLIENT_SECRET: z
+      .string()
+      .optional()
+      .describe("Medplum OAuth2 Client Secret for backend authentication"),
     STYTCH_PROJECT_ID: z
       .string()
       .optional()

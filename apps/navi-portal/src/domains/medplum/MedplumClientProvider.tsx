@@ -32,17 +32,9 @@ export function MedplumClientProvider({
   const [error, setError] = useState<Error | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // TODO: Replace these temporary values with actual Stytch auth when available
-  // For now, using environment variables or hardcoded values for testing
-  const medplumClientId =
-    process.env.NEXT_PUBLIC_MEDPLUM_CLIENT_ID || "your-medplum-client-id";
+  const medplumClientId = process.env.MEDPLUM_CLIENT_ID;
+  const medplumSecret = process.env.MEDPLUM_CLIENT_SECRET;
 
-  // DANGER: This is a temporary secret in client code for testing. Do not use in production.
-  const medplumSecret =
-    process.env.NEXT_PUBLIC_MEDPLUM_CLIENT_SECRET ||
-    "your-medplum-client-secret";
-
-  // Commented out for testing without Stytch auth - uncomment when Stytch is ready
   // const { medplumClientId, medplumSecret } = useAuthentication();
 
   const [medplumClient, setMedplumClient] = useState<MedplumStoreClient | null>(
@@ -108,15 +100,9 @@ export function MedplumClientProvider({
           return;
         }
 
-        // TODO: Remove this check when proper auth is implemented
-        // Check if we have valid credentials (not placeholder values)
-        if (
-          !medplumClientId ||
-          medplumClientId === "your-medplum-client-id" ||
-          !medplumSecret ||
-          medplumSecret === "your-medplum-client-secret"
-        ) {
-          setError(new Error("Medplum credentials not configured"));
+        // Check if we have valid credentials
+        if (!medplumClientId || !medplumSecret) {
+          setError(new Error("Medplum credentials not configured. Please set MEDPLUM_CLIENT_ID and MEDPLUM_CLIENT_SECRET environment variables."));
           return;
         }
 
@@ -178,17 +164,9 @@ export function MedplumClientProvider({
       }
     };
 
-    // TODO: Restore original auth condition when Stytch is ready
-    // Original condition: if (medplumClientId && medplumSecret) {
-    if (
-      medplumClientId &&
-      medplumSecret &&
-      medplumClientId !== "your-medplum-client-id" &&
-      medplumSecret !== "your-medplum-client-secret"
-    ) {
+    if (medplumClientId && medplumSecret) {
       initializeMedplumClient();
     } else {
-      // TODO: Remove when proper auth is implemented
       // If we don't have valid credentials, stop loading
       setIsLoading(false);
     }
@@ -267,13 +245,7 @@ export function MedplumClientProvider({
     );
   }
 
-  // TODO: Remove this check when proper auth is implemented
-  if (
-    !medplumClientId ||
-    medplumClientId === "your-medplum-client-id" ||
-    !medplumSecret ||
-    medplumSecret === "your-medplum-client-secret"
-  ) {
+  if (!medplumClientId || !medplumSecret) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="text-center max-w-md">
@@ -284,7 +256,7 @@ export function MedplumClientProvider({
             Please set your Medplum credentials in environment variables:
           </p>
           <div className="bg-gray-100 p-3 rounded text-sm text-left">
-            <div>NEXT_PUBLIC_MEDPLUM_CLIENT_ID=your_client_id</div>
+            <div>MEDPLUM_CLIENT_ID=your_client_id</div>
             <div>MEDPLUM_CLIENT_SECRET=your_client_secret</div>
           </div>
         </div>
