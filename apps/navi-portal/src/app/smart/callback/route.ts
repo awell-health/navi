@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { env } from "@/env";
-import { SmartSessionData } from "@/lib/smart";
 import {
   errorRedirect,
   decodeState,
-  resolveClientId,
-} from "@/lib/smart/handlers";
-import { kv } from "@vercel/kv";
+  getClientConfigForHost,
+  getIssuerHost,
+  type SmartSessionData,
+  createSmartTicket,
+  mintTrustedTokenForStytch,
+  attestTrustedToken,
+} from "@/domains/smart";
 
 export const runtime = "edge";
 
@@ -117,12 +120,22 @@ export async function GET(request: NextRequest) {
   body.set("grant_type", "authorization_code");
   body.set("code", code);
   body.set("redirect_uri", env.SMART_REDIRECT_URI);
-  // Resolve client_id using same KV mapping as launch
-  const clientId = await resolveClientId(pre.iss);
+  // Resolve client_id using KV mapping
+  const host = getIssuerHost(pre.iss);
+  const clientConfig = await getClientConfigForHost(host);
+  const clientId = clientConfig?.client_id ?? null;
   if (!clientId) {
     return errorRedirect(request, {
       code: "missing_client_id",
       message: "No client_id configured for issuer",
+      iss: pre.iss,
+    });
+  }
+  if (!clientConfig?.stytch_organization_id) {
+    return errorRedirect(request, {
+      code: "missing_stytch_organization_id",
+      message:
+        "There is no organization associated with this SMART client. Please contact your EHR admin to include a stytch_organization_id in the Awell configuration.",
       iss: pre.iss,
     });
   }
@@ -245,6 +258,17 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  const finalFhirUser = tokenJson.fhirUser ?? fhirUserFromIdToken;
+  if (!finalFhirUser) {
+    return errorRedirect(request, {
+      code: "missing_fhir_user",
+      message:
+        "Authorization did not include clinician identity (fhirUser/profile). Please contact your EHR admin to include fhirUser in the SMART launch.",
+      iss: pre.iss,
+      status: 200,
+    });
+  }
+
   const sessionData: SmartSessionData = {
     sid: crypto.randomUUID(),
     iss: pre.iss,
@@ -254,15 +278,22 @@ export async function GET(request: NextRequest) {
     scope: tokenJson.scope,
     patient: tokenJson.patient,
     encounter: tokenJson.encounter,
-    fhirUser: tokenJson.fhirUser ?? fhirUserFromIdToken,
+    fhirUser: finalFhirUser,
     expiresIn: tokenJson.expires_in,
     tokenType: tokenJson.token_type,
+    stytchOrganizationId: clientConfig?.stytch_organization_id,
   };
 
+  const fhirUserUUID = finalFhirUser.replace("Practitioner/", "");
+  const mockEmail = `${fhirUserUUID}@test.com`;
+  const token = await mintTrustedTokenForStytch({
+    organizationId: clientConfig?.stytch_organization_id,
+    practitionerUuid: finalFhirUser,
+    email: mockEmail,
+  });
+
   // Store one-time ticket in KV (short TTL)
-  const ticket = crypto.randomUUID();
-  // 120s TTL for demo; adjust as needed
-  await kv.set(`smart:ticket:${ticket}`, sessionData, { ex: 120 });
+  const ticket = await createSmartTicket(sessionData, 120);
   // Build absolute redirect URL that respects reverse proxy / ngrok headers
   const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
   const forwardedHost =
@@ -272,5 +303,44 @@ export async function GET(request: NextRequest) {
     : new URL(request.url).origin;
   const demoUrl = new URL("/demo/context", origin);
   demoUrl.searchParams.set("ticket", ticket);
-  return NextResponse.redirect(demoUrl.toString(), 302);
+  const resp = NextResponse.redirect(demoUrl.toString(), 302);
+  if (token) {
+    try {
+      const attest = await attestTrustedToken({
+        token,
+        organizationId: clientConfig?.stytch_organization_id,
+      });
+      resp.cookies.set({
+        name: "stytch_session",
+        value: attest.session_token,
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+        path: "/",
+      });
+    } catch (err) {
+      // Handle cases where the Stytch user cannot be found or attest fails
+      const unknown = err as {
+        status_code?: number;
+        error_type?: string;
+        error_message?: string;
+        message?: string;
+      };
+      const isNotFound =
+        typeof unknown.status_code === "number" && unknown.status_code === 404;
+      const code = isNotFound ? "email_not_found" : "stytch_attest_failed";
+      const message = isNotFound
+        ? "A user for this application was not found. Please contact your EHR admin to ensure your user is able to use this application."
+        : unknown.error_message;
+
+      return errorRedirect(request, {
+        code,
+        message,
+        iss: pre.iss,
+        status: unknown.status_code,
+      });
+    }
+  }
+  return resp;
 }

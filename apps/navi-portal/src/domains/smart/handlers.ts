@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { kv } from "@vercel/kv";
-import { decryptObject, SmartPreAuth } from "@/lib/smart";
+import { decryptObject } from "./crypto";
+import type { SmartPreAuth } from "./types";
 
 export function getIssuerHost(iss: string): string {
   try {
@@ -34,12 +34,6 @@ export function errorRedirect(
     url.searchParams.set("status", String(params.status));
   if (params.iss) url.searchParams.set("iss", params.iss);
   return NextResponse.redirect(url.toString(), 302);
-}
-
-export async function resolveClientId(iss: string): Promise<string | null> {
-  const host = getIssuerHost(iss);
-  const fromKv = await kv.get<string>(`smart:client-id:${host}`);
-  return fromKv ?? null;
 }
 
 export async function decodeState(

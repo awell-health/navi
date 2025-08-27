@@ -56,33 +56,23 @@ async function getAesGcmKey(): Promise<CryptoKey> {
 
 function normalizeKeyToBytes(key: string): Uint8Array {
   const trimmed = key.trim();
-
-  // Try base64/base64url first (44 chars typical for 32 bytes)
   try {
     const bytes = fromBase64Url(trimmed);
     if (bytes.length === 32) return bytes;
-  } catch {
-    // ignore
-  }
-
-  // Try hex (64 hex chars → 32 bytes)
+  } catch {}
   if (/^[0-9a-fA-F]{64}$/.test(trimmed)) {
     const out = new Uint8Array(32);
-    for (let i = 0; i < 64; i += 2) {
+    for (let i = 0; i < 64; i += 2)
       out[i / 2] = parseInt(trimmed.slice(i, i + 2), 16);
-    }
     return out;
   }
-
-  // Fallback: interpret as 32 ASCII/UTF-8 bytes
   if (trimmed.length === 32) {
     const encoder = new TextEncoder();
     const bytes = encoder.encode(trimmed);
     if (bytes.length === 32) return bytes;
   }
-
   throw new Error(
-    "TOKEN_ENCRYPTION_KEY must be 32 bytes (provide as base64/base64url, 64-char hex, or 32-char raw)."
+    "TOKEN_ENCRYPTION_KEY must be 32 bytes (base64/base64url, 64-hex, or 32-char raw)"
   );
 }
 
@@ -118,63 +108,4 @@ export async function decryptObject<T>(token: string): Promise<T> {
   const decoder = new TextDecoder();
   const json = decoder.decode(plaintext);
   return JSON.parse(json) as T;
-}
-
-export interface SmartPreAuth {
-  iss: string;
-  authorizationEndpoint: string;
-  tokenEndpoint: string;
-  codeVerifier: string;
-  state: string;
-  scopes: string;
-  launch?: string;
-}
-
-export interface SmartSessionData {
-  sid: string;
-  iss: string;
-  tokenEndpoint: string;
-  accessToken: string;
-  idToken?: string;
-  scope?: string;
-  patient?: string;
-  encounter?: string;
-  fhirUser?: string;
-  expiresIn?: number;
-  tokenType?: string;
-}
-
-export async function discoverSmartConfiguration(iss: string): Promise<{
-  authorization_endpoint: string;
-  token_endpoint: string;
-}> {
-  const wellKnownUrls = [
-    `${iss.replace(/\/$/, "")}/.well-known/smart-configuration`,
-    `${iss.replace(/\/$/, "")}/.well-known/oauth-authorization-server`,
-  ];
-  let lastError: unknown;
-  for (const url of wellKnownUrls) {
-    try {
-      const res = await fetch(url, { headers: { accept: "application/json" } });
-      if (res.ok) {
-        const json = (await res.json()) as {
-          authorization_endpoint?: string;
-          token_endpoint?: string;
-        };
-        if (json.authorization_endpoint && json.token_endpoint) {
-          return {
-            authorization_endpoint: json.authorization_endpoint,
-            token_endpoint: json.token_endpoint,
-          };
-        }
-      }
-    } catch (err) {
-      lastError = err;
-    }
-  }
-  throw new Error(
-    `Unable to discover SMART configuration for issuer: ${iss}${
-      lastError ? " (" + String(lastError) + ")" : ""
-    }`
-  );
 }
