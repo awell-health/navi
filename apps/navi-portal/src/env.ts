@@ -99,6 +99,11 @@ export const env = createEnv({
         "Whether to use HTTP-only cookies (optional, defaults to false)"
       ),
   },
-  experimental__runtimeEnv: {},
+  client: {
+    NEXT_PUBLIC_STATSIG_CLIENT_KEY: z.string().describe("Statsig Client Key"),
+  },
+  experimental__runtimeEnv: {
+    NEXT_PUBLIC_STATSIG_CLIENT_KEY: process.env.NEXT_PUBLIC_STATSIG_CLIENT_KEY,
+  },
   extends: [vercel()],
 });

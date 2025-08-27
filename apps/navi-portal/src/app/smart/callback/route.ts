@@ -11,6 +11,7 @@ import {
   attestTrustedToken,
 } from "@/domains/smart";
 import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
+import { getStatsig, initializeStatsig } from "@/lib/statsig";
 
 export const runtime = "nodejs";
 
@@ -294,7 +295,7 @@ export async function GET(request: NextRequest) {
   });
 
   // Store one-time ticket in KV (short TTL)
-  const ticket = await createSmartTicket(sessionData, 120);
+  const ticket = await createSmartTicket(sessionData);
   // Build absolute redirect URL that respects reverse proxy / ngrok headers
   const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
   const forwardedHost =

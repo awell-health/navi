@@ -58,7 +58,12 @@ export async function deleteClientConfigForHost(host: string) {
   await kv.del(clientKey(normalized));
 }
 
-// One-time SMART ticket storage
+/**
+ * Create a one-time SMART ticket
+ * @param data - The session data to store
+ * @param ttlSeconds - The time to live for the ticket in seconds (default: 120)
+ * @returns The ticket ID
+ */
 export async function createSmartTicket(
   data: SmartSessionData,
   ttlSeconds: number = 120

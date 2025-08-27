@@ -1,6 +1,7 @@
 import { type SmartSessionData, consumeSmartTicket } from "@/domains/smart";
 
 import { SampleComponent } from "../_components/SampleComponent";
+import { getStatsig, initializeStatsig } from "@/lib/statsig";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -148,6 +149,10 @@ export default async function Page({
       </div>
     );
   }
+  await initializeStatsig({
+    userID: session.fhirUser,
+  });
+  getStatsig().logEvent("smart_launch_success");
 
   return (
     <div style={{ padding: 24, fontFamily: "Inter, system-ui, sans-serif" }}>

@@ -1,5 +1,7 @@
 "use client";
 import { Typography } from "@/components/ui";
+import { getStatsig } from "@/lib/statsig";
+import { initializeStatsig } from "@/lib/statsig";
 import { useSearchParams } from "next/navigation";
 
 export default function Page() {
@@ -9,7 +11,14 @@ export default function Page() {
     sp.get("message") ?? "An unexpected error occurred during SMART launch.";
   const status = sp.get("status");
   const iss = sp.get("iss");
-
+  initializeStatsig().then(() => {
+    getStatsig().logEvent({
+      eventName: "smart_launch_error",
+      metadata: {
+        code,
+      },
+    });
+  });
   return (
     <div className="flex flex-col gap-4 p-4">
       <Typography.H1>SMART Launch Error</Typography.H1>
