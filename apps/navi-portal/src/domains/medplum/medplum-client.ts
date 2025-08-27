@@ -196,4 +196,32 @@ export class MedplumStoreClient {
       throw error
     }
   }
+
+  async getTasks(): Promise<Task[]> {
+    try {
+      const bundle = await this.client.search('Task', {
+        _count: 1000,
+        _sort: '-_lastUpdated',
+      })
+
+      return (bundle.entry || []).map((entry) => entry.resource as Task)
+    } catch (error) {
+      console.error('Error fetching tasks:', error)
+      throw error
+    }
+  }
+
+  async getTasksForPatient(patientId: string): Promise<Task[]> {
+    try {
+      const bundle = await this.client.search('Task', {
+        subject: `Patient/${patientId}`,
+        _count: 1000,
+        _sort: '-_lastUpdated',
+      })
+      return (bundle.entry || []).map((entry) => entry.resource as Task)
+    } catch (error) {
+      console.error('Error fetching patient tasks:', error)
+      throw error
+    }
+  }
 }

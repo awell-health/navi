@@ -1,6 +1,8 @@
 import { type SmartSessionData, consumeSmartTicket } from "@/domains/smart";
 
 import { SampleComponent } from "../_components/SampleComponent";
+import { PatientTaskList } from "../_components/PatientTaskList";
+import { MedplumClientProvider } from "@/domains/medplum/MedplumClientProvider";
 import { getStatsig, initializeStatsig } from "@/lib/statsig";
 
 export const runtime = "nodejs";
@@ -155,7 +157,7 @@ export default async function Page({
   getStatsig().logEvent("smart_launch_success");
 
   return (
-    <div style={{ padding: 24, fontFamily: "Inter, system-ui, sans-serif" }}>
+    <div style={{ padding: 24, fontFamily: "Inter, system-ui, sans-serif", maxWidth: "450px", margin: "0 auto" }}>
       <SampleComponent />
       <h1>SMART Context</h1>
       <pre
@@ -164,6 +166,8 @@ export default async function Page({
           color: "#eee",
           padding: 16,
           borderRadius: 8,
+          fontSize: "12px",
+          marginBottom: 24,
         }}
       >
         {JSON.stringify(
@@ -178,91 +182,10 @@ export default async function Page({
           2
         )}
       </pre>
-      <h2>Patient</h2>
-      {patient ? (
-        <pre
-          style={{
-            background: "#111",
-            color: "#eee",
-            padding: 16,
-            borderRadius: 8,
-          }}
-        >
-          {JSON.stringify(
-            {
-              id: patient.id,
-              name:
-                patient.name?.[0]?.text ??
-                ([...(patient.name?.[0]?.given ?? [])].join(" ")
-                  ? `${[...(patient.name?.[0]?.given ?? [])].join(" ")} ${
-                      patient.name?.[0]?.family ?? ""
-                    }`.trim()
-                  : undefined),
-              gender: patient.gender,
-              birthDate: patient.birthDate,
-            },
-            null,
-            2
-          )}
-        </pre>
-      ) : (
-        <p>Patient not available or fetch failed.</p>
-      )}
-
-      <h2>Provider</h2>
-      {provider ? (
-        <pre
-          style={{
-            background: "#111",
-            color: "#eee",
-            padding: 16,
-            borderRadius: 8,
-          }}
-        >
-          {JSON.stringify(
-            {
-              id: provider.id,
-              resourceType: provider.resourceType,
-              name:
-                provider.name?.[0]?.text ??
-                ([...(provider.name?.[0]?.given ?? [])].join(" ")
-                  ? `${[...(provider.name?.[0]?.given ?? [])].join(" ")} ${
-                      provider.name?.[0]?.family ?? ""
-                    }`.trim()
-                  : undefined),
-            },
-            null,
-            2
-          )}
-        </pre>
-      ) : (
-        <p>No provider info.</p>
-      )}
-
-      <h2>Encounter</h2>
-      {encounter ? (
-        <pre
-          style={{
-            background: "#111",
-            color: "#eee",
-            padding: 16,
-            borderRadius: 8,
-          }}
-        >
-          {JSON.stringify(
-            {
-              id: encounter.id,
-              status: encounter.status,
-              class: encounter.class?.display ?? encounter.class?.code,
-              period: encounter.period,
-            },
-            null,
-            2
-          )}
-        </pre>
-      ) : (
-        <p>No encounter info.</p>
-      )}
+      
+      <MedplumClientProvider>
+        <PatientTaskList patientId={session.patient} />
+      </MedplumClientProvider>
     </div>
   );
 }

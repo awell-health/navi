@@ -1,7 +1,7 @@
 "use client";
 import { MedplumStoreClient } from "./medplum-client";
 import { MedplumClient } from "@medplum/core";
-import type { Patient } from "@medplum/fhirtypes";
+import type { Patient, Task } from "@medplum/fhirtypes";
 import { Loader2 } from "lucide-react";
 import {
   createContext,
@@ -18,6 +18,8 @@ type MedplumContextType = {
 
   // Data access methods (delegated to store)
   getPatient: (patientId: string) => Promise<Patient>;
+  getTasks: () => Promise<Task[]>;
+  getTasksForPatient: (patientId: string) => Promise<Task[]>;
 };
 
 const MedplumContext = createContext<MedplumContextType | null>(null);
@@ -232,11 +234,25 @@ export function MedplumClientProvider({
     [medplumClient, isLoading, medplumClientId, medplumSecret, error]
   );
 
+  const getTasks = useCallback(async () => {
+    if (isLoading) throw new Error("Medplum client is still initializing");
+    if (!medplumClient) throw new Error("Medplum store not initialized");
+    return await medplumClient.getTasks();
+  }, [medplumClient, isLoading]);
+
+  const getTasksForPatient = useCallback(async (patientId: string) => {
+    if (isLoading) throw new Error("Medplum client is still initializing");
+    if (!medplumClient) throw new Error("Medplum store not initialized");
+    return await medplumClient.getTasksForPatient(patientId);
+  }, [medplumClient, isLoading]);
+
   const value = {
     store: medplumClient,
     isLoading,
     error,
     getPatient,
+    getTasks,
+    getTasksForPatient,
   };
 
   // TODO: Restore medplumClientId/medplumSecret checks when Stytch auth is ready
