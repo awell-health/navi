@@ -1,22 +1,34 @@
+
 import { BrandingStore } from "../storage/kv-store";
-import fs from "fs/promises";
-import path from "path";
 import {
   validateFontConfig,
   getGoogleFontsCount,
 } from "./google-fonts-validator";
-import { FontConfig } from "@awell-health/navi-core";
+
+let fs: any;
+let path: any;
+let FontConfig: any;
+
+try {
+  fs = await import("fs/promises");
+  path = await import("path");
+  const naviCore = await import("@awell-health/navi-core");
+  FontConfig = naviCore.FontConfig;
+} catch (error) {
+  // Fallback for build environments where these modules aren't available
+  console.warn("Some modules not available, using fallbacks:", error);
+}
 
 /**
  * Build-time dynamic font generation system
  * Scans all branding configs from KV store and generates font imports
  */
 
-const GENERATED_FONTS_DIR = path.join(
-  process.cwd(),
+const GENERATED_FONTS_DIR = path?.join?.(
+  (globalThis as any).process?.cwd?.() || ".",
   "src/lib/branding/fonts/generated"
-);
-const GENERATED_INDEX_FILE = path.join(GENERATED_FONTS_DIR, "index.ts");
+) || "src/lib/branding/fonts/generated";
+const GENERATED_INDEX_FILE = path?.join?.(GENERATED_FONTS_DIR, "index.ts") || `${GENERATED_FONTS_DIR}/index.ts`;
 const GENERATED_FALLBACK_FILE = path.join(GENERATED_FONTS_DIR, "fallback.ts");
 
 // Font validation is now handled by the Google Fonts API validator module
@@ -411,11 +423,11 @@ export async function generateDynamicFonts(): Promise<void> {
     try {
       const existingFiles = await fs.readdir(GENERATED_FONTS_DIR);
       const filesToDelete = existingFiles.filter(
-        (file) => file.startsWith("org-") && file.endsWith(".ts")
+        (file: string) => file.startsWith("org-") && file.endsWith(".ts")
       );
       await Promise.all(
-        filesToDelete.map((file) =>
-          fs.unlink(path.join(GENERATED_FONTS_DIR, file)).catch(() => {})
+        filesToDelete.map((file: string) =>
+          fs?.unlink?.(path?.join?.(GENERATED_FONTS_DIR, file) || `${GENERATED_FONTS_DIR}/${file}`)?.catch?.(() => {})
         )
       );
     } catch {
@@ -562,9 +574,11 @@ export async function loadOrgFontConfig(orgId: string): Promise<{
   cssAssignments: Record<string, string>;
 } | null> {
   try {
-    const { loadOrgFonts, loadFallbackFonts } = await import(
-      "./generated/index"
-    );
+    const generatedModule = await import("./generated/index").catch(() => null);
+    if (!generatedModule) {
+      return null;
+    }
+    const { loadOrgFonts, loadFallbackFonts } = generatedModule;
 
     // Try to load org-specific fonts first
     const orgFonts = await loadOrgFonts(orgId);

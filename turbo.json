@@ -39,7 +39,9 @@
         "STYTCH_TRUSTED_TOKEN_KID",
         "NEXT_PUBLIC_STATSIG_CLIENT_KEY",
         "NEXT_PUBLIC_MEDPLUM_BASE_URL",
-        "NEXT_PUBLIC_MEDPLUM_WS_BASE_URL"
+        "NEXT_PUBLIC_MEDPLUM_WS_BASE_URL",
+        "MEDPLUM_CLIENT_ID",
+        "MEDPLUM_CLIENT_SECRET"
       ],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
