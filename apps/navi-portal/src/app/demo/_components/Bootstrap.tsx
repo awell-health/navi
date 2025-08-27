@@ -7,11 +7,11 @@ import { useMemo } from "react";
 
 export const Bootstrap = ({
   stytchPublicToken,
-  stytchEnv = "test",
+  cookieDomain,
   children,
 }: {
   stytchPublicToken: string;
-  stytchEnv?: "test" | "live";
+  cookieDomain?: string;
   children: React.ReactNode;
 }) => {
   const stytchClient = useMemo(
@@ -20,7 +20,7 @@ export const Bootstrap = ({
         cookieOptions: {
           availableToSubdomains: true,
           // Consider only setting in prod; this breaks on localhost
-          domain: stytchEnv === "live" ? "awellhealth.com" : undefined,
+          domain: cookieDomain,
         },
         endpointOptions: {
           testApiDomain: "test-api.stytch.awellhealth.com",

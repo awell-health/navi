@@ -23,6 +23,7 @@ export default async function RootLayout({
     await getBrandingAction();
   const stytchPublicToken = env.STYTCH_B2B_PUBLIC_TOKEN!;
   const stytchEnv = env.STYTCH_ENV;
+  const cookieDomain = env.HTTP_COOKIE_DOMAIN;
   // Load font configuration dynamically for this organization
   const fontConfig = await loadOrgFontConfig(orgId);
   const fontVariables = fontConfig?.variables ?? "";
@@ -45,7 +46,7 @@ export default async function RootLayout({
         >
           <Bootstrap
             stytchPublicToken={stytchPublicToken}
-            stytchEnv={stytchEnv}
+            cookieDomain={cookieDomain}
           >
             <div className="p-6 w-full h-full">{children}</div>
           </Bootstrap>

@@ -320,6 +320,7 @@ export async function GET(request: NextRequest) {
         path: "/",
       });
     } catch (err) {
+      console.error(err);
       // Handle cases where the Stytch user cannot be found or attest fails
       const unknown = err as {
         status_code?: number;

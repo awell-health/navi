@@ -85,6 +85,12 @@ export const env = createEnv({
       .describe(
         "Redirect URI for SMART callback (e.g. https://app.example.com/smart/callback)"
       ),
+    HTTP_COOKIE_DOMAIN: z
+      .string()
+      .optional()
+      .describe(
+        "Domain for HTTP cookies (optional, defaults to empty for dev)"
+      ),
   },
   experimental__runtimeEnv: {},
   extends: [vercel()],
