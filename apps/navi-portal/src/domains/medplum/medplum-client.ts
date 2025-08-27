@@ -1,227 +1,122 @@
-import type { MedplumClient } from '@medplum/core'
-import type {
-  Bundle,
-  Parameters,
-  Patient,
-  Subscription,
-  Task,
-} from '@medplum/fhirtypes'
+import type { MedplumClient } from "@medplum/core";
+import type { Patient, Task } from "@medplum/fhirtypes";
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-export type ResourceHandler = (resource: any) => void
+export type ResourceHandler = (resource: any) => void;
 
 // Pagination interfaces for progressive loading
 export interface PaginationOptions {
-  pageSize?: number
-  lastUpdated?: string // cursor for pagination
+  pageSize?: number;
+  lastUpdated?: string; // cursor for pagination
 }
 
 export interface PaginatedResult<T> {
-  data: T[]
-  hasMore: boolean
-  nextCursor?: string
-  totalCount?: number // Total count from FHIR bundle
+  data: T[];
+  hasMore: boolean;
+  nextCursor?: string;
+  totalCount?: number; // Total count from FHIR bundle
 }
 export class MedplumStoreClient {
-  private client: MedplumClient
-  private socketsBaseUrl: string
-  private initialized = false
-  private resourceHandlers: Map<string, Set<ResourceHandler>> = new Map()
+  private client: MedplumClient;
+  private initialized = false;
 
-  constructor(client: MedplumClient, socketsBaseUrl: string) {
-    this.client = client
-    this.socketsBaseUrl = socketsBaseUrl
+  constructor(client: MedplumClient) {
+    this.client = client;
   }
 
   // Initialize the store with client login
   async initialize(clientId?: string, clientSecret?: string): Promise<void> {
     if (!this.initialized) {
       if (!this.client) {
-        throw new Error('Failed to create Medplum client')
+        throw new Error("Failed to create Medplum client");
       }
 
       try {
         if (!clientId || !clientSecret) {
           throw new Error(
-            'Medplum credentials are missing. Please check your .env.local file.',
-          )
+            "Medplum credentials are missing. Please check your .env.local file."
+          );
         }
 
-        // Skip WebSocket initialization for now - only needed for real-time subscriptions
-        // await this.initializeWebSocket()
-        this.initialized = true
+        // Perform client credentials login if not already authenticated
+        // This is safe on the server and will not expose secrets to the client
+        // On the client, callers should avoid passing secrets
+        // Only attempt if the client supports startClientLogin
+        // biome-ignore lint/suspicious/noExplicitAny: MedplumClient has runtime methods we call safely
+        const isAuthenticated =
+          (this.client as any).isAuthenticated?.() === true;
+
+        if (!isAuthenticated) {
+          // biome-ignore lint/suspicious/noExplicitAny: see above
+          await (this.client as any).startClientLogin(clientId, clientSecret);
+        }
+
+        this.initialized = true;
       } catch (error) {
-        console.error('Failed to initialize Medplum client:', error)
-        throw error
+        console.error("Failed to initialize Medplum client:", error);
+        throw error;
       }
-    }
-  }
-
-  async initializeWebSocket() {
-    // Create subscriptions for both Task and Patient
-    const taskSubscription = await this.client.createResource<Subscription>({
-      resourceType: 'Subscription',
-      criteria: 'Task',
-      status: 'active',
-      reason: 'Watch for tasks',
-      channel: {
-        type: 'websocket',
-      },
-    })
-
-    const patientSubscription = await this.client.createResource<Subscription>({
-      resourceType: 'Subscription',
-      criteria: 'Patient',
-      status: 'active',
-      reason: 'Watch for patients',
-      channel: {
-        type: 'websocket',
-      },
-    })
-
-    // Get binding tokens for both subscriptions
-    const taskBinding = (await this.client.get(
-      `/fhir/R4/Subscription/${taskSubscription.id}/$get-ws-binding-token`,
-    )) as Parameters
-
-    const patientBinding = (await this.client.get(
-      `/fhir/R4/Subscription/${patientSubscription.id}/$get-ws-binding-token`,
-    )) as Parameters
-
-    const taskToken =
-      taskBinding.parameter?.find((p) => p.name === 'token')?.valueString || ''
-    const patientToken =
-      patientBinding.parameter?.find((p) => p.name === 'token')?.valueString ||
-      ''
-
-    // Initialize WebSocket connection
-    const ws = new WebSocket(`${this.socketsBaseUrl}/ws/subscriptions-r4`)
-    ws.addEventListener('open', () => {
-      console.log('WebSocket open')
-      // Bind both tokens
-      ws?.send(
-        JSON.stringify({
-          type: 'bind-with-token',
-          payload: { token: taskToken },
-        }),
-      )
-      ws?.send(
-        JSON.stringify({
-          type: 'bind-with-token',
-          payload: { token: patientToken },
-        }),
-      )
-    })
-
-    ws.addEventListener('message', (event: MessageEvent<string>) => {
-      const bundle = JSON.parse(event.data) as Bundle
-
-      for (const entry of bundle.entry || []) {
-        if (!entry.resource) return
-
-        const resourceType = entry.resource.resourceType
-
-        if (
-          resourceType === 'SubscriptionStatus' &&
-          entry.resource.status === 'active'
-        ) {
-          //console.log('Heartbeat received');
-        } else {
-          //console.log("Trying to handle resource", resourceType)
-          // Call all handlers for this resource type
-          console.log('Bundle received', resourceType)
-
-          const handlers = this.resourceHandlers.get(resourceType)
-          if (handlers) {
-            for (const handler of handlers) {
-              handler(entry.resource)
-            }
-          }
-        }
-      }
-    })
-
-    ws.addEventListener('error', (error) => {
-      console.error('WebSocket error:', error)
-    })
-
-    ws.addEventListener('close', () => {
-      console.log('WebSocket closed')
-    })
-  }
-
-  // Subscribe to tasks
-  async subscribeToTasks(handler: (task: Task) => void): Promise<() => void> {
-    return this.subscribe('Task', handler)
-  }
-
-  // Subscribe to patients
-  async subscribeToPatients(
-    handler: (patient: Patient) => void,
-  ): Promise<() => void> {
-    return this.subscribe('Patient', handler)
-  }
-
-  // Internal subscription method
-  private subscribe(
-    resourceType: 'Task' | 'Patient',
-    handler: ResourceHandler,
-  ): () => void {
-    if (!this.resourceHandlers.has(resourceType)) {
-      this.resourceHandlers.set(resourceType, new Set())
-    }
-    this.resourceHandlers.get(resourceType)?.add(handler)
-
-    // Return unsubscribe function
-    return () => {
-      this.resourceHandlers.get(resourceType)?.delete(handler)
     }
   }
 
   // Get the current access token
   async getAccessToken(): Promise<string | undefined> {
-    const token = this.client.getAccessToken()
-    return token
+    const token = this.client.getAccessToken();
+    return token;
   }
 
   async getPatient(patientId: string): Promise<Patient> {
     try {
       const patientResource = await this.client.readResource(
-        'Patient',
-        patientId,
-      )
-      return patientResource as Patient
+        "Patient",
+        patientId
+      );
+      return patientResource as Patient;
     } catch (error) {
-      console.error('Error getting patient:', error)
-      throw error
+      console.error("Error getting patient:", error);
+      throw error;
     }
   }
 
   async getTasks(): Promise<Task[]> {
     try {
-      const bundle = await this.client.search('Task', {
+      const bundle = await this.client.search("Task", {
         _count: 1000,
-        _sort: '-_lastUpdated',
-      })
+        _sort: "-_lastUpdated",
+      });
 
-      return (bundle.entry || []).map((entry) => entry.resource as Task)
+      return (bundle.entry || []).map((entry) => entry.resource as Task);
     } catch (error) {
-      console.error('Error fetching tasks:', error)
-      throw error
+      console.error("Error fetching tasks:", error);
+      throw error;
     }
   }
 
   async getTasksForPatient(patientId: string): Promise<Task[]> {
     try {
-      const bundle = await this.client.search('Task', {
+      const bundle = await this.client.search("Task", {
         subject: `Patient/${patientId}`,
-        _count: 1000,
-        _sort: '-_lastUpdated',
-      })
-      return (bundle.entry || []).map((entry) => entry.resource as Task)
+        _count: 100,
+        _sort: "-_lastUpdated",
+      });
+      return (bundle.entry || []).map((entry) => entry.resource as Task);
     } catch (error) {
-      console.error('Error fetching patient tasks:', error)
-      throw error
+      console.error("Error fetching patient tasks:", error);
+      throw error;
+    }
+  }
+
+  async getPatientByIdentifier(identifier: string): Promise<Patient | null> {
+    try {
+      const bundle = await this.client.search("Patient", {
+        identifier,
+        _count: 1,
+      });
+      const first = bundle.entry?.[0]?.resource as Patient | undefined;
+      return first ?? null;
+    } catch (error) {
+      console.error("Error fetching patient by identifier:", error);
+      throw error;
     }
   }
 }

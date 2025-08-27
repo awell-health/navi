@@ -113,22 +113,12 @@ export const env = createEnv({
     NEXT_PUBLIC_MEDPLUM_WS_BASE_URL: z
       .string()
       .describe("Medplum WebSocket Base URL"),
-    NEXT_PUBLIC_MEDPLUM_CLIENT_ID: z
-      .string()
-      .optional()
-      .describe("Medplum OAuth2 Client ID for frontend authentication"),
-    NEXT_PUBLIC_MEDPLUM_CLIENT_SECRET: z
-      .string()
-      .optional()
-      .describe("Medplum OAuth2 Client Secret for frontend authentication"),
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_STATSIG_CLIENT_KEY: process.env.NEXT_PUBLIC_STATSIG_CLIENT_KEY,
     NEXT_PUBLIC_MEDPLUM_BASE_URL: process.env.NEXT_PUBLIC_MEDPLUM_BASE_URL,
     NEXT_PUBLIC_MEDPLUM_WS_BASE_URL:
       process.env.NEXT_PUBLIC_MEDPLUM_WS_BASE_URL,
-    NEXT_PUBLIC_MEDPLUM_CLIENT_ID: process.env.NEXT_PUBLIC_MEDPLUM_CLIENT_ID,
-    NEXT_PUBLIC_MEDPLUM_CLIENT_SECRET: process.env.NEXT_PUBLIC_MEDPLUM_CLIENT_SECRET,
   },
   extends: [vercel()],
 });
