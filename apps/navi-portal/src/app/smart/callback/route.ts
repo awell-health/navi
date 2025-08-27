@@ -4,7 +4,7 @@ import {
   errorRedirect,
   decodeState,
   getClientConfigForHost,
-  getIssuerHost,
+  extractIssuerKey,
   type SmartSessionData,
   createSmartTicket,
   mintTrustedTokenForStytch,
@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
   body.set("code", code);
   body.set("redirect_uri", env.SMART_REDIRECT_URI);
   // Resolve client_id using KV mapping
-  const host = getIssuerHost(pre.iss);
+  const host = extractIssuerKey(pre.iss);
   const clientConfig = await getClientConfigForHost(host);
   const clientId = clientConfig?.client_id ?? null;
   if (!clientId) {
