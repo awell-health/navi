@@ -54,8 +54,7 @@ export async function attestTrustedToken(params: {
 }) {
   const stytch = await loadStytch();
   return await stytch.sessions.attest({
-    profile_id:
-      "trusted-token-profile-test-bec7f137-9b3d-4148-a0b6-279a3f539432",
+    profile_id: env.STYTCH_TRUSTED_TOKEN_PROFILE_ID,
     token: params.token,
     organization_id: params.organizationId,
   });
