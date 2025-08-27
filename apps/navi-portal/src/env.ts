@@ -43,6 +43,7 @@ export const env = createEnv({
     STYTCH_ENV: z
       .enum(["test", "live"])
       .optional()
+      .default("test")
       .describe(
         "Stytch environment: test or live (optional, defaults to test)"
       ),

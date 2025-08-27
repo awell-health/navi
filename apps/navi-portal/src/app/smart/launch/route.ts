@@ -103,6 +103,11 @@ export async function GET(request: NextRequest) {
   redirectUrl.searchParams.set("code_challenge", codeChallenge);
   redirectUrl.searchParams.set("code_challenge_method", "S256");
   if (launch) redirectUrl.searchParams.set("launch", launch);
-
-  return NextResponse.redirect(redirectUrl.toString(), 302);
+  return NextResponse.redirect(redirectUrl.toString(), {
+    headers: {
+      "X-Frame-Options": "ALLOWALL",
+      "Content-Security-Policy": "frame-ancestors *",
+    },
+    status: 302,
+  });
 }
