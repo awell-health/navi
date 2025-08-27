@@ -10,6 +10,7 @@ import {
   mintTrustedTokenForStytch,
   attestTrustedToken,
 } from "@/domains/smart";
+import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 export const runtime = "nodejs";
 
@@ -310,15 +311,19 @@ export async function GET(request: NextRequest) {
         token,
         organizationId: clientConfig?.stytch_organization_id,
       });
-      resp.cookies.set({
+      const cookieOptions: ResponseCookie = {
         name: "stytch_session",
         value: attest.session_token,
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
         maxAge: 60 * 60 * 24 * 30, // 30 days
         path: "/",
-      });
+      };
+      if (env.HTTP_ONLY_COOKIES) {
+        cookieOptions.httpOnly = true;
+        cookieOptions.domain = env.HTTP_COOKIE_DOMAIN;
+        cookieOptions.secure = true;
+        cookieOptions.sameSite = "none";
+      }
+      resp.cookies.set(cookieOptions);
     } catch (err) {
       console.error(err);
       // Handle cases where the Stytch user cannot be found or attest fails

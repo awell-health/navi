@@ -8,10 +8,12 @@ import { useMemo } from "react";
 export const Bootstrap = ({
   stytchPublicToken,
   cookieDomain,
+  useHttpOnly,
   children,
 }: {
   stytchPublicToken: string;
   cookieDomain?: string;
+  useHttpOnly?: boolean;
   children: React.ReactNode;
 }) => {
   const stytchClient = useMemo(
@@ -20,12 +22,14 @@ export const Bootstrap = ({
         cookieOptions: {
           availableToSubdomains: true,
           // Consider only setting in prod; this breaks on localhost
-          domain: cookieDomain,
+          ...(useHttpOnly && { domain: cookieDomain }),
         },
-        endpointOptions: {
-          testApiDomain: "test-api.stytch.awellhealth.com",
-          apiDomain: "api.stytch.awellhealth.com",
-        },
+        ...(useHttpOnly && {
+          endpointOptions: {
+            testApiDomain: "test-api.stytch.awellhealth.com",
+            apiDomain: "api.stytch.awellhealth.com",
+          },
+        }),
       }),
     [stytchPublicToken]
   );

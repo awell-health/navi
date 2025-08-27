@@ -91,6 +91,13 @@ export const env = createEnv({
       .describe(
         "Domain for HTTP cookies (optional, defaults to empty for dev)"
       ),
+    HTTP_ONLY_COOKIES: z
+      .boolean()
+      .optional()
+      .default(false)
+      .describe(
+        "Whether to use HTTP-only cookies (optional, defaults to false)"
+      ),
   },
   experimental__runtimeEnv: {},
   extends: [vercel()],
