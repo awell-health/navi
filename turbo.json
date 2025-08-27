@@ -12,6 +12,7 @@
         ".env"
       ],
       "env": [
+        "BASE_URL",
         "JWT_SIGNING_KEY",
         "JWT_KEY_ID",
         "TOKEN_ENCRYPTION_KEY",

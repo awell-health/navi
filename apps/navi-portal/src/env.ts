@@ -5,6 +5,12 @@ import { z } from "zod/v4";
 export const env = createEnv({
   server: {
     NODE_ENV: z.enum(["development", "production"]).default("development"),
+    BASE_URL: z
+      .url()
+      .optional()
+      .describe(
+        "Base URL for the application (optional, defaults to https://navi-portal.awellhealth.com)"
+      ),
     EDGE_CONFIG_URL: z
       .url()
       .optional()
