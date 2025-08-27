@@ -3,6 +3,7 @@ import { MedplumStoreClient } from "./medplum-client";
 import { MedplumClient } from "@medplum/core";
 import type { Patient, Task } from "@medplum/fhirtypes";
 import { Loader2 } from "lucide-react";
+import { env } from "@/env";
 import {
   createContext,
   useContext,
@@ -32,8 +33,8 @@ export function MedplumClientProvider({
   const [error, setError] = useState<Error | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const medplumClientId = process.env.MEDPLUM_CLIENT_ID;
-  const medplumSecret = process.env.MEDPLUM_CLIENT_SECRET;
+  const medplumClientId = env.NEXT_PUBLIC_MEDPLUM_CLIENT_ID;
+  const medplumSecret = env.NEXT_PUBLIC_MEDPLUM_CLIENT_SECRET;
 
   // const { medplumClientId, medplumSecret } = useAuthentication();
 
@@ -87,8 +88,8 @@ export function MedplumClientProvider({
       try {
         setIsLoading(true);
         setError(null); // Clear any previous errors
-        const medplumBaseUrl = process.env.NEXT_PUBLIC_MEDPLUM_BASE_URL;
-        const medplumWsBaseUrl = process.env.NEXT_PUBLIC_MEDPLUM_WS_BASE_URL;
+        const medplumBaseUrl = env.NEXT_PUBLIC_MEDPLUM_BASE_URL;
+        const medplumWsBaseUrl = env.NEXT_PUBLIC_MEDPLUM_WS_BASE_URL;
 
         if (!medplumBaseUrl || !medplumWsBaseUrl) {
           console.error(
