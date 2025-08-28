@@ -158,6 +158,11 @@ export async function GET(request: NextRequest) {
       headers: {
         "content-type": "application/x-www-form-urlencoded",
         accept: "application/json",
+        ...(clientConfig?.client_secret && {
+          authorization: `Basic ${Buffer.from(
+            `${clientId}:${clientConfig.client_secret}`
+          ).toString("base64")}`,
+        }),
       },
       body,
     });
@@ -185,7 +190,7 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const tokenJson = (await tokenRes.json()) as TokenResponse;
+  const tokenJson = details as TokenResponse;
 
   // Some simulator scenarios embed an error marker inside the JWT claims
   // of the access_token instead of top-level fields. Detect and surface it.
@@ -323,9 +328,11 @@ export async function GET(request: NextRequest) {
         value: attest.session_token,
         maxAge: 60 * 60 * 24 * 30, // 30 days
         path: "/",
+        sameSite: "none",
+        domain: "",
       };
-      // if (env.HTTP_ONLY_COOKIES) {
-      if (true) {
+      if (env.HTTP_ONLY_COOKIES) {
+        console.log("Setting HTTP-only cookie");
         cookieOptions.httpOnly = true;
         cookieOptions.domain = new URL(request.url).hostname; // env.HTTP_COOKIE_DOMAIN;
         cookieOptions.secure = true;
