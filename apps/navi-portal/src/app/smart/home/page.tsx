@@ -1,121 +1,44 @@
-import React from "react";
-import { type SmartSessionData, consumeSmartTicket } from "@/domains/smart";
-import { TaskList } from "./components/task-list";
+import { TaskList } from "@/components/tasks/task-list";
+import { MedplumClientProvider } from "@/domains/medplum/MedplumClientProvider";
+import {
+  fetchEncounter,
+  fetchPatient,
+  fetchProvider,
+} from "@/domains/smart/ehr";
+import { consumeSmartTicket } from "@/domains/smart/store";
+import { PatientIdentifier } from "@awell-health/navi-core";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
-async function getSession(
-  ticket?: string | null
-): Promise<SmartSessionData | null> {
-  if (!ticket) return null;
-  return await consumeSmartTicket(ticket);
-}
-
-type HumanName = {
-  text?: string;
-  given?: string[];
-  family?: string;
-};
-
-type PatientResource = {
-  id?: string;
-  name?: HumanName[];
-  gender?: string;
-  birthDate?: string;
-};
-
-async function fetchPatient(
-  iss: string,
-  accessToken: string,
-  patientId?: string
-): Promise<PatientResource | null> {
-  if (!patientId) return null;
-  const url = `${iss.replace(/\/$/, "")}/Patient/${encodeURIComponent(
-    patientId
-  )}`;
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      accept: "application/json",
-    },
-    cache: "no-store",
-  });
-  if (!res.ok) return null;
-  return (await res.json()) as PatientResource;
-}
-
-export default async function SmartHomePage({
+export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{
-    ticket?: string;
-  }>;
+  searchParams: Promise<{ patientId?: string; ticket?: string }>;
 }) {
   const sp = await searchParams;
-  const session = await getSession(sp?.ticket ?? null);
-  
+  const patientId = sp?.patientId;
+  const session = await consumeSmartTicket(sp?.ticket);
   if (!session) {
     return (
-      <div className="max-w-[550px] mx-auto p-6">
-        <div className="text-center">
-          <h1 className="text-xl font-semibold text-gray-900 mb-2">
-            No SMART Session Found
-          </h1>
-          <p className="text-gray-600">
-            Please start from your EHR&apos;s SMART app launcher.
-          </p>
-        </div>
+      <div style={{ padding: 24 }}>
+        <h1>SMART Demo</h1>
+        <p>No session found. Start from /smart/launch</p>
       </div>
     );
   }
 
-  const patient = await fetchPatient(
-    session.iss,
-    session.accessToken,
-    session.patient
-  );
+  const [patient, provider, encounter] = await Promise.all([
+    fetchPatient(session.iss, session.accessToken, session.patient),
+    fetchProvider(session.iss, session.accessToken, session.fhirUser),
+    fetchEncounter(session.iss, session.accessToken, session.encounter),
+  ]);
 
-  if (!patient) {
-    return (
-      <div className="max-w-[550px] mx-auto p-6">
-        <div className="text-center">
-          <h1 className="text-xl font-semibold text-gray-900 mb-2">
-            Patient Not Found
-          </h1>
-          <p className="text-gray-600">
-            Unable to load patient information from the EHR.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const patientName = 
-    patient.name?.[0]?.text ??
-    ([...(patient.name?.[0]?.given ?? [])].join(" ")
-      ? `${[...(patient.name?.[0]?.given ?? [])].join(" ")} ${
-          patient.name?.[0]?.family ?? ""
-        }`.trim()
-      : "Unknown Patient");
+  const patientIdentifier: PatientIdentifier = {
+    system: session.iss,
+    value: session.patient ?? "",
+  };
 
   return (
-    <div className="max-w-[550px] mx-auto bg-white min-h-screen">
-      <div className="border-b border-gray-200 p-4">
-        <h1 className="text-lg font-semibold text-gray-900">
-          Tasks for {patientName}
-        </h1>
-        <p className="text-sm text-gray-600 mt-1">
-          Patient ID: {patient.id}
-        </p>
-      </div>
-      
-      <div className="p-4">
-        <TaskList 
-          session={session}
-          patient={patient}
-        />
-      </div>
-    </div>
+    <MedplumClientProvider>
+      <TaskList patientIdentifier={patientIdentifier} />
+    </MedplumClientProvider>
   );
 }

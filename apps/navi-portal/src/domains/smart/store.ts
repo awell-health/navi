@@ -63,8 +63,9 @@ export async function getSmartTicket(
 }
 
 export async function consumeSmartTicket(
-  id: string
+  id?: string
 ): Promise<SmartSessionData | null> {
+  if (!id) return null;
   const data = await getSmartTicket(id);
   if (!data) return null;
   await kv.del(ticketKey(id));
