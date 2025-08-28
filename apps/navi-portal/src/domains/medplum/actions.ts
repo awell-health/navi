@@ -6,6 +6,7 @@ import { MedplumClient } from "@medplum/core";
 import { MedplumStoreClient } from "./medplum-client";
 import type { Patient, Task } from "@medplum/fhirtypes";
 import { requireStytchSession } from "@/domains/smart/stytch";
+import { PatientIdentifier } from "@awell-health/navi-core";
 
 const getServerMedplum = cache(async (): Promise<MedplumStoreClient> => {
   const baseUrl = env.NEXT_PUBLIC_MEDPLUM_BASE_URL;
@@ -22,6 +23,14 @@ const getServerMedplum = cache(async (): Promise<MedplumStoreClient> => {
   return store;
 });
 
+export async function fetchPatientAction(
+  patientId: string
+): Promise<Patient | null> {
+  await requireStytchSession();
+  const medplum = await getServerMedplum();
+  return medplum.getPatient(patientId);
+}
+
 export async function fetchPatientTasksAction(
   patientId: string
 ): Promise<Task[]> {
@@ -31,7 +40,7 @@ export async function fetchPatientTasksAction(
 }
 
 export async function fetchPatientByIdentifierAction(
-  identifier: string
+  identifier: PatientIdentifier
 ): Promise<Patient | null> {
   await requireStytchSession();
   const medplum = await getServerMedplum();

@@ -1,3 +1,4 @@
+import { PatientIdentifier } from "@awell-health/navi-core";
 import type { MedplumClient } from "@medplum/core";
 import type { Patient, Task } from "@medplum/fhirtypes";
 
@@ -106,10 +107,12 @@ export class MedplumStoreClient {
     }
   }
 
-  async getPatientByIdentifier(identifier: string): Promise<Patient | null> {
+  async getPatientByIdentifier(
+    identifier: PatientIdentifier
+  ): Promise<Patient | null> {
     try {
       const bundle = await this.client.search("Patient", {
-        identifier,
+        identifier: `${identifier.system}|${identifier.value}`,
         _count: 1,
       });
       const first = bundle.entry?.[0]?.resource as Patient | undefined;
@@ -120,3 +123,4 @@ export class MedplumStoreClient {
     }
   }
 }
+// mother-bac0c4f3

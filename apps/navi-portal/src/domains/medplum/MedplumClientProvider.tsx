@@ -5,6 +5,7 @@ import { env } from "@/env";
 import {
   fetchPatientByIdentifierAction,
   fetchPatientTasksAction,
+  fetchPatientAction,
 } from "@/domains/medplum/actions";
 import {
   createContext,
@@ -14,6 +15,7 @@ import {
   useCallback,
   useRef,
 } from "react";
+import { PatientIdentifier } from "@awell-health/navi-core";
 
 type MedplumContextType = {
   isLoading: boolean;
@@ -23,6 +25,9 @@ type MedplumContextType = {
   getPatient: (patientId: string) => Promise<Patient>;
   getTasks: () => Promise<Task[]>;
   getTasksForPatient: (patientId: string) => Promise<Task[]>;
+  getPatientByIdentifier: (
+    identifier: PatientIdentifier
+  ) => Promise<Patient | null>;
 };
 
 const MedplumContext = createContext<MedplumContextType | null>(null);
@@ -85,7 +90,7 @@ export function MedplumClientProvider({
       if (isLoading) {
         throw new Error("Medplum client is still initializing");
       }
-      const patient = await fetchPatientByIdentifierAction(patientId);
+      const patient = await fetchPatientAction(patientId);
       if (!patient) throw new Error("Patient not found");
       return patient;
     },
@@ -106,12 +111,21 @@ export function MedplumClientProvider({
     [isLoading]
   );
 
+  const getPatientByIdentifier = useCallback(
+    async (identifier: PatientIdentifier) => {
+      if (isLoading) throw new Error("Medplum client is still initializing");
+      return await fetchPatientByIdentifierAction(identifier);
+    },
+    [isLoading]
+  );
+
   const value = {
     isLoading,
     error,
     getPatient,
     getTasks,
     getTasksForPatient,
+    getPatientByIdentifier,
   };
 
   if (isLoading) {
