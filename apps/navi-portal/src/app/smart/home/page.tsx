@@ -8,6 +8,8 @@ import {
   fetchProvider,
 } from "@/domains/smart/ehr";
 import { PatientIdentifier } from "@awell-health/navi-core";
+import { Bootstrap } from "@/app/demo/_components/Bootstrap";
+import { env } from "@/env";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -78,6 +80,8 @@ export default async function SmartHomePage({
     value: session.patient ?? "",
   };
 
+  const stytchPublicToken = env.STYTCH_B2B_PUBLIC_TOKEN;
+
   return (
     <MedplumClientProvider>
       <div className="bg-white min-h-screen w-[550px] min-w-[550px] max-w-[550px] mx-auto">
@@ -89,11 +93,13 @@ export default async function SmartHomePage({
         </div>
 
         <div className="p-4">
-          <TaskList
-            session={session}
-            patient={patient}
-            patientIdentifier={patientIdentifier}
-          />
+          <Bootstrap stytchPublicToken={stytchPublicToken} useHttpOnly={true}>
+            <TaskList
+              session={session}
+              patient={patient}
+              patientIdentifier={patientIdentifier}
+            />
+          </Bootstrap>
         </div>
       </div>
     </MedplumClientProvider>
