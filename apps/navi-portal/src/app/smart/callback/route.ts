@@ -303,9 +303,9 @@ export async function GET(request: NextRequest) {
   const origin = forwardedHost
     ? `${forwardedProto}://${forwardedHost}`
     : new URL(request.url).origin;
-  const demoUrl = new URL("/smart/home", origin);
-  demoUrl.searchParams.set("ticket", ticket);
-  const resp = NextResponse.redirect(demoUrl.toString(), 302);
+  const smartHomeUrl = new URL("/smart/home", origin);
+  smartHomeUrl.searchParams.set("ticket", ticket);
+  const resp = NextResponse.redirect(smartHomeUrl.toString(), 302);
   if (token) {
     try {
       const attest = await attestTrustedToken({

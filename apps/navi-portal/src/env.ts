@@ -108,7 +108,7 @@ export const env = createEnv({
       ),
   },
   client: {
-    NEXT_PUBLIC_STATSIG_CLIENT_KEY: z.string().describe("Statsig Client Key"),
+    NEXT_PUBLIC_STATSIG_CLIENT_KEY: z.string().optional().describe("Statsig Client Key"),
     NEXT_PUBLIC_MEDPLUM_BASE_URL: z.string().describe("Medplum Base URL"),
     NEXT_PUBLIC_MEDPLUM_WS_BASE_URL: z
       .string()
