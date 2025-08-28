@@ -303,7 +303,7 @@ export async function GET(request: NextRequest) {
   const origin = forwardedHost
     ? `${forwardedProto}://${forwardedHost}`
     : new URL(request.url).origin;
-  const demoUrl = new URL("/demo/context", origin);
+  const demoUrl = new URL("/smart/home", origin);
   demoUrl.searchParams.set("ticket", ticket);
   const resp = NextResponse.redirect(demoUrl.toString(), 302);
   if (token) {

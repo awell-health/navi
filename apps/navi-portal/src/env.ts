@@ -38,6 +38,14 @@ export const env = createEnv({
       .string()
       .optional()
       .describe("Vercel team ID (optional, for team-scoped configs)"),
+    MEDPLUM_CLIENT_ID: z
+      .string()
+      .optional()
+      .describe("Medplum OAuth2 Client ID for backend authentication"),
+    MEDPLUM_CLIENT_SECRET: z
+      .string()
+      .optional()
+      .describe("Medplum OAuth2 Client Secret for backend authentication"),
     STYTCH_PROJECT_ID: z
       .string()
       .optional()
@@ -101,9 +109,16 @@ export const env = createEnv({
   },
   client: {
     NEXT_PUBLIC_STATSIG_CLIENT_KEY: z.string().describe("Statsig Client Key"),
+    NEXT_PUBLIC_MEDPLUM_BASE_URL: z.string().describe("Medplum Base URL"),
+    NEXT_PUBLIC_MEDPLUM_WS_BASE_URL: z
+      .string()
+      .describe("Medplum WebSocket Base URL"),
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_STATSIG_CLIENT_KEY: process.env.NEXT_PUBLIC_STATSIG_CLIENT_KEY,
+    NEXT_PUBLIC_MEDPLUM_BASE_URL: process.env.NEXT_PUBLIC_MEDPLUM_BASE_URL,
+    NEXT_PUBLIC_MEDPLUM_WS_BASE_URL:
+      process.env.NEXT_PUBLIC_MEDPLUM_WS_BASE_URL,
   },
   extends: [vercel()],
 });
