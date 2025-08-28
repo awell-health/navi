@@ -106,6 +106,7 @@ export const env = createEnv({
       .describe(
         "Whether to use HTTP-only cookies (optional, defaults to false)"
       ),
+    STATSIG_SERVER_KEY: z.string().optional().describe("Statsig Server Key"),
   },
   client: {
     NEXT_PUBLIC_STATSIG_CLIENT_KEY: z
