@@ -6,7 +6,7 @@ import {
   type SmartPreAuth,
   discoverSmartConfiguration,
   errorRedirect,
-  getIssuerHost,
+  extractIssuerKey,
   getClientConfigForHost,
 } from "@/domains/smart";
 
@@ -82,7 +82,10 @@ export async function GET(request: NextRequest) {
   const encryptedState = await encryptObject(preAuth);
 
   // Resolve client_id from KV mapping (fallback to env)
-  const issuerKey = getIssuerHost(iss);
+  const issuerKey = extractIssuerKey(iss);
+  console.log(
+    `Searching for a client config (issuerKey ${issuerKey}) from issuer ${iss}`
+  );
   const clientConfig = await getClientConfigForHost(issuerKey);
   const clientId = clientConfig?.client_id ?? null;
   if (!clientId) {

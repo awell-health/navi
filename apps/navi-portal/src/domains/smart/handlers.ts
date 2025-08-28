@@ -2,12 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { decryptObject } from "./crypto";
 import type { SmartPreAuth } from "./types";
 
-export function getIssuerHost(iss: string): string {
-  try {
-    return new URL(iss).host;
-  } catch {
-    return iss.replace(/^https?:\/\//, "").replace(/\/+$/, "");
-  }
+export function extractIssuerKey(iss: string): string {
+  return iss.replace(/^https?:\/\//, "").replace(/\/+$/, "");
 }
 
 export function buildOrigin(request: NextRequest): string {

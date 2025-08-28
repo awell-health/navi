@@ -3,6 +3,7 @@
 import { env } from "@/env";
 import { SignJWT, importPKCS8 } from "jose";
 import { B2BClient } from "stytch";
+import { cookies } from "next/headers";
 
 const TRUSTED_ISS = env.BASE_URL ?? "https://navi-portal.awellhealth.com";
 const TRUSTED_AUD = "navi-stytch-attest";
@@ -59,4 +60,19 @@ export async function attestTrustedToken(params: {
     token: params.token,
     organization_id: params.organizationId,
   });
+}
+
+export async function requireStytchSession() {
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get("stytch_session")?.value;
+  if (!sessionToken) {
+    throw new Error("Not authenticated");
+  }
+  const stytch = await loadStytch();
+  try {
+    await stytch.sessions.authenticate({ session_token: sessionToken });
+  } catch (err) {
+    throw new Error("Invalid session");
+  }
+  return { sessionToken };
 }
