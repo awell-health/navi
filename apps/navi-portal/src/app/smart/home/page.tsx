@@ -57,7 +57,7 @@ export default async function SmartHomePage({
   
   if (!session) {
     return (
-      <div className="max-w-[550px] mx-auto p-6">
+      <div className="p-6">
         <div className="text-center">
           <h1 className="text-xl font-semibold text-gray-900 mb-2">
             No SMART Session Found
@@ -78,7 +78,7 @@ export default async function SmartHomePage({
 
   if (!patient) {
     return (
-      <div className="max-w-[550px] mx-auto p-6">
+      <div className="p-6">
         <div className="text-center">
           <h1 className="text-xl font-semibold text-gray-900 mb-2">
             Patient Not Found
@@ -100,7 +100,7 @@ export default async function SmartHomePage({
       : "Unknown Patient");
 
   return (
-    <div className="max-w-[550px] mx-auto bg-white min-h-screen">
+    <div className="bg-white min-h-screen">
       <div className="border-b border-gray-200 p-4">
         <h1 className="text-lg font-semibold text-gray-900">
           Tasks for {patientName}
