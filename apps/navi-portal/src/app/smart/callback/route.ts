@@ -11,9 +11,7 @@ import {
   attestTrustedToken,
 } from "@/domains/smart";
 import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
-import { getStatsig, initializeStatsig } from "@/lib/statsig";
-
-export const runtime = "nodejs";
+import { initializeStatsig, Statsig } from "@/lib/statsig.edge";
 
 type TokenResponse = {
   access_token: string;
@@ -76,6 +74,9 @@ function isExpiredToken(token: TokenResponse): boolean {
 }
 
 export async function GET(request: NextRequest) {
+  initializeStatsig().then(() => {
+    console.log("Statsig initialized");
+  });
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
   const state = searchParams.get("state");
@@ -331,7 +332,18 @@ export async function GET(request: NextRequest) {
         sameSite: "none",
         domain: "",
       };
-      if (env.HTTP_ONLY_COOKIES) {
+      const gate = Statsig.checkGateSync(
+        {
+          userID: finalFhirUser,
+          customIDs: {
+            org_id: clientConfig?.stytch_organization_id,
+          },
+        },
+        "http_only_cookies"
+      );
+      console.log("Gate", gate);
+
+      if (gate) {
         console.log("Setting HTTP-only cookie");
         cookieOptions.httpOnly = true;
         cookieOptions.domain = new URL(request.url).hostname; // env.HTTP_COOKIE_DOMAIN;

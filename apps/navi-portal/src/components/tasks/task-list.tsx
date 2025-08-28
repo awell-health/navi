@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useMedplum } from "@/domains/medplum/MedplumClientProvider";
 import { Task } from "@medplum/fhirtypes";
 import { PatientIdentifier } from "@awell-health/navi-core";
-import { getStatsig, initializeStatsig } from "@/lib/statsig";
+import { getStatsig, initializeStatsig } from "@/lib/statsig.client";
 
 export const TaskList = ({
   patientIdentifier,
