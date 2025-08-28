@@ -151,6 +151,11 @@ export async function GET(request: NextRequest) {
       headers: {
         "content-type": "application/x-www-form-urlencoded",
         accept: "application/json",
+        ...(clientConfig?.client_secret && {
+          authorization: `Basic ${Buffer.from(
+            `${clientId}:${clientConfig.client_secret}`
+          ).toString("base64")}`,
+        }),
       },
       body,
     });
@@ -317,8 +322,11 @@ export async function GET(request: NextRequest) {
         value: attest.session_token,
         maxAge: 60 * 60 * 24 * 30, // 30 days
         path: "/",
+        sameSite: "none",
+        domain: "",
       };
       if (env.HTTP_ONLY_COOKIES) {
+        console.log("Setting HTTP-only cookie");
         cookieOptions.httpOnly = true;
         cookieOptions.domain = env.HTTP_COOKIE_DOMAIN;
         cookieOptions.secure = true;

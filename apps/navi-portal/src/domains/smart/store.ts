@@ -5,6 +5,7 @@ import type { SmartSessionData } from "./types";
 
 export type SmartClientConfig = {
   client_id: string;
+  client_secret?: string;
   stytch_organization_id?: string;
 };
 
