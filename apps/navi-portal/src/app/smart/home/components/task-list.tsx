@@ -8,6 +8,7 @@ import { TaskFilters } from "./task-filters";
 import { TaskDetails } from "./task-details";
 import { type SmartSessionData } from "@/domains/smart";
 import { type ActivityFragment } from "@/lib/awell-client/generated/graphql";
+import { PatientIdentifier } from "@awell-health/navi-core";
 
 type PatientResource = {
   id?: string;
