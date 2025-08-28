@@ -2,8 +2,7 @@ import { PatientIdentifier } from "@awell-health/navi-core";
 import type { MedplumClient } from "@medplum/core";
 import type { Patient, Task } from "@medplum/fhirtypes";
 
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-export type ResourceHandler = (resource: any) => void;
+export type ResourceHandler = (resource: unknown) => void;
 
 // Pagination interfaces for progressive loading
 export interface PaginationOptions {
@@ -43,13 +42,10 @@ export class MedplumStoreClient {
         // This is safe on the server and will not expose secrets to the client
         // On the client, callers should avoid passing secrets
         // Only attempt if the client supports startClientLogin
-        // biome-ignore lint/suspicious/noExplicitAny: MedplumClient has runtime methods we call safely
-        const isAuthenticated =
-          (this.client as any).isAuthenticated?.() === true;
+        const isAuthenticated = this.client.isAuthenticated?.() === true;
 
         if (!isAuthenticated) {
-          // biome-ignore lint/suspicious/noExplicitAny: see above
-          await (this.client as any).startClientLogin(clientId, clientSecret);
+          await this.client.startClientLogin(clientId, clientSecret);
         }
 
         this.initialized = true;

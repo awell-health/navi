@@ -1,8 +1,6 @@
 import { type SmartSessionData, consumeSmartTicket } from "@/domains/smart";
 
 import { SampleComponent } from "../_components/SampleComponent";
-import { PatientTaskList } from "../_components/PatientTaskList";
-import { MedplumClientProvider } from "@/domains/medplum/MedplumClientProvider";
 import { getStatsig, initializeStatsig } from "@/lib/statsig";
 import {
   fetchEncounter,
@@ -104,10 +102,6 @@ export default async function Page({
           2
         )}
       </pre>
-
-      <MedplumClientProvider>
-        <PatientTaskList patientId={session.patient} />
-      </MedplumClientProvider>
     </div>
   );
 }
