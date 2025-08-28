@@ -39,7 +39,6 @@ export function MedplumClientProvider({
 }) {
   const [error, setError] = useState<Error | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
   // No client-side Medplum client; use server API routes
   const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
 
