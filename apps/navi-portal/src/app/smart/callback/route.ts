@@ -145,7 +145,14 @@ export async function GET(request: NextRequest) {
   body.set("code_verifier", pre.codeVerifier);
 
   let tokenRes: Response;
+  let details: unknown = null;
   try {
+    console.log(
+      "Pinging token endpoint",
+      pre.tokenEndpoint,
+      "with body",
+      body.toString()
+    );
     tokenRes = await fetch(pre.tokenEndpoint, {
       method: "POST",
       headers: {
@@ -159,6 +166,11 @@ export async function GET(request: NextRequest) {
       },
       body,
     });
+    try {
+      details = await tokenRes.json();
+    } catch {
+      details = await tokenRes.text();
+    }
   } catch (err) {
     return errorRedirect(request, {
       code: "token_request_failed",
@@ -168,13 +180,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (!tokenRes.ok) {
-    // Try to parse JSON error, otherwise return raw text
-    let details: unknown = null;
-    try {
-      details = await tokenRes.json();
-    } catch {
-      details = await tokenRes.text();
-    }
+    console.log("Token exchange failed", tokenRes.status, details);
     // 400 indicates invalid_client, invalid_grant, etc. Pass through status for clarity
     return errorRedirect(request, {
       code: "token_exchange_failed",
@@ -328,7 +334,7 @@ export async function GET(request: NextRequest) {
       if (env.HTTP_ONLY_COOKIES) {
         console.log("Setting HTTP-only cookie");
         cookieOptions.httpOnly = true;
-        cookieOptions.domain = env.HTTP_COOKIE_DOMAIN;
+        cookieOptions.domain = new URL(request.url).hostname; // env.HTTP_COOKIE_DOMAIN;
         cookieOptions.secure = true;
         cookieOptions.sameSite = "none";
       }
