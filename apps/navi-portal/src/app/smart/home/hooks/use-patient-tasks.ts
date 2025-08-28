@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import { type SmartSessionData } from "@/domains/smart";
 import { type ActivityFragment } from "@/lib/awell-client/generated/graphql";
+import { useMedplum } from "@/domains/medplum/MedplumClientProvider";
+import { PatientIdentifier } from "@awell-health/navi-core";
+import type { Task } from "@medplum/fhirtypes";
 
 type PatientResource = {
   id?: string;
@@ -28,10 +31,11 @@ export function usePatientTasks(
   const [tasks, setTasks] = useState<ActivityFragment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const { getPatientByIdentifier, getTasksForPatient } = useMedplum();
 
   useEffect(() => {
     async function fetchTasks() {
-      if (!session.patient || !patient.id) {
+      if (!session.patient || !session.iss) {
         setTasks([]);
         setLoading(false);
         return;
@@ -41,77 +45,48 @@ export function usePatientTasks(
         setLoading(true);
         setError(null);
 
-        const mockTasks: ActivityFragment[] = [
-          {
-            id: "task-1",
-            date: new Date().toISOString(),
-            status: "ACTIVE" as const,
-            action: "ACTIVATE" as const,
-            object: {
-              id: "obj-1",
-              type: "FORM" as const,
-              name: "Patient Health Questionnaire",
-            },
-            indirect_object: {
-              id: "stakeholder-1",
-              type: "STAKEHOLDER" as const,
-              name: "Dr. Sarah Johnson",
-            },
-            is_user_activity: true,
-            reference_id: "PHQ-9-001",
-            reference_type: "ORCHESTRATION" as const,
-            careflow_id: "cf-001",
-            pathway_definition_id: "pd-001",
-            tenant_id: "tenant-001",
-            sub_activities: [],
-          },
-          {
-            id: "task-2",
-            date: new Date(Date.now() - 86400000).toISOString(),
-            status: "DONE" as const,
-            action: "COMPLETE" as const,
-            object: {
-              id: "obj-2",
-              type: "MESSAGE" as const,
-              name: "Medication Review",
-            },
-            indirect_object: {
-              id: "stakeholder-2",
-              type: "STAKEHOLDER" as const,
-              name: "Nurse Mary Wilson",
-            },
-            is_user_activity: true,
-            reference_id: "MED-REV-002",
-            reference_type: "ORCHESTRATION" as const,
-            careflow_id: "cf-001",
-            pathway_definition_id: "pd-001",
-            tenant_id: "tenant-001",
-            sub_activities: [],
-            resolution: null,
-          },
-          {
-            id: "task-3",
-            date: new Date(Date.now() - 172800000).toISOString(),
-            status: "ACTIVE" as const,
-            action: "ASSIGNED" as const,
-            object: {
-              id: "obj-3",
-              type: "CHECKLIST" as const,
-              name: "Pre-Surgery Checklist",
-            },
-            is_user_activity: true,
-            reference_id: "PRE-SURG-003",
-            reference_type: "ORCHESTRATION" as const,
-            careflow_id: "cf-002",
-            pathway_definition_id: "pd-002",
-            tenant_id: "tenant-001",
-            sub_activities: [],
-          },
-        ];
+        const patientIdentifier: PatientIdentifier = {
+          system: session.iss,
+          value: session.patient,
+        };
 
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setTasks(mockTasks);
+        const medplumPatient = await getPatientByIdentifier(patientIdentifier);
+        if (!medplumPatient?.id) {
+          setTasks([]);
+          setLoading(false);
+          return;
+        }
+
+        const medplumTasks = await getTasksForPatient(medplumPatient.id);
+        
+        const convertedTasks: ActivityFragment[] = medplumTasks.map((task: Task) => ({
+          id: task.id || `task-${Date.now()}-${Math.random()}`,
+          date: task.authoredOn || new Date().toISOString(),
+          status: mapTaskStatus(task.status),
+          action: "ACTIVATE" as const,
+          object: {
+            id: task.id || "unknown",
+            type: "FORM" as const,
+            name: task.description || task.code?.text || "Unnamed Task",
+          },
+          indirect_object: task.requester?.display ? {
+            id: task.requester.reference || "unknown",
+            type: "STAKEHOLDER" as const,
+            name: task.requester.display,
+          } : undefined,
+          is_user_activity: true,
+          reference_id: task.identifier?.[0]?.value || task.id || "unknown",
+          reference_type: "ORCHESTRATION" as const,
+          careflow_id: "medplum-task",
+          pathway_definition_id: "medplum-pathway",
+          tenant_id: "medplum",
+          sub_activities: [],
+          resolution: task.status === "completed" ? null : undefined,
+        }));
+
+        setTasks(convertedTasks);
       } catch (err) {
+        console.error("Error fetching patient tasks:", err);
         setError(err instanceof Error ? err : new Error("Failed to fetch tasks"));
       } finally {
         setLoading(false);
@@ -119,7 +94,25 @@ export function usePatientTasks(
     }
 
     fetchTasks();
-  }, [session.patient, patient.id]);
+  }, [session.patient, session.iss, getPatientByIdentifier, getTasksForPatient]);
 
   return { tasks, loading, error };
+}
+
+function mapTaskStatus(fhirStatus?: string): "ACTIVE" | "DONE" | "FAILED" {
+  switch (fhirStatus) {
+    case "completed":
+      return "DONE";
+    case "failed":
+    case "cancelled":
+      return "FAILED";
+    case "draft":
+    case "requested":
+    case "received":
+    case "accepted":
+    case "ready":
+    case "in-progress":
+    default:
+      return "ACTIVE";
+  }
 }
