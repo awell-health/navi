@@ -47,6 +47,12 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.1.1
         version: 5.1.1(react-hook-form@7.58.0(react@19.1.0))
+      '@medplum/core':
+        specifier: ^4.3.10
+        version: 4.3.10
+      '@medplum/fhirtypes':
+        specifier: ^4.3.10
+        version: 4.3.10
       '@radix-ui/react-aspect-ratio':
         specifier: ^1.1.7
         version: 1.1.7(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -1921,6 +1927,19 @@ packages:
     peerDependencies:
       '@types/react': '>=16'
       react: '>=16'
+
+  '@medplum/core@4.3.10':
+    resolution: {integrity: sha512-CZF0UFH6n9bgkW0pBACReFVSzxjunlVx2UxwHLiz9Ra3fPSpS3aa8Ll35hWKSLw88q+MI2ewZn0wIPSpNo82iQ==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    peerDependencies:
+      pdfmake: ^0.2.5
+    peerDependenciesMeta:
+      pdfmake:
+        optional: true
+
+  '@medplum/fhirtypes@4.3.10':
+    resolution: {integrity: sha512-ExTcxsxhup/N8QBNanYCC0DIcI6yI9mkbYLxOaijs9Rae9QHsXm/BJvKF8J930YV9zmRbV198YsP9sHGzE8t2g==}
+    engines: {node: ^20.19.0 || >=22.12.0}
 
   '@napi-rs/wasm-runtime@0.2.11':
     resolution: {integrity: sha512-9DPkXtvHydrcOsopiYpUgPHpmj0HWZKMUnL2dZqpvC42lsratuBG06V5ipyno0fUek5VlFsNQ+AcFATSrJXgMA==}
@@ -9649,6 +9668,10 @@ snapshots:
       '@types/mdx': 2.0.13
       '@types/react': 19.1.8
       react: 19.1.0
+
+  '@medplum/core@4.3.10': {}
+
+  '@medplum/fhirtypes@4.3.10': {}
 
   '@napi-rs/wasm-runtime@0.2.11':
     dependencies:

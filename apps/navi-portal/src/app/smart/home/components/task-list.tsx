@@ -23,9 +23,10 @@ type PatientResource = {
 interface TaskListProps {
   session: SmartSessionData;
   patient: PatientResource;
+  patientIdentifier?: PatientIdentifier;
 }
 
-export function TaskList({ session, patient }: TaskListProps) {
+export function TaskList({ session, patient, patientIdentifier }: TaskListProps) {
   const [selectedTask, setSelectedTask] = useState<ActivityFragment | null>(null);
   
   const { tasks, loading, error } = usePatientTasks(session, patient);
