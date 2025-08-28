@@ -100,7 +100,7 @@ export const env = createEnv({
       ),
   },
   client: {
-    NEXT_PUBLIC_STATSIG_CLIENT_KEY: z.string().describe("Statsig Client Key"),
+    NEXT_PUBLIC_STATSIG_CLIENT_KEY: z.string().optional().describe("Statsig Client Key"),
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_STATSIG_CLIENT_KEY: process.env.NEXT_PUBLIC_STATSIG_CLIENT_KEY,
