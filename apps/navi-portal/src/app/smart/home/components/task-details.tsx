@@ -1,12 +1,12 @@
 "use client";
 
 import React from "react";
-import { type ActivityFragment } from "@/lib/awell-client/generated/graphql";
 import { X, Calendar, User, FileText } from "lucide-react";
 import { TaskStatusBadge } from "./task-status-badge";
+import { Task } from "@medplum/fhirtypes";
 
 interface TaskDetailsProps {
-  task: ActivityFragment;
+  task: Task;
   onClose: () => void;
 }
 
@@ -26,11 +26,8 @@ export function TaskDetails({ task, onClose }: TaskDetailsProps) {
   };
 
   const getAssignee = () => {
-    if (task.indirect_object?.name) {
-      return task.indirect_object.name;
-    }
-    if (task.object?.name && task.object.type === "STAKEHOLDER") {
-      return task.object.name;
+    if (task.requester?.display) {
+      return `Assigned to: ${task.requester.display}`;
     }
     return "Unassigned";
   };
@@ -51,7 +48,7 @@ export function TaskDetails({ task, onClose }: TaskDetailsProps) {
         <div className="p-4 space-y-4">
           <div>
             <h3 className="font-medium text-gray-900 mb-2">
-              {task.object.name || "Unnamed Task"}
+              {task.description || "Unnamed Task"}
             </h3>
             <TaskStatusBadge status={task.status} />
           </div>
@@ -61,18 +58,20 @@ export function TaskDetails({ task, onClose }: TaskDetailsProps) {
               <Calendar className="w-4 h-4 text-gray-500 mt-0.5" />
               <div>
                 <div className="text-sm font-medium text-gray-900">Created</div>
-                <div className="text-sm text-gray-600">{formatDate(task.date)}</div>
+                <div className="text-sm text-gray-600">
+                  {formatDate(task.authoredOn || "")}
+                </div>
               </div>
             </div>
 
-            {task.status === "DONE" && task.resolution && (
+            {task.status === "completed" && (
               <div className="flex items-start gap-3">
                 <Calendar className="w-4 h-4 text-gray-500 mt-0.5" />
                 <div>
-                  <div className="text-sm font-medium text-gray-900">Completed</div>
-                  <div className="text-sm text-gray-600">
-                    Task completed
+                  <div className="text-sm font-medium text-gray-900">
+                    Completed
                   </div>
+                  <div className="text-sm text-gray-600">Task completed</div>
                 </div>
               </div>
             )}
@@ -80,7 +79,9 @@ export function TaskDetails({ task, onClose }: TaskDetailsProps) {
             <div className="flex items-start gap-3">
               <User className="w-4 h-4 text-gray-500 mt-0.5" />
               <div>
-                <div className="text-sm font-medium text-gray-900">Assignee</div>
+                <div className="text-sm font-medium text-gray-900">
+                  Assignee
+                </div>
                 <div className="text-sm text-gray-600">{getAssignee()}</div>
               </div>
             </div>
@@ -89,16 +90,22 @@ export function TaskDetails({ task, onClose }: TaskDetailsProps) {
               <FileText className="w-4 h-4 text-gray-500 mt-0.5" />
               <div>
                 <div className="text-sm font-medium text-gray-900">Type</div>
-                <div className="text-sm text-gray-600">{task.object.type}</div>
+                <div className="text-sm text-gray-600">
+                  {task.code?.coding?.[0]?.display || "Unknown"}
+                </div>
               </div>
             </div>
 
-            {task.reference_id && (
+            {task.id && (
               <div className="flex items-start gap-3">
                 <FileText className="w-4 h-4 text-gray-500 mt-0.5" />
                 <div>
-                  <div className="text-sm font-medium text-gray-900">Reference ID</div>
-                  <div className="text-sm text-gray-600 font-mono">{task.reference_id}</div>
+                  <div className="text-sm font-medium text-gray-900">
+                    Reference ID
+                  </div>
+                  <div className="text-sm text-gray-600 font-mono">
+                    {task.id}
+                  </div>
                 </div>
               </div>
             )}
@@ -109,7 +116,8 @@ export function TaskDetails({ task, onClose }: TaskDetailsProps) {
               Activity Completion
             </div>
             <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
-              Activity completion interface will be integrated here in a future update.
+              Activity completion interface will be integrated here in a future
+              update.
             </div>
           </div>
         </div>

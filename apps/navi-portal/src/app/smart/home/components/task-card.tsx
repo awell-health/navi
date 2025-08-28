@@ -1,18 +1,19 @@
 "use client";
 
 import React from "react";
-import { type ActivityFragment } from "@/lib/awell-client/generated/graphql";
 import { Calendar, User, ChevronRight } from "lucide-react";
 import { TaskStatusBadge } from "./task-status-badge";
+import { Task } from "@medplum/fhirtypes";
 
 interface TaskCardProps {
-  task: ActivityFragment;
+  task: Task;
   onClick: () => void;
 }
 
 export function TaskCard({ task, onClick }: TaskCardProps) {
-  const isCompleted = task.status === "DONE";
-  
+  const isCompleted =
+    task.status === "completed" || task.status === "cancelled";
+
   const formatDate = (dateString: string) => {
     try {
       return new Date(dateString).toLocaleDateString("en-US", {
@@ -28,11 +29,8 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
   };
 
   const getAssignee = () => {
-    if (task.indirect_object?.name) {
-      return `Assigned to: ${task.indirect_object.name}`;
-    }
-    if (task.object?.name && task.object.type === "STAKEHOLDER") {
-      return `Assigned to: ${task.object.name}`;
+    if (task.requester?.display) {
+      return `Assigned to: ${task.requester.display}`;
     }
     return "Unassigned";
   };
@@ -45,29 +43,31 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
       <div className="flex justify-between w-full items-center">
         <div className="font-medium text-gray-900 flex flex-col gap-1.5 flex-1">
           <div className="text-sm font-medium">
-            {task.object.name || "Unnamed Task"}
+            {task.description || "Unnamed Task"}
           </div>
-          
-          <TaskStatusBadge status={task.status} />
-          
+
+          <div className="flex items-center gap-1">
+            <TaskStatusBadge status={task.status} />
+          </div>
+
           <div className="flex items-center gap-1 text-xs text-gray-600 font-normal">
             <Calendar className="w-3 h-3" />
-            Created: {formatDate(task.date)}
+            Created: {formatDate(task.authoredOn || "")}
           </div>
-          
-          {isCompleted && task.resolution && (
+
+          {isCompleted && (
             <div className="flex items-center gap-1 text-xs text-gray-600 font-normal">
               <Calendar className="w-3 h-3" />
-              Completed: Task completed
+              Completed: {formatDate(task.lastModified || "")}
             </div>
           )}
-          
+
           <div className="flex items-center gap-1 text-xs text-gray-600 font-normal">
             <User className="w-3 h-3" />
             {getAssignee()}
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2 ml-4">
           <ChevronRight className="w-4 h-4 text-gray-400" />
         </div>

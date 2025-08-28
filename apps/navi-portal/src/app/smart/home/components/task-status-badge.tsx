@@ -1,28 +1,33 @@
 "use client";
 
 import React from "react";
-import { type ActivityStatus } from "@/lib/awell-client/generated/graphql";
+import { Task } from "@medplum/fhirtypes";
+import { capitalize } from "@medplum/core";
 
 interface TaskStatusBadgeProps {
-  status: ActivityStatus;
+  status: Task["status"];
 }
 
 export function TaskStatusBadge({ status }: TaskStatusBadgeProps) {
-  const getStatusConfig = (status: ActivityStatus) => {
+  const getStatusConfig = (status: Task["status"]) => {
     switch (status) {
-      case "ACTIVE":
+      case "in-progress":
+      case "ready":
+      case "received":
+      case "requested":
         return {
-          label: "Active",
+          label: capitalize(status),
           className: "bg-blue-100 text-blue-800 border-blue-200",
         };
-      case "DONE":
+      case "completed":
         return {
           label: "Completed",
           className: "bg-green-100 text-green-800 border-green-200",
         };
-      case "CANCELLED":
+      case "rejected":
+      case "cancelled":
         return {
-          label: "Cancelled",
+          label: capitalize(status),
           className: "bg-red-100 text-red-800 border-red-200",
         };
       default:
@@ -36,7 +41,9 @@ export function TaskStatusBadge({ status }: TaskStatusBadgeProps) {
   const config = getStatusConfig(status);
 
   return (
-    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${config.className}`}>
+    <span
+      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${config.className}`}
+    >
       {config.label}
     </span>
   );

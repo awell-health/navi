@@ -28,7 +28,7 @@ export default async function SmartHomePage({
 }) {
   const sp = await searchParams;
   const session = await getSession(sp?.ticket ?? null);
-  
+
   if (!session) {
     return (
       <div className="p-6">
@@ -65,7 +65,7 @@ export default async function SmartHomePage({
     );
   }
 
-  const patientName = 
+  const patientName =
     patient.name?.[0]?.text ??
     ([...(patient.name?.[0]?.given ?? [])].join(" ")
       ? `${[...(patient.name?.[0]?.given ?? [])].join(" ")} ${
@@ -80,18 +80,16 @@ export default async function SmartHomePage({
 
   return (
     <MedplumClientProvider>
-      <div className="bg-white min-h-screen">
+      <div className="bg-white min-h-screen w-[550px] min-w-[550px] max-w-[550px] mx-auto">
         <div className="border-b border-gray-200 p-4">
           <h1 className="text-lg font-semibold text-gray-900">
             Tasks for {patientName}
           </h1>
-          <p className="text-sm text-gray-600 mt-1">
-            Patient ID: {patient.id}
-          </p>
+          <p className="text-sm text-gray-600 mt-1">Patient ID: {patient.id}</p>
         </div>
-        
+
         <div className="p-4">
-          <TaskList 
+          <TaskList
             session={session}
             patient={patient}
             patientIdentifier={patientIdentifier}

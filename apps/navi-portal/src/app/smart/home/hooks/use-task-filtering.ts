@@ -1,21 +1,20 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { type ActivityFragment, type ActivityStatus } from "@/lib/awell-client/generated/graphql";
+import { Task } from "@medplum/fhirtypes";
 
 interface UseTaskFilteringResult {
-  filteredTasks: ActivityFragment[];
+  filteredTasks: Task[];
   sortOrder: "asc" | "desc";
   setSortOrder: (order: "asc" | "desc") => void;
-  statusFilter: string;
-  setStatusFilter: (status: string) => void;
-  availableStatuses: ActivityStatus[];
+  statusFilter: Task["status"] | null;
+  setStatusFilter: (status: Task["status"] | null) => void;
+  availableStatuses: Task["status"][];
 }
 
-export function useTaskFiltering(tasks: ActivityFragment[]): UseTaskFilteringResult {
-  const ALL_STATUS_FILTER = "all-status";
+export function useTaskFiltering(tasks: Task[]): UseTaskFilteringResult {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [statusFilter, setStatusFilter] = useState<string>(ALL_STATUS_FILTER);
+  const [statusFilter, setStatusFilter] = useState<Task["status"] | null>(null);
 
   const availableStatuses = useMemo(() => {
     const statuses = [...new Set(tasks.map((task) => task.status))];
@@ -24,14 +23,14 @@ export function useTaskFiltering(tasks: ActivityFragment[]): UseTaskFilteringRes
 
   const filteredTasks = useMemo(() => {
     let filtered = tasks.filter((task) => {
-      if (statusFilter === ALL_STATUS_FILTER) return true;
+      if (statusFilter === null) return true;
       return task.status === statusFilter;
     });
 
     filtered = filtered.sort((a, b) => {
-      const dateA = new Date(a.date).getTime();
-      const dateB = new Date(b.date).getTime();
-      
+      const dateA = new Date(a.authoredOn || "").getTime();
+      const dateB = new Date(b.authoredOn || "").getTime();
+
       if (sortOrder === "asc") {
         return dateA - dateB;
       } else {

@@ -25,7 +25,7 @@ export default async function Layout({
           </div>
         }
       >
-        <body className="max-w-[550px] mx-auto">{children}</body>
+        <body>{children}</body>
       </Suspense>
     </html>
   );
