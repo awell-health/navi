@@ -26,8 +26,8 @@ export const Bootstrap = ({
         },
         ...(useHttpOnly && {
           endpointOptions: {
-            testApiDomain: "test-api.stytch.awellhealth.com",
-            apiDomain: "api.stytch.awellhealth.com",
+            testApiDomain: "test-auth.navi-portal.awellhealth.com",
+            apiDomain: "auth.navi-portal.awellhealth.com",
           },
         }),
       }),

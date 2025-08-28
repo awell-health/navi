@@ -10,6 +10,7 @@ import {
 import { PatientIdentifier } from "@awell-health/navi-core";
 import { Bootstrap } from "@/app/demo/_components/Bootstrap";
 import { env } from "@/env";
+import { initializeStatsig, Statsig } from "@/lib/statsig.edge";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,8 +29,14 @@ export default async function SmartHomePage({
     ticket?: string;
   }>;
 }) {
-  const sp = await searchParams;
-  const session = await getSession(sp?.ticket ?? null);
+  const [session] = await Promise.all([
+    searchParams.then(async (sp) => {
+      return await getSession(sp?.ticket ?? null);
+    }),
+    initializeStatsig().catch((e) =>
+      console.error("Error initializing Statsig", e)
+    ),
+  ]);
 
   if (!session) {
     return (
@@ -81,6 +88,16 @@ export default async function SmartHomePage({
   };
 
   const stytchPublicToken = env.STYTCH_B2B_PUBLIC_TOKEN;
+  const httpOnly = Statsig.checkGateSync(
+    {
+      userID: session.fhirUser,
+      customIDs: {
+        org_id: session.iss,
+      },
+    },
+    "http_only_cookies"
+  );
+  console.log("httpOnly", httpOnly);
 
   return (
     <MedplumClientProvider>
@@ -93,7 +110,10 @@ export default async function SmartHomePage({
         </div>
 
         <div className="p-4">
-          <Bootstrap stytchPublicToken={stytchPublicToken} useHttpOnly={true}>
+          <Bootstrap
+            stytchPublicToken={stytchPublicToken}
+            useHttpOnly={httpOnly}
+          >
             <TaskList
               session={session}
               patient={patient}

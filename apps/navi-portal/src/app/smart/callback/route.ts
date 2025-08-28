@@ -346,7 +346,7 @@ export async function GET(request: NextRequest) {
       if (gate) {
         console.log("Setting HTTP-only cookie");
         cookieOptions.httpOnly = true;
-        cookieOptions.domain = new URL(request.url).hostname; // env.HTTP_COOKIE_DOMAIN;
+        cookieOptions.domain = env.HTTP_COOKIE_DOMAIN;
         cookieOptions.secure = true;
         cookieOptions.sameSite = "none";
       }
