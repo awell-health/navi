@@ -95,7 +95,6 @@ export async function GET(request: NextRequest) {
       iss,
     });
   }
-
   const redirectUrl = new URL(authorization_endpoint);
   redirectUrl.searchParams.set("response_type", "code");
   redirectUrl.searchParams.set("client_id", clientId);

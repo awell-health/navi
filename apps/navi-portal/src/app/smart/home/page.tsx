@@ -1,16 +1,15 @@
 import React from "react";
 import { type SmartSessionData, consumeSmartTicket } from "@/domains/smart";
-import { TaskList } from "./components/task-list";
+import { SmartHomeTabs } from "./components/smart-home-tabs";
 import { MedplumClientProvider } from "@/domains/medplum/MedplumClientProvider";
-import {
-  fetchEncounter,
-  fetchPatient,
-  fetchProvider,
-} from "@/domains/smart/ehr";
+import { fetchPatient } from "@/domains/smart/ehr";
 import { PatientIdentifier } from "@awell-health/navi-core";
+import { User } from "lucide-react";
 import { Bootstrap } from "@/app/demo/_components/Bootstrap";
 import { env } from "@/env";
 import { initializeStatsig, Statsig } from "@/lib/statsig.edge";
+import { Patient } from "@medplum/fhirtypes";
+import { getTestPatient } from "./TestPatient";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,18 +26,18 @@ export default async function SmartHomePage({
 }: {
   searchParams: Promise<{
     ticket?: string;
+    testPatient?: string;
   }>;
 }) {
+  const sp = await searchParams;
   const [session] = await Promise.all([
-    searchParams.then(async (sp) => {
-      return await getSession(sp?.ticket ?? null);
-    }),
+    getSession(sp?.ticket ?? null),
     initializeStatsig().catch((e) =>
       console.error("Error initializing Statsig", e)
     ),
   ]);
 
-  if (!session) {
+  if (!session && !sp?.testPatient) {
     return (
       <div className="p-6">
         <div className="text-center">
@@ -53,18 +52,42 @@ export default async function SmartHomePage({
     );
   }
 
-  const [patient, provider, encounter] = await Promise.all([
-    fetchPatient(session.iss, session.accessToken, session.patient),
-    fetchProvider(session.iss, session.accessToken, session.fhirUser),
-    fetchEncounter(session.iss, session.accessToken, session.encounter),
-  ]);
+  let httpOnly = false;
+  let patient: Patient | null = null;
+  let patientIdentifier: PatientIdentifier | null = null;
 
-  if (!patient) {
+  if (session) {
+    patient = await fetchPatient(
+      session.iss,
+      session.accessToken,
+      session.patient
+    );
+    httpOnly = Statsig.checkGateSync(
+      {
+        userID: session.fhirUser,
+        customIDs: {
+          org_id: session.iss,
+        },
+      },
+      "http_only_cookies"
+    );
+    patientIdentifier = {
+      system: session.iss,
+      value: session.patient ?? "",
+    };
+  } else if (sp?.testPatient) {
+    patient = getTestPatient();
+    patientIdentifier = {
+      system: "https://launch.smarthealthit.org/v/r4/fhir",
+      value: patient.id ?? "",
+    };
+  }
+  if (!patient || !patientIdentifier) {
     return (
       <div className="p-6">
         <div className="text-center">
           <h1 className="text-xl font-semibold text-gray-900 mb-2">
-            Patient Not Found
+            Patient or Patient Identifier Not Found
           </h1>
           <p className="text-gray-600">
             Unable to load patient information from the EHR.
@@ -82,45 +105,30 @@ export default async function SmartHomePage({
         }`.trim()
       : "Unknown Patient");
 
-  const patientIdentifier: PatientIdentifier = {
-    system: session.iss,
-    value: session.patient ?? "",
-  };
-
-  const httpOnly = Statsig.checkGateSync(
-    {
-      userID: session.fhirUser,
-      customIDs: {
-        org_id: session.iss,
-      },
-    },
-    "http_only_cookies"
-  );
   console.log("httpOnly", httpOnly, "cookie domain", env.HTTP_COOKIE_DOMAIN);
 
   return (
     <MedplumClientProvider>
       <div className="bg-white min-h-screen w-[550px] min-w-[550px] max-w-[550px] mx-auto">
-        <div className="border-b border-gray-200 p-4">
-          <h1 className="text-lg font-semibold text-gray-900">
-            Tasks for {patientName}
-          </h1>
-          <p className="text-sm text-gray-600 mt-1">Patient ID: {patient.id}</p>
+        <div className="bg-gray-50 border-b border-gray-200 px-6 py-5">
+          <div className="flex items-center gap-2">
+            <User className="w-6 h-6 mr-2" /> {patientName}{" "}
+            <span className="text-sm text-gray-500 mt-1 font-medium">
+              ({patient.id})
+            </span>
+          </div>
         </div>
 
-        <div className="p-4">
-          <Bootstrap
-            stytchPublicToken={env.STYTCH_B2B_PUBLIC_TOKEN}
-            cookieDomain={env.HTTP_COOKIE_DOMAIN}
-            useHttpOnly={httpOnly}
-          >
-            <TaskList
-              session={session}
-              patient={patient}
-              patientIdentifier={patientIdentifier}
-            />
-          </Bootstrap>
-        </div>
+        <Bootstrap
+          stytchPublicToken={env.STYTCH_B2B_PUBLIC_TOKEN}
+          cookieDomain={env.HTTP_COOKIE_DOMAIN}
+          useHttpOnly={httpOnly}
+        >
+          <SmartHomeTabs
+            patient={patient}
+            patientIdentifier={patientIdentifier}
+          />
+        </Bootstrap>
       </div>
     </MedplumClientProvider>
   );

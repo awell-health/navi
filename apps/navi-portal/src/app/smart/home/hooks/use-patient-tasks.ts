@@ -24,7 +24,7 @@ interface UsePatientTasksResult {
 }
 
 export function usePatientTasks(
-  session: SmartSessionData,
+  patientIdentifier: PatientIdentifier,
   patient: PatientResource
 ): UsePatientTasksResult {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -34,7 +34,7 @@ export function usePatientTasks(
 
   useEffect(() => {
     async function fetchTasks() {
-      if (!session.patient || !session.iss) {
+      if (!patientIdentifier.value || !patientIdentifier.system) {
         setTasks([]);
         setLoading(false);
         return;
@@ -44,10 +44,6 @@ export function usePatientTasks(
         setLoading(true);
         setError(null);
 
-        const patientIdentifier: PatientIdentifier = {
-          system: session.iss,
-          value: session.patient,
-        };
 
         const medplumPatient = await getPatientByIdentifier(patientIdentifier);
         if (!medplumPatient?.id) {
@@ -70,12 +66,7 @@ export function usePatientTasks(
     }
 
     fetchTasks();
-  }, [
-    session.patient,
-    session.iss,
-    getPatientByIdentifier,
-    getTasksForPatient,
-  ]);
+  }, [patientIdentifier, getPatientByIdentifier, getTasksForPatient]);
 
   return { tasks, loading, error };
 }

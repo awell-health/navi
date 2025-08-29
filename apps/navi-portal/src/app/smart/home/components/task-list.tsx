@@ -22,19 +22,17 @@ type PatientResource = {
 };
 
 interface TaskListProps {
-  session: SmartSessionData;
   patient: PatientResource;
-  patientIdentifier?: PatientIdentifier;
+  patientIdentifier: PatientIdentifier;
 }
 
 export function TaskList({
-  session,
   patient,
   patientIdentifier,
 }: TaskListProps) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
-  const { tasks, loading, error } = usePatientTasks(session, patient);
+  const { tasks, loading, error } = usePatientTasks(patientIdentifier, patient);
   const {
     filteredTasks,
     sortOrder,
@@ -74,6 +72,17 @@ export function TaskList({
     );
   }
 
+  if (selectedTask) {
+  return (
+    <>
+      <TaskDetails
+        task={selectedTask}
+        onClose={() => setSelectedTask(null)}
+      />
+    </>
+  )
+  }
+
   return (
     <>
       <div className="space-y-4">
@@ -95,13 +104,6 @@ export function TaskList({
           ))}
         </div>
       </div>
-
-      {selectedTask && (
-        <TaskDetails
-          task={selectedTask}
-          onClose={() => setSelectedTask(null)}
-        />
-      )}
     </>
   );
 }
