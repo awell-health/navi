@@ -39,16 +39,16 @@ export class MedplumStoreClient {
           );
         }
 
-        // Perform client credentials login if not already authenticated
         // This is safe on the server and will not expose secrets to the client
-        // On the client, callers should avoid passing secrets
-        // Only attempt if the client supports startClientLogin
         const isAuthenticated = this.client.isAuthenticated() === true;
 
         if (!isAuthenticated) {
-          console.log("Starting Medplum client login", clientId, clientSecret);
-          await this.client.startClientLogin(clientId, clientSecret);
-          console.log("Medplum client login successful");
+          console.log("Starting Medplum client login with basic auth", clientId, clientSecret);
+          
+          const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+          this.client.setAccessToken(`Basic ${basicAuth}`);
+          
+          console.log("Medplum client basic auth configured");
         }
 
         this.initialized = true;
