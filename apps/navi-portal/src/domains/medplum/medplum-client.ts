@@ -111,12 +111,10 @@ export class MedplumStoreClient {
     identifier: PatientIdentifier
   ): Promise<Patient | null> {
     try {
-      const bundle = await this.client.search("Patient", {
+      const patient = await this.client.searchOne("Patient", {
         identifier: `${identifier.system}|${identifier.value}`,
-        _count: 1,
       });
-      const first = bundle.entry?.[0]?.resource as Patient | undefined;
-      return first ?? null;
+      return patient ?? null;
     } catch (error) {
       console.error("Error fetching patient by identifier:", error);
       throw error;

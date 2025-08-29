@@ -33,21 +33,29 @@ export function TaskView({ task, onBack }: TaskViewProps) {
     }
   };
 
-  let careflowId = null
+  let careflowId = null;
   let stakeholderId = null;
   let activityId = null;
-  const awellExtension = task.extension?.find(ext => ext.url === "https://awellhealth.com/fhir/StructureDefinition/awell-task");
-  
+  const awellExtension = task.extension?.find(
+    (ext) =>
+      ext.url === "https://awellhealth.com/fhir/StructureDefinition/awell-task"
+  );
+
   if (awellExtension) {
     const { extension } = awellExtension as Extension;
-    careflowId = extension?.find(ext => ext.url === "careflow-id")?.valueString || null;
-    stakeholderId = extension?.find(ext => ext.url === "stakeholder-id")?.valueString || null;
-    activityId = extension?.find(ext => ext.url === "activity-id")?.valueString || null;
+    careflowId =
+      extension?.find((ext) => ext.url === "pathway-id")?.valueString || null;
+    stakeholderId =
+      extension?.find((ext) => ext.url === "stakeholder-id")?.valueString ||
+      null;
+    activityId =
+      extension?.find((ext) => ext.url === "activity-id")?.valueString || null;
   }
 
   console.log("careflowId", careflowId);
   console.log("stakeholderId", stakeholderId);
-  console.log('task', task);
+  console.log("activityId", activityId);
+  console.log("task", task);
 
   return (
     <div className="bg-white">
@@ -70,27 +78,27 @@ export function TaskView({ task, onBack }: TaskViewProps) {
           items={[
             {
               label: "Task Status",
-              value: <TaskStatusBadge status={task.status} />
+              value: <TaskStatusBadge status={task.status} />,
             },
             {
               label: "Task Intent",
-              value: task.intent || "unknown"
+              value: task.intent || "unknown",
             },
             {
               label: "Priority",
-              value: task.priority || "unknown"
+              value: task.priority || "unknown",
             },
             {
               label: "Description",
-              value: task.description || "-"
+              value: task.description || "-",
             },
             {
               label: "Created Date",
-              value: formatDate(task.authoredOn?.toString())
+              value: formatDate(task.authoredOn?.toString()),
             },
             {
               label: "Last Modified",
-              value: formatDate(task.lastModified)
+              value: formatDate(task.lastModified),
             },
           ]}
         />
@@ -108,8 +116,8 @@ export function TaskView({ task, onBack }: TaskViewProps) {
                   orgId={awellDefaultBranding.orgId}
                   hasCustomBranding={false}
                 >
-                  <ActivityProvider 
-                    careflowId={careflowId} 
+                  <ActivityProvider
+                    careflowId={careflowId}
                     stakeholderId={stakeholderId}
                   >
                     <CareflowActivitiesContent activityId={activityId} />
