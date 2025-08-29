@@ -51,35 +51,48 @@ export function SmartHomeTabs({
   const [activeTab, setActiveTab] = React.useState("context");
 
   return (
-    <Tabs defaultValue="context" value={activeTab} onValueChange={setActiveTab} className="w-full">
+    <Tabs
+      defaultValue="context"
+      value={activeTab}
+      onValueChange={setActiveTab}
+      className="w-full"
+    >
       <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger 
-          value="context" 
+        <TabsTrigger
+          value="context"
           isActive={activeTab === "context"}
           onClick={() => setActiveTab("context")}
         >
           Context
         </TabsTrigger>
-        <TabsTrigger 
-          value="tasks" 
+        <TabsTrigger
+          value="tasks"
           isActive={activeTab === "tasks"}
           onClick={() => setActiveTab("tasks")}
         >
           Tasks
         </TabsTrigger>
       </TabsList>
-      
-      <TabsContent value="context" isActive={activeTab === "context"} className="mt-6">
+
+      <TabsContent
+        value="context"
+        isActive={activeTab === "context"}
+        className="mt-6"
+      >
         <div className="space-y-4">
-          <PatientInfoCard patient={patient} patientIdentifier={patientIdentifier} />
+          <PatientInfoCard
+            patient={patient}
+            patientIdentifier={patientIdentifier}
+          />
         </div>
       </TabsContent>
-      
-      <TabsContent value="tasks" isActive={activeTab === "tasks"} className="mt-6">
-        <TaskList
-          patient={patient}
-          patientIdentifier={patientIdentifier}
-        />
+
+      <TabsContent
+        value="tasks"
+        isActive={activeTab === "tasks"}
+        className="mt-6"
+      >
+        <TaskList patientIdentifier={patientIdentifier} />
       </TabsContent>
     </Tabs>
   );

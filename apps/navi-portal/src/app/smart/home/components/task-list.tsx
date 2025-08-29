@@ -6,33 +6,17 @@ import { useTaskFiltering } from "../hooks/use-task-filtering";
 import { TaskCard } from "./task-card";
 import { TaskFilters } from "./task-filters";
 import { TaskDetails } from "./task-details";
-import { type SmartSessionData } from "@/domains/smart";
 import { PatientIdentifier } from "@awell-health/navi-core";
 import { Task } from "@medplum/fhirtypes";
 
-type PatientResource = {
-  id?: string;
-  name?: Array<{
-    text?: string;
-    given?: string[];
-    family?: string;
-  }>;
-  gender?: string;
-  birthDate?: string;
-};
-
 interface TaskListProps {
-  patient: PatientResource;
   patientIdentifier: PatientIdentifier;
 }
 
-export function TaskList({
-  patient,
-  patientIdentifier,
-}: TaskListProps) {
+export function TaskList({ patientIdentifier }: TaskListProps) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
-  const { tasks, loading, error } = usePatientTasks(patientIdentifier, patient);
+  const { tasks, loading, error } = usePatientTasks(patientIdentifier);
   const {
     filteredTasks,
     sortOrder,
@@ -66,21 +50,21 @@ export function TaskList({
       <div className="text-center py-8">
         <div className="text-gray-900 font-medium mb-2">No Tasks Found</div>
         <p className="text-gray-600 text-sm">
-          This patient currently has no assigned tasks.
+          This patient currently has no active tasks.
         </p>
       </div>
     );
   }
 
   if (selectedTask) {
-  return (
-    <>
-      <TaskDetails
-        task={selectedTask}
-        onClose={() => setSelectedTask(null)}
-      />
-    </>
-  )
+    return (
+      <>
+        <TaskDetails
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+        />
+      </>
+    );
   }
 
   return (

@@ -24,8 +24,7 @@ interface UsePatientTasksResult {
 }
 
 export function usePatientTasks(
-  patientIdentifier: PatientIdentifier,
-  patient: PatientResource
+  patientIdentifier: PatientIdentifier
 ): UsePatientTasksResult {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,8 +43,8 @@ export function usePatientTasks(
         setLoading(true);
         setError(null);
 
-
         const medplumPatient = await getPatientByIdentifier(patientIdentifier);
+        console.log("Fetched Medplum Patient", medplumPatient);
         if (!medplumPatient?.id) {
           setTasks([]);
           setLoading(false);
@@ -53,7 +52,7 @@ export function usePatientTasks(
         }
 
         const medplumTasks = await getTasksForPatient(medplumPatient.id);
-
+        console.log("Fetched Medplum Tasks", medplumTasks);
         setTasks(medplumTasks);
       } catch (err) {
         console.error("Error fetching patient tasks:", err);
