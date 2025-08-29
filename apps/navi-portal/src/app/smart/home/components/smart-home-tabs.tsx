@@ -5,7 +5,7 @@ import { User } from "lucide-react";
 import { TaskList } from "./task-list";
 import { PatientIdentifier } from "@awell-health/navi-core";
 import { ReusableTabs } from "./reusable-tabs";
-import { Task } from "@medplum/fhirtypes";
+import { Coding, Identifier, Task } from "@medplum/fhirtypes";
 import { TaskView } from "./task-view";
 import { InfoCard } from "./info-card";
 
@@ -87,19 +87,14 @@ export function SmartHomeTabs({
   //   "display": "Master Patient Index"
   // }
   // Helper function to get identifiers count
-  const renderMPIIdentifierValue = (array: any[]) => {
-    const mpiIdentifier = array.find(item => {
-      return item.type?.coding?.find((coding: { code: string; }) => coding.code === "MPI");
+  const renderMPIIdentifierValue = (identifiers: Identifier[]) => {
+    const mpiIdentifier = identifiers.find(item => {
+      return item.type?.coding?.find((coding: Coding) => coding.code === "MPI");
     });
     if (!mpiIdentifier) return null;
 
     return (
-      <div className="flex flex-col gap-1 text-xs">
-        <div className="flex flex-col">
-          <span className="text-gray-500">{mpiIdentifier.type?.code}</span>
-          <span className="text-gray-900">{mpiIdentifier.value}</span>
-        </div>
-      </div>
+      <span className="text-gray-900">{mpiIdentifier.value}</span>
     );
   };
 

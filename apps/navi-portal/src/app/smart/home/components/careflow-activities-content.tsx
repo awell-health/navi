@@ -179,7 +179,7 @@ export function CareflowActivitiesContent({ activityId }: { activityId: string |
                 Unsupported activity type
               </p>
               <p className="text-sm text-muted-foreground">
-                Activity type "{activeActivity.object.type}" is not supported
+                Activity type {activeActivity.object.type} is not supported
               </p>
             </div>
           </div>
