@@ -12,6 +12,7 @@ import {
 } from "@/domains/smart";
 import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { initializeStatsig, Statsig } from "@/lib/statsig.edge";
+import { fetchProvider } from "@/domains/smart/ehr";
 
 type TokenResponse = {
   access_token: string;
@@ -74,11 +75,13 @@ function isExpiredToken(token: TokenResponse): boolean {
 }
 
 export async function GET(request: NextRequest) {
-  initializeStatsig().then(() => {
-    console.log("Statsig initialized");
-  }).catch((e) => {
-    console.error("Error initializing Statsig", e);
-  });
+  initializeStatsig()
+    .then(() => {
+      console.log("Statsig initialized");
+    })
+    .catch((e) => {
+      console.error("Error initializing Statsig", e);
+    });
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
   const state = searchParams.get("state");
@@ -292,6 +295,33 @@ export async function GET(request: NextRequest) {
     });
   }
 
+  const fhirUserUUID = finalFhirUser.replace("Practitioner/", "");
+  let email = `${fhirUserUUID}@test.com`;
+
+  const profile = await fetchProvider(
+    pre.iss,
+    tokenJson.access_token,
+    finalFhirUser
+  );
+  console.log("fhirUser profile", profile);
+  if (profile) {
+    const maybeEmail = profile?.telecom?.find(
+      (t) => t.system === "email"
+    )?.value;
+    if (maybeEmail) {
+      email = maybeEmail;
+    }
+  }
+  console.log("email", email);
+  if (!email) {
+    return errorRedirect(request, {
+      code: "missing_email",
+      message: "Email not found in profile",
+      iss: pre.iss,
+      status: 200,
+    });
+  }
+
   const sessionData: SmartSessionData = {
     sid: crypto.randomUUID(),
     iss: pre.iss,
@@ -306,25 +336,19 @@ export async function GET(request: NextRequest) {
     tokenType: tokenJson.token_type,
     stytchOrganizationId: clientConfig?.stytch_organization_id,
   };
-
-  const fhirUserUUID = finalFhirUser.replace("Practitioner/", "");
-  const mockEmail = `${fhirUserUUID}@test.com`;
   console.log(
     "Minting trusted token for Stytch",
     clientConfig?.stytch_organization_id,
     finalFhirUser,
-    mockEmail
+    email
   );
   const token = await mintTrustedTokenForStytch({
     organizationId: clientConfig?.stytch_organization_id,
     practitionerUuid: finalFhirUser,
-    email: mockEmail,
+    email,
   });
 
-  console.log("Creating smart ticket", sessionData);
-  // Store one-time ticket in KV (short TTL)
   const ticket = await createSmartTicket(sessionData);
-  console.log("Created smart ticket", ticket);
   // Build absolute redirect URL that respects reverse proxy / ngrok headers
   const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
   const forwardedHost =

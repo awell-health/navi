@@ -52,7 +52,9 @@ export async function createSmartTicket(
   ttlSeconds: number = 120
 ): Promise<string> {
   const id = crypto.randomUUID();
+  console.log(`Creating smart ticket ${id}`, data);
   await kv.set(ticketKey(id), data, { ex: Math.max(1, ttlSeconds) });
+  console.log(`Created smart ticket ${id}`);
   return id;
 }
 
