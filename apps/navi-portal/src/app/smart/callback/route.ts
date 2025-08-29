@@ -11,9 +11,7 @@ import {
   attestTrustedToken,
 } from "@/domains/smart";
 import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
-import { getStatsig, initializeStatsig } from "@/lib/statsig";
-
-export const runtime = "nodejs";
+import { initializeStatsig, Statsig } from "@/lib/statsig.edge";
 
 type TokenResponse = {
   access_token: string;
@@ -76,6 +74,9 @@ function isExpiredToken(token: TokenResponse): boolean {
 }
 
 export async function GET(request: NextRequest) {
+  initializeStatsig().then(() => {
+    console.log("Statsig initialized");
+  });
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
   const state = searchParams.get("state");
@@ -145,15 +146,32 @@ export async function GET(request: NextRequest) {
   body.set("code_verifier", pre.codeVerifier);
 
   let tokenRes: Response;
+  let details: unknown = null;
   try {
+    console.log(
+      "Pinging token endpoint",
+      pre.tokenEndpoint,
+      "with body",
+      body.toString()
+    );
     tokenRes = await fetch(pre.tokenEndpoint, {
       method: "POST",
       headers: {
         "content-type": "application/x-www-form-urlencoded",
         accept: "application/json",
+        ...(clientConfig?.client_secret && {
+          authorization: `Basic ${Buffer.from(
+            `${clientId}:${clientConfig.client_secret}`
+          ).toString("base64")}`,
+        }),
       },
       body,
     });
+    try {
+      details = await tokenRes.json();
+    } catch {
+      details = await tokenRes.text();
+    }
   } catch (err) {
     return errorRedirect(request, {
       code: "token_request_failed",
@@ -163,13 +181,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (!tokenRes.ok) {
-    // Try to parse JSON error, otherwise return raw text
-    let details: unknown = null;
-    try {
-      details = await tokenRes.json();
-    } catch {
-      details = await tokenRes.text();
-    }
+    console.log("Token exchange failed", tokenRes.status, details);
     // 400 indicates invalid_client, invalid_grant, etc. Pass through status for clarity
     return errorRedirect(request, {
       code: "token_exchange_failed",
@@ -179,12 +191,14 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const tokenJson = (await tokenRes.json()) as TokenResponse;
+  const tokenJson = details as TokenResponse;
+  console.log("Token JSON", tokenJson);
 
   // Some simulator scenarios embed an error marker inside the JWT claims
   // of the access_token instead of top-level fields. Detect and surface it.
   try {
     if (typeof tokenJson.access_token === "string") {
+      console.log("Parsing access_token");
       const parts = tokenJson.access_token.split(".");
       if (parts.length === 3) {
         const [, payloadB64] = parts;
@@ -196,7 +210,7 @@ export async function GET(request: NextRequest) {
           sim_error: string;
           error: string;
         }>;
-
+        console.log("Parsed claims", claims);
         const embedded = claims.auth_error || claims.sim_error || claims.error;
         if (typeof embedded === "string" && embedded.length > 0) {
           const normalized = embedded
@@ -214,6 +228,7 @@ export async function GET(request: NextRequest) {
       }
     }
   } catch {
+    console.log("Error parsing access_token. Ignoring...");
     // ignore parse errors
   }
 
@@ -244,6 +259,7 @@ export async function GET(request: NextRequest) {
   let fhirUserFromIdToken: string | undefined;
   if (tokenJson.id_token) {
     try {
+      console.log("Parsing id_token", tokenJson.id_token);
       const [, payloadB64] = tokenJson.id_token.split(".");
       if (payloadB64) {
         const base64 = payloadB64.replace(/-/g, "+").replace(/_/g, "/");
@@ -253,14 +269,17 @@ export async function GET(request: NextRequest) {
           fhirUser: string;
           profile: string;
         }>;
+        console.log("Parsed claims", claims);
         fhirUserFromIdToken = claims.fhirUser || claims.profile;
       }
     } catch {
+      console.log("Error parsing id_token. Ignoring...");
       // ignore parse errors and continue
     }
   }
 
   const finalFhirUser = tokenJson.fhirUser ?? fhirUserFromIdToken;
+  console.log("fhirUser", finalFhirUser);
   if (!finalFhirUser) {
     return errorRedirect(request, {
       code: "missing_fhir_user",
@@ -288,14 +307,22 @@ export async function GET(request: NextRequest) {
 
   const fhirUserUUID = finalFhirUser.replace("Practitioner/", "");
   const mockEmail = `${fhirUserUUID}@test.com`;
+  console.log(
+    "Minting trusted token for Stytch",
+    clientConfig?.stytch_organization_id,
+    finalFhirUser,
+    mockEmail
+  );
   const token = await mintTrustedTokenForStytch({
     organizationId: clientConfig?.stytch_organization_id,
     practitionerUuid: finalFhirUser,
     email: mockEmail,
   });
 
+  console.log("Creating smart ticket", sessionData);
   // Store one-time ticket in KV (short TTL)
   const ticket = await createSmartTicket(sessionData);
+  console.log("Created smart ticket", ticket);
   // Build absolute redirect URL that respects reverse proxy / ngrok headers
   const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
   const forwardedHost =
@@ -308,6 +335,11 @@ export async function GET(request: NextRequest) {
   const resp = NextResponse.redirect(smartHomeUrl.toString(), 302);
   if (token) {
     try {
+      console.log(
+        "Attesting token",
+        token,
+        clientConfig?.stytch_organization_id
+      );
       const attest = await attestTrustedToken({
         token,
         organizationId: clientConfig?.stytch_organization_id,
@@ -317,8 +349,22 @@ export async function GET(request: NextRequest) {
         value: attest.session_token,
         maxAge: 60 * 60 * 24 * 30, // 30 days
         path: "/",
+        sameSite: "none",
+        domain: "",
       };
-      if (env.HTTP_ONLY_COOKIES) {
+      const gate = Statsig.checkGateSync(
+        {
+          userID: finalFhirUser,
+          customIDs: {
+            org_id: clientConfig?.stytch_organization_id,
+          },
+        },
+        "http_only_cookies"
+      );
+      console.log("Gate", gate);
+
+      if (gate) {
+        console.log("Setting HTTP-only cookie");
         cookieOptions.httpOnly = true;
         cookieOptions.domain = env.HTTP_COOKIE_DOMAIN;
         cookieOptions.secure = true;

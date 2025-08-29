@@ -1,7 +1,7 @@
 import { type SmartSessionData, consumeSmartTicket } from "@/domains/smart";
 
 import { SampleComponent } from "../_components/SampleComponent";
-import { getStatsig, initializeStatsig } from "@/lib/statsig";
+import { getStatsig, initializeStatsig } from "@/lib/statsig.client";
 import {
   fetchEncounter,
   fetchPatient,

@@ -26,6 +26,7 @@ export class MedplumStoreClient {
 
   // Initialize the store with client login
   async initialize(clientId?: string, clientSecret?: string): Promise<void> {
+    console.log("Initializing Medplum client", clientId, clientSecret);
     if (!this.initialized) {
       if (!this.client) {
         throw new Error("Failed to create Medplum client");
@@ -42,10 +43,12 @@ export class MedplumStoreClient {
         // This is safe on the server and will not expose secrets to the client
         // On the client, callers should avoid passing secrets
         // Only attempt if the client supports startClientLogin
-        const isAuthenticated = this.client.isAuthenticated?.() === true;
+        const isAuthenticated = this.client.isAuthenticated() === true;
 
         if (!isAuthenticated) {
+          console.log("Starting Medplum client login", clientId, clientSecret);
           await this.client.startClientLogin(clientId, clientSecret);
+          console.log("Medplum client login successful");
         }
 
         this.initialized = true;
@@ -119,4 +122,3 @@ export class MedplumStoreClient {
     }
   }
 }
-

@@ -1,7 +1,7 @@
 "use client";
 import { Typography } from "@/components/ui";
-import { getStatsig } from "@/lib/statsig";
-import { initializeStatsig } from "@/lib/statsig";
+import { getStatsig } from "@/lib/statsig.client";
+import { initializeStatsig } from "@/lib/statsig.client";
 import { useSearchParams } from "next/navigation";
 
 export default function Page() {

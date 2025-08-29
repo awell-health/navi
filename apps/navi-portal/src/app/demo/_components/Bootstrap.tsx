@@ -22,16 +22,16 @@ export const Bootstrap = ({
         cookieOptions: {
           availableToSubdomains: true,
           // Consider only setting in prod; this breaks on localhost
-          ...(useHttpOnly && { domain: cookieDomain }),
+          ...(useHttpOnly && cookieDomain && { domain: cookieDomain }),
         },
         ...(useHttpOnly && {
           endpointOptions: {
-            testApiDomain: "test-api.stytch.awellhealth.com",
-            apiDomain: "api.stytch.awellhealth.com",
+            testApiDomain: "test-auth.navi-portal.awellhealth.com",
+            apiDomain: "auth.navi-portal.awellhealth.com",
           },
         }),
       }),
-    [stytchPublicToken]
+    [stytchPublicToken, cookieDomain, useHttpOnly]
   );
   return (
     <StytchB2BProvider stytch={stytchClient}>{children}</StytchB2BProvider>

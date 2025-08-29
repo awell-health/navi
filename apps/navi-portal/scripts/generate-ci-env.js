@@ -32,7 +32,6 @@ STYTCH_TRUSTED_TOKEN_PRIVATE_KEY_B64=stytch-trusted-token-private-key-b64
 STYTCH_TRUSTED_TOKEN_KID=stytch-trusted-token-kid
 NEXT_PUBLIC_STATSIG_CLIENT_KEY=statsig-client-key
 NEXT_PUBLIC_MEDPLUM_BASE_URL=https://api.medplum.com
-NEXT_PUBLIC_MEDPLUM_WS_BASE_URL=ws://api.medplum.com
 `;
 
   const envPath = path.join(process.cwd(), "apps", "navi-portal", ".env.test");
@@ -58,7 +57,6 @@ NEXT_PUBLIC_MEDPLUM_WS_BASE_URL=ws://api.medplum.com
   console.log("   STYTCH_TRUSTED_TOKEN_KID=stytch-trusted-token-kid");
   console.log("   NEXT_PUBLIC_STATSIG_CLIENT_KEY=statsig-client-key");
   console.log("   NEXT_PUBLIC_MEDPLUM_BASE_URL=https://api.medplum.com");
-  console.log("   NEXT_PUBLIC_MEDPLUM_WS_BASE_URL=ws://api.medplum.com");
   console.log("");
   console.log("⚠️  These are test keys only - NOT for production use");
 }

@@ -44,7 +44,6 @@ const loadStytch = async () => {
   stytch = new B2BClient({
     project_id: env.STYTCH_B2B_PROJECT_ID,
     secret: env.STYTCH_B2B_SECRET,
-    env: env.STYTCH_ENV,
     custom_base_url: env.STYTCH_B2B_BASE_URL,
   });
   return stytch;
