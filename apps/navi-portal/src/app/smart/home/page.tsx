@@ -4,7 +4,6 @@ import { SmartHomeTabs } from "./components/smart-home-tabs";
 import { MedplumClientProvider } from "@/domains/medplum/MedplumClientProvider";
 import { fetchPatient } from "@/domains/smart/ehr";
 import { PatientIdentifier } from "@awell-health/navi-core";
-import { User } from "lucide-react";
 import { Bootstrap } from "@/app/demo/_components/Bootstrap";
 import { env } from "@/env";
 import { initializeStatsig, Statsig } from "@/lib/statsig.edge";
@@ -97,27 +96,11 @@ export default async function SmartHomePage({
     );
   }
 
-  const patientName =
-    patient.name?.[0]?.text ??
-    ([...(patient.name?.[0]?.given ?? [])].join(" ")
-      ? `${[...(patient.name?.[0]?.given ?? [])].join(" ")} ${
-          patient.name?.[0]?.family ?? ""
-        }`.trim()
-      : "Unknown Patient");
-
   console.log("httpOnly", httpOnly, "cookie domain", env.HTTP_COOKIE_DOMAIN);
 
   return (
     <MedplumClientProvider>
-      <div className="bg-white min-h-screen w-[550px] min-w-[550px] max-w-[550px] mx-auto">
-        <div className="bg-gray-50 border-b border-gray-200 px-6 py-5">
-          <div className="flex items-center gap-2">
-            <User className="w-6 h-6 mr-2" /> {patientName}{" "}
-            <span className="text-sm text-gray-500 mt-1 font-medium">
-              ({patient.id})
-            </span>
-          </div>
-        </div>
+      <div className="w-[550px] min-w-[550px] max-w-[550px] mx-auto">
         {sp?.testPatient && (
           <SmartHomeTabs
             patient={patient}
