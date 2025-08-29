@@ -19,7 +19,7 @@ export function ReusableTabs({
   children,
 }: ReusableTabsProps) {
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white">
       {/* Tabs */}
       <div className="border-b border-gray-200">
         <div className="flex">

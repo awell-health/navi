@@ -1,11 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { ArrowLeft } from "lucide-react";
-// import { ReusableTabs } from "./reusable-tabs";
-import { Task } from "@medplum/fhirtypes";
+import { Extension, Task } from "@medplum/fhirtypes";
 import { TaskStatusBadge } from "./task-status-badge";
 import { InfoCard } from "./info-card";
+import { ApolloProvider } from "@/lib/awell-client/provider";
+import { ActivityProvider } from "@/lib/activity-provider";
+import { CareflowActivitiesContent } from "./careflow-activities-content";
+import { BrandingProvider } from "@/lib/branding-provider";
+import { awellDefaultBranding } from "@/lib/branding/defaults";
 
 interface TaskViewProps {
   task: Task;
@@ -13,13 +17,6 @@ interface TaskViewProps {
 }
 
 export function TaskView({ task, onBack }: TaskViewProps) {
-  // const [activeTab, setActiveTab] = React.useState("context");
-
-  // const tabs = [
-  //   { id: "context", label: "Context" },
-  //   { id: "task", label: "Task" },
-  // ];
-
   // Helper function to format date
   const formatDate = (dateString?: string) => {
     if (!dateString) return "-";
@@ -36,8 +33,24 @@ export function TaskView({ task, onBack }: TaskViewProps) {
     }
   };
 
+  let careflowId = null
+  let stakeholderId = null;
+  let activityId = null;
+  const awellExtension = task.extension?.find(ext => ext.url === "https://awellhealth.com/fhir/StructureDefinition/awell-task");
+  
+  if (awellExtension) {
+    const { extension } = awellExtension as Extension;
+    careflowId = extension?.find(ext => ext.url === "careflow-id")?.valueString || null;
+    stakeholderId = extension?.find(ext => ext.url === "stakeholder-id")?.valueString || null;
+    activityId = extension?.find(ext => ext.url === "activity-id")?.valueString || null;
+  }
+
+  console.log("careflowId", careflowId);
+  console.log("stakeholderId", stakeholderId);
+  console.log('task', task);
+
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white">
       {/* Back Button */}
       <div className="py-4 -mt-2">
         <button
@@ -48,25 +61,6 @@ export function TaskView({ task, onBack }: TaskViewProps) {
           Back to patient
         </button>
       </div>
-
-      {/* Tabs */}
-      {/* <div className="border-b border-gray-200">
-        <div className="flex">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors hover:cursor-pointer ${
-                activeTab === tab.id
-                  ? "border-blue-500 text-blue-600 bg-white"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div> */}
 
       {/* Tab Content */}
       <div className="py-2 space-y-4">
@@ -97,19 +91,38 @@ export function TaskView({ task, onBack }: TaskViewProps) {
             {
               label: "Last Modified",
               value: formatDate(task.lastModified)
-            }
+            },
           ]}
         />
 
-          <div className="border border-gray-200 rounded-lg bg-white">
-            <div className="px-4 py-3 border-b border-gray-100">
-              <h3 className="font-semibold text-gray-900">Resolve Task</h3>
-            </div>
-            <div className="px-4 py-8 text-center">
-              <p className="text-gray-600">Task resolution interface will be implemented here</p>
-            </div>
+        {/* Activity Resolution Interface */}
+        <div className="border border-gray-200 rounded-lg bg-white">
+          <div className="px-4 py-3 border-b border-gray-100">
+            <h3 className="font-semibold text-gray-900">Resolve Task</h3>
           </div>
-        
+          <div className="px-4 py-4">
+            {careflowId && stakeholderId ? (
+              <ApolloProvider>
+                <BrandingProvider
+                  branding={awellDefaultBranding.branding}
+                  orgId={awellDefaultBranding.orgId}
+                  hasCustomBranding={false}
+                >
+                  <ActivityProvider 
+                    careflowId={careflowId} 
+                    stakeholderId={stakeholderId}
+                  >
+                    <CareflowActivitiesContent activityId={activityId} />
+                  </ActivityProvider>
+                </BrandingProvider>
+              </ApolloProvider>
+            ) : (
+              <div>
+                <p>No careflow or stakeholder found</p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

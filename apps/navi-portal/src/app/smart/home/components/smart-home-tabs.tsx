@@ -80,41 +80,27 @@ export function SmartHomeTabs({
     }
   };
 
-  // Helper function to get phone number
-  const getPhoneNumber = () => {
-    const phone = patient.telecom?.find(t => t.system === "phone");
-    return phone?.value || "-";
-  };
 
-  // Helper function to get email
-  const getEmail = () => {
-    const email = patient.telecom?.find(t => t.system === "email");
-    return email?.value || "-";
-  };
-
-  // Helper function to get address
-  const getAddress = () => {
-    const addr = patient.address?.[0];
-    if (!addr) return "-";
-    
-    const parts = [
-      addr.line?.[0],
-      addr.city,
-      addr.state,
-      addr.postalCode,
-    ].filter(Boolean);
-    
-    return parts.join(", ") || "-";
-  };
-
+  // {
+  //   "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+  //   "code": "MPI",
+  //   "display": "Master Patient Index"
+  // }
   // Helper function to get identifiers count
-  const getIdentifiersCount = () => {
-    return patient.identifier?.length || 0;
-  };
+  const renderMPIIdentifierValue = (array: any[]) => {
+    const mpiIdentifier = array.find(item => {
+      return item.type?.coding?.find((coding: { code: string; }) => coding.code === "MPI");
+    });
+    if (!mpiIdentifier) return null;
 
-  // Helper function to get telecom count
-  const getTelecomCount = () => {
-    return patient.telecom?.length || 0;
+    return (
+      <div className="flex flex-col gap-1 text-xs">
+        <div className="flex flex-col">
+          <span className="text-gray-500">{mpiIdentifier.type?.code}</span>
+          <span className="text-gray-900">{mpiIdentifier.value}</span>
+        </div>
+      </div>
+    );
   };
 
   const tabs = [
@@ -122,17 +108,17 @@ export function SmartHomeTabs({
     { id: "tasks", label: "Tasks" },
   ];
 
+  console.log("patient", patient);
+
   return (
     <div className="bg-white min-h-screen">
       {/* Separate Header - Context Bar */}
-      <div className="bg-gray-50 border-b border-gray-200 px-6 py-3 mb-4 border-l border-r border-gray-200">
+      <div className="bg-gray-50 border-b border-gray-200 px-6 py-3 mb-4 border-l border-r">
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <User className="w-4 h-4" />
           <span className="font-medium">{getPatientName()}</span>
           <span>•</span>
-          <span>DOB {formatDate(patient.birthDate)}</span>
-          <span>•</span>
-          <span>Gender {patient.gender || "unknown"}</span>
+          <span>ID {patient.id || "unknown"}</span>
         </div>
       </div>
 
@@ -150,40 +136,20 @@ export function SmartHomeTabs({
             title="Patient Details & Demographics"
             items={[
               {
+                label: "MPI",
+                value: patient.identifier?.length && patient.identifier?.length > 0 ? (
+                  renderMPIIdentifierValue(patient.identifier)
+                ) : (
+                  patient.identifier?.[0]?.value || "-"
+                )
+              },
+              {
                 label: "Full Name",
                 value: getPatientName()
               },
               {
                 label: "Date of Birth",
                 value: formatDate(patient.birthDate)
-              },
-              {
-                label: "Gender",
-                value: patient.gender || "unknown"
-              },
-              {
-                label: "Phone",
-                value: getTelecomCount() > 1 ? (
-                  <button className="text-sm text-blue-600 hover:text-blue-800">Show {getTelecomCount()} items</button>
-                ) : (
-                  getPhoneNumber()
-                )
-              },
-              {
-                label: "Email",
-                value: getEmail()
-              },
-              {
-                label: "Identifiers",
-                value: getIdentifiersCount() > 1 ? (
-                  <button className="text-sm text-blue-600 hover:text-blue-800">Show {getIdentifiersCount()} items</button>
-                ) : (
-                  patient.identifier?.[0]?.value || "-"
-                )
-              },
-              {
-                label: "Address",
-                value: getAddress()
               }
             ]}
           />
