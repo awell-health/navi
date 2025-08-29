@@ -32,15 +32,23 @@ interface TabsContentProps {
 }
 
 const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
-  ({ defaultValue, value, onValueChange, className, children, ...props }, ref) => {
-    const [internalValue, setInternalValue] = React.useState(value || defaultValue || "");
-    
-    const handleValueChange = React.useCallback((newValue: string) => {
-      if (value === undefined) {
-        setInternalValue(newValue);
-      }
-      onValueChange?.(newValue);
-    }, [value, onValueChange]);
+  (
+    { defaultValue, value, onValueChange, className, children, ...props },
+    ref
+  ) => {
+    const [internalValue, setInternalValue] = React.useState(
+      value || defaultValue || ""
+    );
+
+    const handleValueChange = React.useCallback(
+      (newValue: string) => {
+        if (value === undefined) {
+          setInternalValue(newValue);
+        }
+        onValueChange?.(newValue);
+      },
+      [value, onValueChange]
+    );
 
     const currentValue = value !== undefined ? value : internalValue;
 
@@ -50,6 +58,7 @@ const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
         return React.cloneElement(child, {
           currentValue,
           onValueChange: handleValueChange,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any);
       }
       return child;
@@ -89,8 +98,8 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
         ref={ref}
         className={cn(
           "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-          isActive 
-            ? "bg-white text-gray-900 shadow-sm" 
+          isActive
+            ? "bg-white text-gray-900 shadow-sm"
             : "hover:bg-white/50 hover:text-gray-900 text-gray-600",
           className
         )}
@@ -111,8 +120,8 @@ const TabsContent = React.forwardRef<HTMLDivElement, TabsContentProps>(
         ref={ref}
         className={cn(
           "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all duration-200",
-          isActive 
-            ? "opacity-100 visible" 
+          isActive
+            ? "opacity-100 visible"
             : "opacity-0 invisible absolute pointer-events-none",
           className
         )}

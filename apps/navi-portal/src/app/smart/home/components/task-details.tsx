@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { X, Calendar, User, FileText, ChevronUpIcon } from "lucide-react";
+import { X, ChevronUpIcon } from "lucide-react";
 import { TaskStatusBadge } from "./task-status-badge";
 import { Task } from "@medplum/fhirtypes";
 import { Card, CardHeader, CardContent } from "@/components/ui";
@@ -54,16 +54,16 @@ export function TaskDetails({ task, onClose }: TaskDetailsProps) {
 
   return (
     <Card className="w-full bg-gray-50 border-gray-200">
-      <CardHeader 
+      <CardHeader
         className="flex flex-row items-center justify-between cursor-pointer pb-2"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <h3 className="font-semibold text-gray-900">Task Information</h3>
         <div className="flex items-center gap-2">
-          <ChevronUpIcon 
+          <ChevronUpIcon
             className={`w-4 h-4 text-gray-500 transition-transform ${
               isExpanded ? "rotate-0" : "rotate-180"
-            }`} 
+            }`}
           />
           <button
             onClick={(e) => {
@@ -76,7 +76,7 @@ export function TaskDetails({ task, onClose }: TaskDetailsProps) {
           </button>
         </div>
       </CardHeader>
-      
+
       {isExpanded && (
         <CardContent className="pt-0">
           <div className="space-y-3">
@@ -87,16 +87,14 @@ export function TaskDetails({ task, onClose }: TaskDetailsProps) {
                 </span>
                 <span className="text-sm text-gray-900 text-right max-w-[60%]">
                   {item.label === "Task Status" ? (
-                    <TaskStatusBadge status={item.value as any} />
+                    <TaskStatusBadge status={item.value as Task["status"]} />
                   ) : (
                     item.value
                   )}
                 </span>
               </div>
             ))}
-            <div>
-              SPACE FOR NAVI ACTIVITY COMPLETION
-            </div>
+            <div>SPACE FOR NAVI ACTIVITY COMPLETION</div>
           </div>
         </CardContent>
       )}
