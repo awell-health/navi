@@ -5,17 +5,15 @@ import { usePatientTasks } from "../hooks/use-patient-tasks";
 import { useTaskFiltering } from "../hooks/use-task-filtering";
 import { TaskCard } from "./task-card";
 import { TaskFilters } from "./task-filters";
-import { TaskDetails } from "./task-details";
 import { PatientIdentifier } from "@awell-health/navi-core";
 import { Task } from "@medplum/fhirtypes";
 
 interface TaskListProps {
   patientIdentifier: PatientIdentifier;
+  setSelectedTask: (task: Task) => void;
 }
 
-export function TaskList({ patientIdentifier }: TaskListProps) {
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-
+export function TaskList({ patientIdentifier, setSelectedTask }: TaskListProps) {
   const { tasks, loading, error } = usePatientTasks(patientIdentifier);
   const {
     filteredTasks,
@@ -53,17 +51,6 @@ export function TaskList({ patientIdentifier }: TaskListProps) {
           This patient currently has no active tasks.
         </p>
       </div>
-    );
-  }
-
-  if (selectedTask) {
-    return (
-      <>
-        <TaskDetails
-          task={selectedTask}
-          onClose={() => setSelectedTask(null)}
-        />
-      </>
     );
   }
 
