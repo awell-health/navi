@@ -192,11 +192,13 @@ export async function GET(request: NextRequest) {
   }
 
   const tokenJson = details as TokenResponse;
+  console.log("Token JSON", tokenJson);
 
   // Some simulator scenarios embed an error marker inside the JWT claims
   // of the access_token instead of top-level fields. Detect and surface it.
   try {
     if (typeof tokenJson.access_token === "string") {
+      console.log("Parsing access_token");
       const parts = tokenJson.access_token.split(".");
       if (parts.length === 3) {
         const [, payloadB64] = parts;
@@ -208,7 +210,7 @@ export async function GET(request: NextRequest) {
           sim_error: string;
           error: string;
         }>;
-
+        console.log("Parsed claims", claims);
         const embedded = claims.auth_error || claims.sim_error || claims.error;
         if (typeof embedded === "string" && embedded.length > 0) {
           const normalized = embedded
@@ -226,6 +228,7 @@ export async function GET(request: NextRequest) {
       }
     }
   } catch {
+    console.log("Error parsing access_token. Ignoring...");
     // ignore parse errors
   }
 
@@ -256,6 +259,7 @@ export async function GET(request: NextRequest) {
   let fhirUserFromIdToken: string | undefined;
   if (tokenJson.id_token) {
     try {
+      console.log("Parsing id_token", tokenJson.id_token);
       const [, payloadB64] = tokenJson.id_token.split(".");
       if (payloadB64) {
         const base64 = payloadB64.replace(/-/g, "+").replace(/_/g, "/");
@@ -265,14 +269,17 @@ export async function GET(request: NextRequest) {
           fhirUser: string;
           profile: string;
         }>;
+        console.log("Parsed claims", claims);
         fhirUserFromIdToken = claims.fhirUser || claims.profile;
       }
     } catch {
+      console.log("Error parsing id_token. Ignoring...");
       // ignore parse errors and continue
     }
   }
 
   const finalFhirUser = tokenJson.fhirUser ?? fhirUserFromIdToken;
+  console.log("fhirUser", finalFhirUser);
   if (!finalFhirUser) {
     return errorRedirect(request, {
       code: "missing_fhir_user",
@@ -300,14 +307,22 @@ export async function GET(request: NextRequest) {
 
   const fhirUserUUID = finalFhirUser.replace("Practitioner/", "");
   const mockEmail = `${fhirUserUUID}@test.com`;
+  console.log(
+    "Minting trusted token for Stytch",
+    clientConfig?.stytch_organization_id,
+    finalFhirUser,
+    mockEmail
+  );
   const token = await mintTrustedTokenForStytch({
     organizationId: clientConfig?.stytch_organization_id,
     practitionerUuid: finalFhirUser,
     email: mockEmail,
   });
 
+  console.log("Creating smart ticket", sessionData);
   // Store one-time ticket in KV (short TTL)
   const ticket = await createSmartTicket(sessionData);
+  console.log("Created smart ticket", ticket);
   // Build absolute redirect URL that respects reverse proxy / ngrok headers
   const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
   const forwardedHost =
