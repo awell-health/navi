@@ -96,7 +96,7 @@ export default async function SmartHomePage({
     },
     "http_only_cookies"
   );
-  console.log("httpOnly", httpOnly);
+  console.log("httpOnly", httpOnly, "cookie domain", env.HTTP_COOKIE_DOMAIN);
 
   return (
     <MedplumClientProvider>

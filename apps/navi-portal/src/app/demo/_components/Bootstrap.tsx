@@ -22,7 +22,7 @@ export const Bootstrap = ({
         cookieOptions: {
           availableToSubdomains: true,
           // Consider only setting in prod; this breaks on localhost
-          ...(useHttpOnly && { domain: cookieDomain }),
+          ...(useHttpOnly && cookieDomain && { domain: cookieDomain }),
         },
         ...(useHttpOnly && {
           endpointOptions: {
@@ -31,7 +31,7 @@ export const Bootstrap = ({
           },
         }),
       }),
-    [stytchPublicToken]
+    [stytchPublicToken, cookieDomain, useHttpOnly]
   );
   return (
     <StytchB2BProvider stytch={stytchClient}>{children}</StytchB2BProvider>
