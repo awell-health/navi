@@ -87,7 +87,6 @@ export default async function SmartHomePage({
     value: session.patient ?? "",
   };
 
-  const stytchPublicToken = env.STYTCH_B2B_PUBLIC_TOKEN;
   const httpOnly = Statsig.checkGateSync(
     {
       userID: session.fhirUser,
@@ -111,7 +110,8 @@ export default async function SmartHomePage({
 
         <div className="p-4">
           <Bootstrap
-            stytchPublicToken={stytchPublicToken}
+            stytchPublicToken={env.STYTCH_B2B_PUBLIC_TOKEN}
+            cookieDomain={env.HTTP_COOKIE_DOMAIN}
             useHttpOnly={httpOnly}
           >
             <TaskList

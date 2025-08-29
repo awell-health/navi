@@ -320,6 +320,11 @@ export async function GET(request: NextRequest) {
   const resp = NextResponse.redirect(smartHomeUrl.toString(), 302);
   if (token) {
     try {
+      console.log(
+        "Attesting token",
+        token,
+        clientConfig?.stytch_organization_id
+      );
       const attest = await attestTrustedToken({
         token,
         organizationId: clientConfig?.stytch_organization_id,
