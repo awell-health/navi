@@ -79,7 +79,7 @@ export default async function SmartHomePage({
     patient = getTestPatient();
     patientIdentifier = {
       system: "https://launch.smarthealthit.org/v/r4/fhir",
-      value: patient.id ?? "",
+      value: patient.id!,
     };
   }
   if (!patient || !patientIdentifier) {
@@ -118,17 +118,24 @@ export default async function SmartHomePage({
             </span>
           </div>
         </div>
-
-        <Bootstrap
-          stytchPublicToken={env.STYTCH_B2B_PUBLIC_TOKEN}
-          cookieDomain={env.HTTP_COOKIE_DOMAIN}
-          useHttpOnly={httpOnly}
-        >
+        {sp?.testPatient && (
           <SmartHomeTabs
             patient={patient}
             patientIdentifier={patientIdentifier}
           />
-        </Bootstrap>
+        )}
+        {session && (
+          <Bootstrap
+            stytchPublicToken={env.STYTCH_B2B_PUBLIC_TOKEN}
+            cookieDomain={env.HTTP_COOKIE_DOMAIN}
+            useHttpOnly={httpOnly}
+          >
+            <SmartHomeTabs
+              patient={patient}
+              patientIdentifier={patientIdentifier}
+            />
+          </Bootstrap>
+        )}
       </div>
     </MedplumClientProvider>
   );

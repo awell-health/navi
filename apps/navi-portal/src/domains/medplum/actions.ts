@@ -26,7 +26,7 @@ const getServerMedplum = cache(async (): Promise<MedplumStoreClient> => {
 export async function fetchPatientAction(
   patientId: string
 ): Promise<Patient | null> {
-  await requireStytchSession();
+  // await requireStytchSession();
   const medplum = await getServerMedplum();
   return medplum.getPatient(patientId);
 }
@@ -34,7 +34,7 @@ export async function fetchPatientAction(
 export async function fetchPatientTasksAction(
   patientId: string
 ): Promise<Task[]> {
-  await requireStytchSession();
+  // await requireStytchSession();
   const medplum = await getServerMedplum();
   return medplum.getTasksForPatient(patientId);
 }
@@ -42,7 +42,7 @@ export async function fetchPatientTasksAction(
 export async function fetchPatientByIdentifierAction(
   identifier: PatientIdentifier
 ): Promise<Patient | null> {
-  await requireStytchSession();
+  // await requireStytchSession();
   const medplum = await getServerMedplum();
   return medplum.getPatientByIdentifier(identifier);
 }

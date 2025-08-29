@@ -81,7 +81,7 @@ export class MedplumStoreClient {
   async getTasks(): Promise<Task[]> {
     try {
       const bundle = await this.client.search("Task", {
-        _count: 1000,
+        _count: 100,
         _sort: "-_lastUpdated",
       });
 
@@ -94,6 +94,7 @@ export class MedplumStoreClient {
 
   async getTasksForPatient(patientId: string): Promise<Task[]> {
     try {
+      console.log("Fetching Medplum Tasks for Patient", patientId);
       const bundle = await this.client.search("Task", {
         subject: `Patient/${patientId}`,
         _count: 100,

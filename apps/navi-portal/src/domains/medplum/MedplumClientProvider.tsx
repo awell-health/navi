@@ -86,6 +86,7 @@ export function MedplumClientProvider({
 
   const getPatient = useCallback(
     async (patientId: string) => {
+      console.log("Fetching Medplum Patient", patientId);
       if (isLoading) {
         throw new Error("Medplum client is still initializing");
       }
@@ -103,8 +104,10 @@ export function MedplumClientProvider({
 
   const getTasksForPatient = useCallback(
     async (patientId: string) => {
+      console.log("Fetching Medplum Tasks for Patient", patientId);
       if (isLoading) throw new Error("Medplum client is still initializing");
       const tasks = await fetchPatientTasksAction(patientId);
+      console.log("Fetched Medplum Tasks", tasks.length);
       return tasks;
     },
     [isLoading]
@@ -112,6 +115,7 @@ export function MedplumClientProvider({
 
   const getPatientByIdentifier = useCallback(
     async (identifier: PatientIdentifier) => {
+      console.log("Fetching Medplum Patient by Identifier", identifier);
       if (isLoading) throw new Error("Medplum client is still initializing");
       return await fetchPatientByIdentifierAction(identifier);
     },
