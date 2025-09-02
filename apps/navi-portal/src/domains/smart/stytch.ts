@@ -2,7 +2,7 @@
 
 import { env } from "@/env";
 import { SignJWT, importPKCS8 } from "jose";
-import { B2BClient } from "stytch";
+import { B2BClient, StytchError } from "stytch";
 import { cookies } from "next/headers";
 
 const TRUSTED_ISS = env.BASE_URL ?? "https://navi-portal.awellhealth.com";
@@ -24,15 +24,23 @@ export async function mintTrustedTokenForStytch(params: {
   ).toString("utf8");
   const privateKey = await importPKCS8(pem, "RS256");
   const now = Math.floor(Date.now() / 1000);
-  return await new SignJWT({
+
+
+  const signObject = {
     sub: params.practitionerUuid,
-    custom_email_claim: params.email,
+    // custom_email_claim: 'pawel@awellhealth.com',
+    custom_email_claim: 'pawel@awellhealth.com', // params.email,
     organization_id: params.organizationId,
     iss: TRUSTED_ISS,
     aud: TRUSTED_AUD,
     iat: now,
     exp: now + 5 * 60,
-  })
+  }
+
+  console.log("----------------------> signObject", signObject);
+
+
+  return await new SignJWT(signObject)
     .setProtectedHeader({ alg: "RS256", kid: env.STYTCH_TRUSTED_TOKEN_KID })
     .sign(privateKey);
 }
@@ -54,11 +62,15 @@ export async function attestTrustedToken(params: {
   organizationId: string;
 }) {
   const stytch = await loadStytch();
-  return await stytch.sessions.attest({
+
+  const attest = await stytch.sessions.attest({
     profile_id: env.STYTCH_TRUSTED_TOKEN_PROFILE_ID,
     token: params.token,
     organization_id: params.organizationId,
   });
+
+  return attest;
+
 }
 
 export async function requireStytchSession() {

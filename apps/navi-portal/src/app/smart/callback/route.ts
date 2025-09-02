@@ -75,13 +75,7 @@ function isExpiredToken(token: TokenResponse): boolean {
 }
 
 export async function GET(request: NextRequest) {
-  initializeStatsig()
-    .then(() => {
-      console.log("Statsig initialized");
-    })
-    .catch((e) => {
-      console.error("Error initializing Statsig", e);
-    });
+  await initializeStatsig()
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
   const state = searchParams.get("state");

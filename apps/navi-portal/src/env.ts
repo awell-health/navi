@@ -68,7 +68,7 @@ export const env = createEnv({
     STYTCH_B2B_SECRET: z.string().describe("Stytch B2B Project Secret"),
     STYTCH_B2B_BASE_URL: z
       .string()
-      .default("https://test-api.stytch.awellhealth.com")
+      .default("https://test-auth.stytch.awellhealth.com")
       .describe("Stytch B2B Base URL"),
     STYTCH_TRUSTED_TOKEN_PROFILE_ID: z
       .string()

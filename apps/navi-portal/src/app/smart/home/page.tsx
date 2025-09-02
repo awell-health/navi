@@ -64,7 +64,7 @@ export default async function SmartHomePage({
     httpOnly = Statsig.checkGateSync(
       {
         userID: session.fhirUser,
-        customIDs: {
+        customIDs: {  
           org_id: session.iss,
         },
       },
@@ -81,6 +81,7 @@ export default async function SmartHomePage({
       value: patient.id!,
     };
   }
+  console.log("----------------------> httpOnly", httpOnly);
   if (!patient || !patientIdentifier) {
     return (
       <div className="p-6">
@@ -97,6 +98,7 @@ export default async function SmartHomePage({
   }
 
   console.log("httpOnly", httpOnly, "cookie domain", env.HTTP_COOKIE_DOMAIN);
+  console.log('{env.STYTCH_B2B_PUBLIC_TOKEN}', env.STYTCH_B2B_PUBLIC_TOKEN)
 
   return (
     <MedplumClientProvider>
@@ -113,10 +115,16 @@ export default async function SmartHomePage({
             cookieDomain={env.HTTP_COOKIE_DOMAIN}
             useHttpOnly={httpOnly}
           >
-            <SmartHomeTabs
-              patient={patient}
-              patientIdentifier={patientIdentifier}
-            />
+            <>
+            
+            <div>
+              {httpOnly ? 'httpOnly' : 'http'}
+              </div>
+              <SmartHomeTabs
+                patient={patient}
+                patientIdentifier={patientIdentifier}
+              />
+            </>
           </Bootstrap>
         )}
       </div>

@@ -83,6 +83,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
+
+    // if valid stytch session use JWT Token from cookie
+    if (request.cookies.get("stytch_session_jwt")) {
+
+    }
+
     // Extract session ID from cookie (fallback if no valid JWT)
     const sessionCookie = request.cookies.get("awell.sid");
     if (!sessionCookie) {
