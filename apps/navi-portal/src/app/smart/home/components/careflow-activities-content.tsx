@@ -73,9 +73,6 @@ export function CareflowActivitiesContent({ activityId }: { activityId: string |
     service,
   } = useActivity();
 
-  // State for activity drawer
-  const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);
-
   useEffect(() => {
     if (activityId) {
       setActiveActivity(activityId);
@@ -101,28 +98,6 @@ export function CareflowActivitiesContent({ activityId }: { activityId: string |
       },
     }
   );
-
-  // Mark the active activity as viewed when it changes
-  useEffect(() => {
-    if (activeActivity) {
-      markActivityAsViewed(activeActivity.id);
-    }
-  }, [activeActivity, markActivityAsViewed]);
-
-  // Handle activity list icon click
-  const handleActivityListClick = () => {
-    console.log("📋 Activity list clicked");
-    setIsActivityDrawerOpen(true);
-  };
-
-  const handleActivityClick = (activity: ActivityFragment) => {
-    console.log("🔍 Activity clicked:", activity);
-    if (canDisplayActivity(activity)) {
-      setActiveActivity(activity.id);
-    } else {
-      console.warn("⚠️ Cannot display activity type:", activity.object.type);
-    }
-  };
 
   // Render the appropriate activity component based on the active activity type
   const renderActiveActivity = () => {

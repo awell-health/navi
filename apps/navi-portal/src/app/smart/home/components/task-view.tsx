@@ -52,11 +52,6 @@ export function TaskView({ task, onBack }: TaskViewProps) {
       extension?.find((ext) => ext.url === "activity-id")?.valueString || null;
   }
 
-  console.log("careflowId", careflowId);
-  console.log("stakeholderId", stakeholderId);
-  console.log("activityId", activityId);
-  console.log("task", task);
-
   return (
     <div className="bg-white">
       {/* Back Button */}
@@ -104,33 +99,37 @@ export function TaskView({ task, onBack }: TaskViewProps) {
         />
 
         {/* Activity Resolution Interface */}
+        {(task.status !== "completed" && task.status !== "cancelled") && (
         <div className="border border-gray-200 rounded-lg bg-white">
           <div className="px-4 py-3 border-b border-gray-100">
             <h3 className="font-semibold text-gray-900">Resolve Task</h3>
           </div>
           <div className="px-4 py-4">
-            {careflowId && stakeholderId ? (
-              <ApolloProvider>
-                <BrandingProvider
+            {careflowId && stakeholderId && activityId && (
+              <>
+               <ApolloProvider>
+                {/* <BrandingProvider
                   branding={awellDefaultBranding.branding}
                   orgId={awellDefaultBranding.orgId}
                   hasCustomBranding={false}
-                >
+                > */}
                   <ActivityProvider
                     careflowId={careflowId}
                     stakeholderId={stakeholderId}
+                    activityId={activityId} // NEW: Enable single activity mode when activityId is provided
                   >
-                    <CareflowActivitiesContent activityId={activityId} />
+                    {/* <CareflowActivitiesContent activityId={activityId} /> */}
+                    <div>
+                      {activityId}
+                    </div>
                   </ActivityProvider>
-                </BrandingProvider>
+                {/* </BrandingProvider> */}
               </ApolloProvider>
-            ) : (
-              <div>
-                <p>No careflow or stakeholder found</p>
-              </div>
+              </>
             )}
           </div>
         </div>
+        )}
       </div>
     </div>
   );

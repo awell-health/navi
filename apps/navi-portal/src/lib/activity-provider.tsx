@@ -8,10 +8,11 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { useSessionId } from "@/hooks/use-session-id";
+// import { useSessionId } from "@/hooks/use-session-id";
 import {
   ActivityFragment,
   usePathwayActivitiesQuery,
+  useGetActivityQuery,
   useOnActivityCreatedSubscription,
   useOnActivityUpdatedSubscription,
   useOnActivityCompletedSubscription,
@@ -186,6 +187,10 @@ interface ActivityContextType {
   isLoading: boolean;
   error: string | null;
 
+  // Mode information
+  isSingleActivityMode: boolean;
+  activityId?: string;
+
   // UI-specific state (not in GraphQL)
   visitedActivities: Set<string>;
   newActivities: Set<string>;
@@ -213,6 +218,7 @@ interface ActivityProviderProps {
   children: React.ReactNode;
   careflowId: string;
   stakeholderId?: string;
+  activityId?: string; // NEW: Optional single activity mode
   onActivityActivate?: (activityId: string, activity: ActivityFragment) => void;
   service?: ActivityService; // Allow injection for testing
 }
@@ -221,11 +227,13 @@ export function ActivityProvider({
   children,
   careflowId,
   stakeholderId,
+  activityId, // NEW: Optional single activity mode
   service: injectedService,
 }: ActivityProviderProps) {
   // Create service instance only once
   const [service] = useState(() => injectedService || new ActivityService());
-  const sessionId = useSessionId();
+  // const sessionId = useSessionId();
+  const sessionId = '123-123-123-123';
 
   // State
   const [activities, setActivities] = useState<ActivityFragment[]>([]);
@@ -236,29 +244,53 @@ export function ActivityProvider({
   );
   const [newActivities, setNewActivities] = useState<Set<string>>(new Set());
 
-  // GraphQL query for initial activities
+  // Conditional GraphQL queries based on mode
+  const isSingleActivityMode = !!activityId;
+  
+  console.log(`🎯 ActivityProvider mode: ${isSingleActivityMode ? 'Single Activity' : 'Multiple Activities'}`);
+  if (isSingleActivityMode) {
+    console.log(`🎯 Single activity mode with ID: ${activityId}`);
+  } else {
+    console.log(`🎯 Multiple activities mode for careflow: ${careflowId}`);
+  }
+
+  // Query for multiple activities (existing behavior)
   const {
     data: activitiesData,
-    loading: isLoading,
-    error: gqlError,
-    refetch,
+    loading: isLoadingMultiple,
+    error: gqlErrorMultiple,
+    refetch: refetchMultiple,
   } = usePathwayActivitiesQuery({
     variables: {
       careflow_id: careflowId,
-      // WHY: trackId narrows the activities universe server-side. If present
-      // in session, we pass it to GraphQL so only the relevant track's
-      // activities are returned. This prevents leaking unrelated tasks.
-      // Note: activityId is a client-side focus filter, not a server filter.
-      // It can be used to select a single activity in the UI.
-      // We read both from session cookies via a tiny helper to avoid plumbing.
-      // For now, only server-side track filtering is applied here.
     },
+    skip: isSingleActivityMode, // Skip when in single activity mode
   });
+
+  // NEW: Query for single activity
+  const {
+    data: singleActivityData,
+    loading: isLoadingSingle,
+    error: gqlErrorSingle,
+    refetch: refetchSingle,
+  } = useGetActivityQuery({
+    variables: {
+      id: activityId!,
+    },
+    skip: !isSingleActivityMode, // Skip when not in single activity mode
+  });
+
+  // Unified loading and error states
+  const isLoading = isSingleActivityMode ? isLoadingSingle : isLoadingMultiple;
+  const gqlError = isSingleActivityMode ? gqlErrorSingle : gqlErrorMultiple;
+  const refetch = isSingleActivityMode ? refetchSingle : refetchMultiple;
 
   // GraphQL mutation for completing activities
   const [completeActivityMutation] = useCompleteActivityMutation();
 
   // =================== SUBSCRIPTION HANDLERS ===================
+  // Note: These subscriptions work with both single and multiple activity modes
+  // They update the activities array and active activity state regardless of mode
 
   // These could be extracted to a custom hook: useActivitySubscriptions
   function shouldReplaceActivity(
@@ -452,10 +484,11 @@ export function ActivityProvider({
 
   // =================== INITIAL DATA HANDLING ===================
 
+  // Handle multiple activities mode (existing behavior)
   useEffect(() => {
-    if (activitiesData?.pathwayActivities?.activities) {
+    if (!isSingleActivityMode && activitiesData?.pathwayActivities?.activities) {
       const allActivities = activitiesData.pathwayActivities.activities;
-      console.log("📋 Activities loaded from GraphQL:", allActivities.length);
+      console.log("📋 Activities loaded from GraphQL:", activitiesData, allActivities.length);
 
       // WHY: apply stakeholder filter first (ownership), then apply client-side
       // focus filter when activityId is provided to limit to a single activity
@@ -490,7 +523,25 @@ export function ActivityProvider({
         }
       }
     }
-  }, [activitiesData, stakeholderId, activeActivity, service]);
+  }, [activitiesData, stakeholderId, activeActivity, service, isSingleActivityMode]);
+
+  // Handle single activity mode (NEW)
+  useEffect(() => {
+    if (isSingleActivityMode && singleActivityData?.activity?.activity) {
+      const singleActivity = singleActivityData.activity.activity;
+      console.log("🎯 Single activity loaded from GraphQL:", singleActivity.id);
+
+      // Set as the only activity in the list
+      setActivities([singleActivity]);
+
+      // Set as the active activity
+      if (!activeActivity || activeActivity.id !== singleActivity.id) {
+        setActiveActivityState(singleActivity);
+        service.emit("activity.activated", { activity: singleActivity });
+        console.log("🎯 Single activity set as active:", singleActivity.id);
+      }
+    }
+  }, [singleActivityData, activeActivity, service, isSingleActivityMode]);
 
   // =================== ACTION HANDLERS ===================
 
@@ -678,6 +729,10 @@ export function ActivityProvider({
       isLoading,
       error,
 
+      // Mode information
+      isSingleActivityMode,
+      activityId,
+
       // UI-specific state (not in GraphQL)
       visitedActivities,
       newActivities,
@@ -699,6 +754,8 @@ export function ActivityProvider({
       activeActivity,
       isLoading,
       error,
+      isSingleActivityMode,
+      activityId,
       visitedActivities,
       newActivities,
       setActiveActivity,
