@@ -5,7 +5,13 @@ import { User } from "lucide-react";
 import { TaskList } from "./task-list";
 import { PatientIdentifier } from "@awell-health/navi-core";
 import { ReusableTabs } from "./reusable-tabs";
-import { Coding, Extension, Identifier, Patient, Task } from "@medplum/fhirtypes";
+import {
+  Coding,
+  Extension,
+  Identifier,
+  Patient,
+  Task,
+} from "@medplum/fhirtypes";
 import { TaskView } from "./task-view";
 import { InfoCard } from "./info-card";
 import { useMedplum } from "@/domains/medplum/MedplumClientProvider";
@@ -118,7 +124,11 @@ export function SmartHomeTabs({
     { id: "tasks", label: "Tasks" },
   ];
 
-  const awellExtension = medplumPatient?.extension?.find((ext: Extension) => ext.url === "https://awellhealth.com/fhir/StructureDefinition/awell-data-points");
+  const awellExtension = medplumPatient?.extension?.find(
+    (ext: Extension) =>
+      ext.url ===
+      "https://awellhealth.com/fhir/StructureDefinition/awell-data-points"
+  );
 
   let programVbc;
   let programDiseaseStage;
@@ -126,9 +136,13 @@ export function SmartHomeTabs({
 
   if (awellExtension) {
     const { extension } = awellExtension as Extension;
-    programVbc = extension?.find((ext) => ext.url === "programVbc")?.valueString || '-';
-    programDiseaseStage = extension?.find((ext) => ext.url === "programDiseaseStage")?.valueString || '-';
-    programSite = extension?.find((ext) => ext.url === "programSite")?.valueString || '-';
+    programVbc =
+      extension?.find((ext) => ext.url === "programVbc")?.valueString || "-";
+    programDiseaseStage =
+      extension?.find((ext) => ext.url === "programDiseaseStage")
+        ?.valueString || "-";
+    programSite =
+      extension?.find((ext) => ext.url === "programSite")?.valueString || "-";
   }
 
   return (
@@ -173,14 +187,14 @@ export function SmartHomeTabs({
                 },
                 {
                   label: "Date of Birth",
-                  value: formatDate(patient.birthDate),
+                  value: formatDate(patient?.birthDate),
                 },
                 {
                   label: "MPI",
                   value:
                     patient?.identifier?.length &&
                     patient?.identifier?.length > 0
-                      ? renderMPIIdentifierValue(patient.identifier)
+                      ? renderMPIIdentifierValue(patient?.identifier)
                       : patient?.identifier?.[0]?.value || "-",
                 },
                 {
