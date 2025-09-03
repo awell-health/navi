@@ -57,6 +57,10 @@ export default async function SmartHomePage({
   let patientIdentifier: PatientIdentifier | null = null;
 
   if (session) {
+    patientIdentifier = {
+      system: session.iss,
+      value: session.patient ?? "",
+    };
     if (session.scope?.includes("patient/*.read")) {
       patient = await fetchPatient(
         session.iss,
@@ -73,10 +77,6 @@ export default async function SmartHomePage({
       },
       "http_only_cookies"
     );
-    patientIdentifier = {
-      system: session.iss,
-      value: session.patient ?? "",
-    };
   } else if (sp?.testPatient) {
     patient = getTestPatient();
     patientIdentifier = {
@@ -84,6 +84,10 @@ export default async function SmartHomePage({
       value: patient.id!,
     };
   }
+  console.log("httpOnly", httpOnly);
+  console.log("cookie domain", env.HTTP_COOKIE_DOMAIN);
+  console.log("patient", patient);
+  console.log("patientIdentifier", patientIdentifier);
   if (!patient || !patientIdentifier) {
     return (
       <div className="p-6">
@@ -98,11 +102,6 @@ export default async function SmartHomePage({
       </div>
     );
   }
-
-  console.log("httpOnly", httpOnly);
-  console.log("cookie domain", env.HTTP_COOKIE_DOMAIN);
-  console.log("patient", patient);
-  console.log("patientIdentifier", patientIdentifier);
 
   return (
     <MedplumClientProvider>
