@@ -88,7 +88,7 @@ export default async function SmartHomePage({
   console.log("cookie domain", env.HTTP_COOKIE_DOMAIN);
   console.log("patient", patient);
   console.log("patientIdentifier", patientIdentifier);
-  if (!patient || !patientIdentifier) {
+  if (!patientIdentifier) {
     return (
       <div className="p-6">
         <div className="text-center">

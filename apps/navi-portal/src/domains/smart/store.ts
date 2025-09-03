@@ -51,7 +51,7 @@ export async function deleteClientConfigForHost(host: string) {
  */
 export async function createSmartTicket(
   data: SmartSessionData,
-  ttlSeconds: number = 120
+  ttlSeconds: number = 86400
 ): Promise<string> {
   const id = crypto.randomUUID();
   console.log(`Creating smart ticket ${id}`, data);
