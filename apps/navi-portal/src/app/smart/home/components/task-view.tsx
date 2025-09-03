@@ -10,6 +10,7 @@ import { ActivityProvider } from "@/lib/activity-provider";
 import { CareflowActivitiesContent } from "./careflow-activities-content";
 import { BrandingProvider } from "@/lib/branding-provider";
 import { awellDefaultBranding } from "@/lib/branding/defaults";
+import { toast } from "sonner";
 
 interface TaskViewProps {
   task: Task;
@@ -53,15 +54,17 @@ export function TaskView({ task, onBack }: TaskViewProps) {
       extension?.find((ext) => ext.url === "activity-id")?.valueString || null;
   }
 
-  const handleBack = () => {
+  const handleTaskCompleted = () => {
     setSubmitted(true);
+    toast.success("Task completed");
     setTimeout(() => {
       onBack();
       setSubmitted(false);
     }, 500);
   };
 
-  const hideActivity = task.status === "completed" || task.status === "cancelled" || submitted;
+  const hideActivity =
+    task.status === "completed" || task.status === "cancelled" || submitted;
 
   return (
     <div className="bg-white">
@@ -110,38 +113,45 @@ export function TaskView({ task, onBack }: TaskViewProps) {
           <div className="px-4 py-3 border-b border-gray-100">
             <h3 className="font-semibold text-gray-900">Resolve Task</h3>
           </div>
-          {submitted && <div className="px-4 py-4 flex items-center gap-2 justify-center">
-            <Loader2 className="w-5 h-5 text-blue-500 animate-spin" /> Submitting task...
-          </div>}
-          {!submitted && hideActivity && <div className="px-4 py-4 flex items-center gap-2 justify-center">
-            <Check className="w-5 h-5 text-green-500" /> Task completed
-          </div>}
-          {!hideActivity&& <div className="px-4 py-4">
-            {careflowId && stakeholderId && activityId ? (
-              <ApolloProvider>
-                <BrandingProvider
-                  branding={awellDefaultBranding.branding}
-                  orgId={awellDefaultBranding.orgId}
-                  hasCustomBranding={false}
-                >
-                  <ActivityProvider
-                    careflowId={careflowId}
-                    stakeholderId={stakeholderId}
-                    activityId={activityId}
+          {submitted && (
+            <div className="px-4 py-4 flex items-center gap-2 justify-center">
+              <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />{" "}
+              Submitting task...
+            </div>
+          )}
+          {!submitted && hideActivity && (
+            <div className="px-4 py-4 flex items-center gap-2 justify-center">
+              <Check className="w-5 h-5 text-green-500" /> Task completed
+            </div>
+          )}
+          {!hideActivity && (
+            <div className="px-4 py-4">
+              {careflowId && stakeholderId && activityId ? (
+                <ApolloProvider>
+                  <BrandingProvider
+                    branding={awellDefaultBranding.branding}
+                    orgId={awellDefaultBranding.orgId}
+                    hasCustomBranding={false}
                   >
-                    <CareflowActivitiesContent
+                    <ActivityProvider
+                      careflowId={careflowId}
+                      stakeholderId={stakeholderId}
                       activityId={activityId}
-                      onCompleted={handleBack}
-                    />
-                  </ActivityProvider>
-                </BrandingProvider>
-              </ApolloProvider>
-            ) : (
-              <div>
-                <p>No task found</p>
-              </div>
-            )}
-          </div>}
+                    >
+                      <CareflowActivitiesContent
+                        activityId={activityId}
+                        onCompleted={handleTaskCompleted}
+                      />
+                    </ActivityProvider>
+                  </BrandingProvider>
+                </ApolloProvider>
+              ) : (
+                <div>
+                  <p>No task found</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
