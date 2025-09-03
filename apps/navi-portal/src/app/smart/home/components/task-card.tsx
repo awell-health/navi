@@ -29,9 +29,10 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
   };
 
   const getAssignee = () => {
-    if (task.requester?.display) {
-      return `Assigned to: ${task.requester.display}`;
+    if (task.owner?.display) {
+      return `Assigned to: ${task.owner.display}`;
     }
+    
     return "Unassigned";
   };
 

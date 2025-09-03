@@ -5,7 +5,7 @@ import { User } from "lucide-react";
 import { TaskList } from "./task-list";
 import { PatientIdentifier } from "@awell-health/navi-core";
 import { ReusableTabs } from "./reusable-tabs";
-import { Coding, Identifier, Task } from "@medplum/fhirtypes";
+import { Coding, Extension, Identifier, Patient, Task } from "@medplum/fhirtypes";
 import { TaskView } from "./task-view";
 import { InfoCard } from "./info-card";
 
@@ -45,11 +45,13 @@ type PatientResource = {
 interface SmartHomeTabsProps {
   patient: PatientResource;
   patientIdentifier: PatientIdentifier;
+  medplumPatient?: Patient | null;
 }
 
 export function SmartHomeTabs({
   patient,
   patientIdentifier,
+  medplumPatient,
 }: SmartHomeTabsProps) {
   const [activeTab, setActiveTab] = React.useState("context");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -103,7 +105,18 @@ export function SmartHomeTabs({
     { id: "tasks", label: "Tasks" },
   ];
 
-  console.log("patient", patient);
+  const awellExtension = medplumPatient?.extension?.find((ext: Extension) => ext.url === "https://awellhealth.com/fhir/StructureDefinition/awell-data-points");
+
+  let programVbc;
+  let programDiseaseStage;
+  let programSite;
+
+  if (awellExtension) {
+    const { extension } = awellExtension as Extension;
+    programVbc = extension?.find((ext) => ext.url === "programVbc")?.valueString || '-';
+    programDiseaseStage = extension?.find((ext) => ext.url === "programDiseaseStage")?.valueString || '-';
+    programSite = extension?.find((ext) => ext.url === "programSite")?.valueString || '-';
+  }
 
   return (
     <div className="bg-white min-h-screen">
@@ -142,6 +155,14 @@ export function SmartHomeTabs({
               title="Patient Details & Demographics"
               items={[
                 {
+                  label: "Full Name",
+                  value: getPatientName(),
+                },
+                {
+                  label: "Date of Birth",
+                  value: formatDate(patient.birthDate),
+                },
+                {
                   label: "MPI",
                   value:
                     patient.identifier?.length && patient.identifier?.length > 0
@@ -149,12 +170,16 @@ export function SmartHomeTabs({
                       : patient.identifier?.[0]?.value || "-",
                 },
                 {
-                  label: "Full Name",
-                  value: getPatientName(),
+                  label: "Program VBC",
+                  value: programVbc,
                 },
                 {
-                  label: "Date of Birth",
-                  value: formatDate(patient.birthDate),
+                  label: "Program Disease Stage",
+                  value: programDiseaseStage,
+                },
+                {
+                  label: "Program Site",
+                  value: programSite,
                 },
               ]}
             />

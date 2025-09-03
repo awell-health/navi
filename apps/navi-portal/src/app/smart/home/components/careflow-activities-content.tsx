@@ -77,8 +77,6 @@ export function CareflowActivitiesContent({
     service,
   } = useActivity();
 
-  // State for activity drawer
-  const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);
 
   useEffect(() => {
     if (activityId) {
@@ -103,6 +101,8 @@ export function CareflowActivitiesContent({
       onIframeClose: () => {
         console.log("Iframe close requested");
       },
+      isSingleActivityMode: !!activityId, // Enable single activity mode when activityId is provided
+      allowCompletedActivitiesInSingleMode: !!activityId, // Allow completed activities in single mode
     }
   );
 
