@@ -16,23 +16,21 @@ export const Bootstrap = ({
   useHttpOnly?: boolean;
   children: React.ReactNode;
 }) => {
-  const stytchClient = useMemo(
-    () =>
-      createStytchB2BHeadlessClient(stytchPublicToken, {
-        cookieOptions: {
-          availableToSubdomains: true,
-          // Consider only setting in prod; this breaks on localhost
-          ...(useHttpOnly && cookieDomain && { domain: cookieDomain }),
-        },
-        ...(useHttpOnly && {
+  const stytchClient = useMemo(() => {
+    const options = useHttpOnly
+      ? {
+          cookieOptions: {
+            availableToSubdomains: true,
+            domain: cookieDomain,
+          },
           endpointOptions: {
             testApiDomain: "test-auth.navi-portal.awellhealth.com",
             apiDomain: "auth.navi-portal.awellhealth.com",
           },
-        }),
-      }),
-    [stytchPublicToken, cookieDomain, useHttpOnly]
-  );
+        }
+      : {};
+    return createStytchB2BHeadlessClient(stytchPublicToken, options);
+  }, [stytchPublicToken, cookieDomain, useHttpOnly]);
   return (
     <StytchB2BProvider stytch={stytchClient}>{children}</StytchB2BProvider>
   );

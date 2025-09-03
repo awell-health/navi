@@ -2,11 +2,13 @@
 
 import { kv } from "@vercel/kv";
 import type { SmartSessionData } from "./types";
+import { TokenEnvironment } from "@awell-health/navi-core";
 
 export type SmartClientConfig = {
   client_id: string;
   client_secret?: string;
   stytch_organization_id?: string;
+  environment?: TokenEnvironment;
 };
 
 const CLIENT_PREFIX = "smart:client:";

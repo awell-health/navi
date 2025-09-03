@@ -9,73 +9,21 @@ import {
   createSmartTicket,
   mintTrustedTokenForStytch,
   attestTrustedToken,
+  detectSimulatorError,
+  isExpiredToken,
+  getClinicianFhirUser,
+  decodeIdToken,
+  getRequestOrigin,
+  buildStytchCookieOptions,
+  exchangeAuthorizationCode,
+  fetchStytchMemberByExternalId,
+  getTenantIdForEnvironment,
+  mintAwellJwt,
 } from "@/domains/smart";
-import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { initializeStatsig, Statsig } from "@/lib/statsig.edge";
-import { fetchProvider } from "@/domains/smart/ehr";
-
-type TokenResponse = {
-  access_token: string;
-  token_type?: string;
-  scope?: string;
-  expires_in?: number;
-  id_token?: string;
-  patient?: string;
-  encounter?: string;
-  fhirUser?: string;
-  sim_error?: string;
-};
-
-function normalizeErrorCode(code: string | undefined | null): string {
-  if (!code) return "simulated_error";
-  return code
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "");
-}
-
-function safeDecodeJwtPayload<T>(jwt?: string): T | null {
-  if (!jwt || typeof jwt !== "string") return null;
-  try {
-    const parts = jwt.split(".");
-    if (parts.length !== 3) return null;
-    const [, payloadB64] = parts;
-    const base64 = payloadB64.replace(/-/g, "+").replace(/_/g, "/");
-    const pad = base64.length % 4 === 0 ? 0 : 4 - (base64.length % 4);
-    const decoded = atob(base64 + "=".repeat(pad));
-    return JSON.parse(decoded) as T;
-  } catch {
-    return null;
-  }
-}
-
-function detectSimulatorError(token: TokenResponse): string | null {
-  if (typeof token.sim_error === "string" && token.sim_error.length > 0) {
-    return normalizeErrorCode(token.sim_error);
-  }
-  const embedded = safeDecodeJwtPayload<{
-    auth_error?: string;
-    sim_error?: string;
-    error?: string;
-  }>(token.access_token);
-  const candidate =
-    embedded?.auth_error || embedded?.sim_error || embedded?.error;
-  return candidate ? normalizeErrorCode(candidate) : null;
-}
-
-function isExpiredToken(token: TokenResponse): boolean {
-  const nowSeconds = Math.floor(Date.now() / 1000);
-  const idClaims = safeDecodeJwtPayload<{ exp?: number }>(token.id_token);
-  const idTokenExpired =
-    typeof idClaims?.exp === "number" && idClaims.exp <= nowSeconds;
-  const accessExpired =
-    typeof token.expires_in === "number" && token.expires_in <= 0;
-  return Boolean(accessExpired || idTokenExpired);
-}
 
 export async function GET(request: NextRequest) {
-  initializeStatsig()
+  await initializeStatsig()
     .then(() => {
       console.log("Statsig initialized");
     })
@@ -124,10 +72,6 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const body = new URLSearchParams();
-  body.set("grant_type", "authorization_code");
-  body.set("code", code);
-  body.set("redirect_uri", env.SMART_REDIRECT_URI);
   // Resolve client_id using KV mapping
   const host = extractIssuerKey(pre.iss);
   const clientConfig = await getClientConfigForHost(host);
@@ -147,95 +91,27 @@ export async function GET(request: NextRequest) {
       iss: pre.iss,
     });
   }
-  body.set("client_id", clientId);
-  body.set("code_verifier", pre.codeVerifier);
-
-  let tokenRes: Response;
-  let details: unknown = null;
+  let tokenJson;
   try {
-    console.log(
-      "Pinging token endpoint",
-      pre.tokenEndpoint,
-      "with body",
-      body.toString()
-    );
-    tokenRes = await fetch(pre.tokenEndpoint, {
-      method: "POST",
-      headers: {
-        "content-type": "application/x-www-form-urlencoded",
-        accept: "application/json",
-        ...(clientConfig?.client_secret && {
-          authorization: `Basic ${Buffer.from(
-            `${clientId}:${clientConfig.client_secret}`
-          ).toString("base64")}`,
-        }),
-      },
-      body,
+    tokenJson = await exchangeAuthorizationCode({
+      tokenEndpoint: pre.tokenEndpoint,
+      clientId,
+      code,
+      redirectUri: env.SMART_REDIRECT_URI,
+      codeVerifier: pre.codeVerifier,
+      clientSecret: clientConfig?.client_secret,
     });
-    try {
-      details = await tokenRes.json();
-    } catch {
-      details = await tokenRes.text();
-    }
   } catch (err) {
-    return errorRedirect(request, {
-      code: "token_request_failed",
-      message: "Network or CORS error while contacting token endpoint",
-      iss: pre?.iss ?? "",
-    });
-  }
-
-  if (!tokenRes.ok) {
-    console.log("Token exchange failed", tokenRes.status, details);
-    // 400 indicates invalid_client, invalid_grant, etc. Pass through status for clarity
+    const status = (err as { status?: number }).status;
+    const message = (err as { message?: string }).message;
     return errorRedirect(request, {
       code: "token_exchange_failed",
-      status: String(tokenRes.status),
-      message: typeof details === "string" ? details : JSON.stringify(details),
+      status: status ? String(status) : undefined,
+      message,
       iss: pre?.iss ?? "",
     });
   }
-
-  const tokenJson = details as TokenResponse;
-  console.log("Token JSON", tokenJson);
-
-  // Some simulator scenarios embed an error marker inside the JWT claims
-  // of the access_token instead of top-level fields. Detect and surface it.
-  try {
-    if (typeof tokenJson.access_token === "string") {
-      console.log("Parsing access_token");
-      const parts = tokenJson.access_token.split(".");
-      if (parts.length === 3) {
-        const [, payloadB64] = parts;
-        const base64 = payloadB64.replace(/-/g, "+").replace(/_/g, "/");
-        const pad = base64.length % 4 === 0 ? 0 : 4 - (base64.length % 4);
-        const decoded = atob(base64 + "=".repeat(pad));
-        const claims = JSON.parse(decoded) as Partial<{
-          auth_error: string;
-          sim_error: string;
-          error: string;
-        }>;
-        console.log("Parsed claims", claims);
-        const embedded = claims.auth_error || claims.sim_error || claims.error;
-        if (typeof embedded === "string" && embedded.length > 0) {
-          const normalized = embedded
-            .trim()
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, "_")
-            .replace(/^_+|_+$/g, "");
-          return errorRedirect(request, {
-            code: normalized || "simulated_error",
-            message: `SMART launcher embedded error in token: ${embedded}`,
-            iss: pre.iss,
-            status: 200,
-          });
-        }
-      }
-    }
-  } catch {
-    console.log("Error parsing access_token. Ignoring...");
-    // ignore parse errors
-  }
+  console.log("TokenResponse", tokenJson);
 
   // Use unified simulator detection (top-level sim_error or embedded claim)
   const simCode = detectSimulatorError(tokenJson);
@@ -260,32 +136,10 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // Extract fhirUser/profile from id_token claims if present
-  let fhirUserFromIdToken: string | undefined;
-  if (tokenJson.id_token) {
-    try {
-      console.log("Parsing id_token", tokenJson.id_token);
-      const [, payloadB64] = tokenJson.id_token.split(".");
-      if (payloadB64) {
-        const base64 = payloadB64.replace(/-/g, "+").replace(/_/g, "/");
-        const pad = base64.length % 4 === 0 ? 0 : 4 - (base64.length % 4);
-        const decoded = atob(base64 + "=".repeat(pad));
-        const claims = JSON.parse(decoded) as Partial<{
-          fhirUser: string;
-          profile: string;
-        }>;
-        console.log("Parsed claims", claims);
-        fhirUserFromIdToken = claims.fhirUser || claims.profile;
-      }
-    } catch {
-      console.log("Error parsing id_token. Ignoring...");
-      // ignore parse errors and continue
-    }
-  }
-
-  const finalFhirUser = tokenJson.fhirUser ?? fhirUserFromIdToken;
-  console.log("fhirUser", finalFhirUser);
-  if (!finalFhirUser) {
+  // Resolve clinician identity from token or id_token
+  const clinicianFhirUser = getClinicianFhirUser(tokenJson);
+  console.log("fhirUser", clinicianFhirUser);
+  if (!clinicianFhirUser) {
     return errorRedirect(request, {
       code: "missing_fhir_user",
       message:
@@ -295,35 +149,31 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const fhirUserUUID = finalFhirUser.replace("Practitioner/", "");
-  let email = `${fhirUserUUID}@test.com`;
-
-  const profile = await fetchProvider(
-    pre.iss,
-    tokenJson.access_token,
-    finalFhirUser
-  );
-  console.log("fhirUser profile", profile);
-  if (profile) {
-    const maybeEmail = profile?.telecom?.find(
-      (t) => t.system === "email"
-    )?.value;
-    if (maybeEmail) {
-      email = maybeEmail;
-    }
-  }
-  console.log("email", email);
-  if (!email) {
+  const subject = decodeIdToken(tokenJson.id_token)?.sub;
+  console.log("subject", subject);
+  const organizationId = clientConfig?.stytch_organization_id;
+  const stytchMember = await fetchStytchMemberByExternalId({
+    organization_id: organizationId,
+    externalId: subject,
+  });
+  if (!stytchMember) {
     return errorRedirect(request, {
-      code: "missing_email",
-      message: "Email not found in profile",
+      code: "email_not_found",
+      message:
+        "A user for this application was not found. Please contact your EHR admin to ensure your user is able to use this application.",
       iss: pre.iss,
-      status: 200,
+      status: 404,
     });
   }
 
+  // Resolve tenant_id from Stytch organization metadata for the given environment
+  const tenantId = await getTenantIdForEnvironment({
+    organization_id: organizationId,
+    environment: clientConfig.environment ?? "development",
+  });
+
   const sessionData: SmartSessionData = {
-    sid: crypto.randomUUID(),
+    sid: pre.state,
     iss: pre.iss,
     tokenEndpoint: pre.tokenEndpoint,
     accessToken: tokenJson.access_token,
@@ -331,56 +181,35 @@ export async function GET(request: NextRequest) {
     scope: tokenJson.scope,
     patient: tokenJson.patient,
     encounter: tokenJson.encounter,
-    fhirUser: finalFhirUser,
+    fhirUser: clinicianFhirUser,
     expiresIn: tokenJson.expires_in,
     tokenType: tokenJson.token_type,
     stytchOrganizationId: clientConfig?.stytch_organization_id,
   };
-  console.log(
-    "Minting trusted token for Stytch",
-    clientConfig?.stytch_organization_id,
-    finalFhirUser,
-    email
-  );
+  console.log("Minting trusted token for Stytch");
   const token = await mintTrustedTokenForStytch({
-    organizationId: clientConfig?.stytch_organization_id,
-    practitionerUuid: finalFhirUser,
-    email,
+    organizationId,
+    practitionerUuid: clinicianFhirUser,
+    email: stytchMember.email_address,
   });
 
   const ticket = await createSmartTicket(sessionData);
   // Build absolute redirect URL that respects reverse proxy / ngrok headers
-  const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
-  const forwardedHost =
-    request.headers.get("x-forwarded-host") ?? request.headers.get("host");
-  const origin = forwardedHost
-    ? `${forwardedProto}://${forwardedHost}`
-    : new URL(request.url).origin;
+  const origin = await getRequestOrigin(request);
   const smartHomeUrl = new URL("/smart/home", origin);
   smartHomeUrl.searchParams.set("ticket", ticket);
   const resp = NextResponse.redirect(smartHomeUrl.toString(), 302);
   if (token) {
     try {
-      console.log(
-        "Attesting token",
-        token,
-        clientConfig?.stytch_organization_id
-      );
-      const attest = await attestTrustedToken({
-        token,
-        organizationId: clientConfig?.stytch_organization_id,
+      const attest = await attestTrustedToken({ token, organizationId });
+      console.log("Attest", attest);
+      let cookieOptions = await buildStytchCookieOptions({
+        sessionToken: attest.session_token,
+        httpOnly: false,
       });
-      const cookieOptions: ResponseCookie = {
-        name: "stytch_session",
-        value: attest.session_token,
-        maxAge: 60 * 60 * 24 * 30, // 30 days
-        path: "/",
-        sameSite: "none",
-        domain: "",
-      };
       const gate = Statsig.checkGateSync(
         {
-          userID: finalFhirUser,
+          userID: clinicianFhirUser,
           customIDs: {
             org_id: clientConfig?.stytch_organization_id,
           },
@@ -391,12 +220,29 @@ export async function GET(request: NextRequest) {
 
       if (gate) {
         console.log("Setting HTTP-only cookie");
-        cookieOptions.httpOnly = true;
-        cookieOptions.domain = env.HTTP_COOKIE_DOMAIN;
-        cookieOptions.secure = true;
-        cookieOptions.sameSite = "none";
+        cookieOptions = await buildStytchCookieOptions({
+          sessionToken: attest.session_token,
+          httpOnly: true,
+          domain: env.HTTP_COOKIE_DOMAIN,
+        });
       }
       resp.cookies.set(cookieOptions);
+
+      // Issue awell.jwt for authenticated user (no awell.sid dependency)
+      const jwt = await mintAwellJwt({
+        sub: pre.state,
+        orgId: organizationId,
+        tenantId: tenantId ?? "",
+        environment: clientConfig.environment ?? "development",
+        authenticationState: "authenticated",
+      });
+      resp.cookies.set("awell.jwt", jwt, {
+        httpOnly: true,
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 15 * 60,
+        path: "/",
+      });
     } catch (err) {
       console.error(err);
       // Handle cases where the Stytch user cannot be found or attest fails

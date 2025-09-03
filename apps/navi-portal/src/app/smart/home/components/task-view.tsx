@@ -120,7 +120,10 @@ export function TaskView({ task, onBack }: TaskViewProps) {
                     careflowId={careflowId}
                     stakeholderId={stakeholderId}
                   >
-                    <CareflowActivitiesContent activityId={activityId} />
+                    <CareflowActivitiesContent
+                      activityId={activityId}
+                      onCompleted={onBack}
+                    />
                   </ActivityProvider>
                 </BrandingProvider>
               </ApolloProvider>

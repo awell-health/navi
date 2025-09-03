@@ -53,17 +53,20 @@ export function SmartHomeTabs({
 }: SmartHomeTabsProps) {
   const [activeTab, setActiveTab] = React.useState("context");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [banner, setBanner] = useState<string | null>(null);
 
   // Helper function to format patient name
   const getPatientName = () => {
     if (patient.name?.[0]?.text) {
       return patient.name[0].text;
     }
-    
+
     const given = patient.name?.[0]?.given?.join(" ") || "";
     const family = patient.name?.[0]?.family || "";
-    
-    return [given, family].filter(Boolean).join(" ").trim() || "Unknown Patient";
+
+    return (
+      [given, family].filter(Boolean).join(" ").trim() || "Unknown Patient"
+    );
   };
 
   // Helper function to format date
@@ -80,7 +83,6 @@ export function SmartHomeTabs({
     }
   };
 
-
   // {
   //   "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
   //   "code": "MPI",
@@ -88,14 +90,12 @@ export function SmartHomeTabs({
   // }
   // Helper function to get identifiers count
   const renderMPIIdentifierValue = (identifiers: Identifier[]) => {
-    const mpiIdentifier = identifiers.find(item => {
+    const mpiIdentifier = identifiers.find((item) => {
       return item.type?.coding?.find((coding: Coding) => coding.code === "MPI");
     });
     if (!mpiIdentifier) return null;
 
-    return (
-      <span className="text-gray-900">{mpiIdentifier.value}</span>
-    );
+    return <span className="text-gray-900">{mpiIdentifier.value}</span>;
   };
 
   const tabs = [
@@ -117,46 +117,68 @@ export function SmartHomeTabs({
         </div>
       </div>
 
-      {!selectedTask && <ReusableTabs
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        tabs={tabs}
-      >
-        {/* Context Tab Content */}
-        <div 
-          className={`space-y-4 ${activeTab === "context" ? "block" : "hidden"}`}
+      {banner && (
+        <div className="px-6 mb-4">
+          <div className="rounded-md border border-green-200 bg-green-50 text-green-800 shadow-sm px-4 py-3">
+            <p className="font-medium">{banner}</p>
+          </div>
+        </div>
+      )}
+
+      {!selectedTask && (
+        <ReusableTabs
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          tabs={tabs}
         >
-          {/* Patient Details Box - Non-collapsible */}
-          <InfoCard
-            title="Patient Details & Demographics"
-            items={[
-              {
-                label: "MPI",
-                value: patient.identifier?.length && patient.identifier?.length > 0 ? (
-                  renderMPIIdentifierValue(patient.identifier)
-                ) : (
-                  patient.identifier?.[0]?.value || "-"
-                )
-              },
-              {
-                label: "Full Name",
-                value: getPatientName()
-              },
-              {
-                label: "Date of Birth",
-                value: formatDate(patient.birthDate)
-              }
-            ]}
-          />
-        </div>
+          {/* Context Tab Content */}
+          <div
+            className={`space-y-4 ${
+              activeTab === "context" ? "block" : "hidden"
+            }`}
+          >
+            {/* Patient Details Box - Non-collapsible */}
+            <InfoCard
+              title="Patient Details & Demographics"
+              items={[
+                {
+                  label: "MPI",
+                  value:
+                    patient.identifier?.length && patient.identifier?.length > 0
+                      ? renderMPIIdentifierValue(patient.identifier)
+                      : patient.identifier?.[0]?.value || "-",
+                },
+                {
+                  label: "Full Name",
+                  value: getPatientName(),
+                },
+                {
+                  label: "Date of Birth",
+                  value: formatDate(patient.birthDate),
+                },
+              ]}
+            />
+          </div>
 
-        {/* Tasks Tab Content */}
-        <div className={activeTab === "tasks" ? "block" : "hidden"}>
-          <TaskList patientIdentifier={patientIdentifier} setSelectedTask={setSelectedTask} />
-        </div>
-      </ReusableTabs>}
+          {/* Tasks Tab Content */}
+          <div className={activeTab === "tasks" ? "block" : "hidden"}>
+            <TaskList
+              patientIdentifier={patientIdentifier}
+              setSelectedTask={setSelectedTask}
+            />
+          </div>
+        </ReusableTabs>
+      )}
 
-      {selectedTask && <TaskView task={selectedTask} onBack={() => setSelectedTask(null)} />}
+      {selectedTask && (
+        <TaskView
+          task={selectedTask}
+          onBack={() => {
+            setSelectedTask(null);
+            setBanner(null);
+          }}
+        />
+      )}
     </div>
   );
 }

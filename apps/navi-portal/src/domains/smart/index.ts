@@ -4,3 +4,6 @@ export * from "./discovery";
 export * from "./handlers";
 export * from "./store";
 export * from "./stytch";
+export * from "./token";
+export * from "./http";
+export * from "./jwt";

@@ -1,10 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { Activities } from "@/components/activities/index";
 import {
-  ActivityData,
   assertFormActivity,
   assertMessageActivity,
   assertChecklistActivity,
@@ -61,7 +59,13 @@ function canDisplayActivity(activity: ActivityFragment): boolean {
   return false;
 }
 
-export function CareflowActivitiesContent({ activityId }: { activityId: string | null }) {
+export function CareflowActivitiesContent({
+  activityId,
+  onCompleted,
+}: {
+  activityId: string | null;
+  onCompleted?: () => void;
+}) {
   const {
     activeActivity,
     activities,
@@ -109,20 +113,16 @@ export function CareflowActivitiesContent({ activityId }: { activityId: string |
     }
   }, [activeActivity, markActivityAsViewed]);
 
-  // Handle activity list icon click
-  const handleActivityListClick = () => {
-    console.log("📋 Activity list clicked");
-    setIsActivityDrawerOpen(true);
-  };
-
-  const handleActivityClick = (activity: ActivityFragment) => {
-    console.log("🔍 Activity clicked:", activity);
-    if (canDisplayActivity(activity)) {
-      setActiveActivity(activity.id);
-    } else {
-      console.warn("⚠️ Cannot display activity type:", activity.object.type);
-    }
-  };
+  // When an activity is completed: notify parent (TaskView) to go back
+  useEffect(() => {
+    const unsubscribe = service.on("activity.completed", async (data) => {
+      console.log("🎉 Activity completed", data);
+      onCompleted?.();
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, [service, onCompleted]);
 
   // Render the appropriate activity component based on the active activity type
   const renderActiveActivity = () => {
@@ -189,7 +189,12 @@ export function CareflowActivitiesContent({ activityId }: { activityId: string |
 
   // Show completion state if session is completed
   if (completionState === "completed") {
-    return <CompletionStateRenderer waitingCountdown={waitingCountdown || 0} completionState={completionState} />;
+    return (
+      <CompletionStateRenderer
+        waitingCountdown={waitingCountdown || 0}
+        completionState={completionState}
+      />
+    );
   }
 
   // Show loading state

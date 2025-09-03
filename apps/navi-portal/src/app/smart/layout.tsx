@@ -1,6 +1,7 @@
 import { generateThemeCSS } from "@/lib/branding";
 import { getBrandingByOrgId } from "@/lib/branding/branding-service";
 import "../globals.css";
+import { Toaster } from "@/components/ui/sonner";
 import { Suspense } from "react";
 import { LoaderCircle } from "lucide-react";
 
@@ -25,7 +26,10 @@ export default async function Layout({
           </div>
         }
       >
-        <body>{children}</body>
+        <body>
+          {children}
+          <Toaster theme="light" richColors closeButton position="top-center" />
+        </body>
       </Suspense>
     </html>
   );

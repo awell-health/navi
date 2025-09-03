@@ -192,6 +192,7 @@ interface ActivityContextType {
 
   // Actions
   setActiveActivity: (activityId: string) => void;
+  clearActiveActivity: () => void;
   markActivityAsViewed: (activityId: string) => void;
   refetchActivities: () => Promise<void>;
   completeActivity: (
@@ -215,6 +216,7 @@ interface ActivityProviderProps {
   stakeholderId?: string;
   onActivityActivate?: (activityId: string, activity: ActivityFragment) => void;
   service?: ActivityService; // Allow injection for testing
+  autoAdvanceOnComplete?: boolean; // If true, move to next task; otherwise clear selection
 }
 
 export function ActivityProvider({
@@ -222,6 +224,7 @@ export function ActivityProvider({
   careflowId,
   stakeholderId,
   service: injectedService,
+  autoAdvanceOnComplete = true,
 }: ActivityProviderProps) {
   // Create service instance only once
   const [service] = useState(() => injectedService || new ActivityService());
@@ -390,7 +393,7 @@ export function ActivityProvider({
             )
           );
 
-          if (nextActivity) {
+          if (autoAdvanceOnComplete && nextActivity) {
             console.log("🎯 Auto-advancing to next activity:", {
               id: nextActivity.id,
               name: nextActivity.object.name,
@@ -400,7 +403,9 @@ export function ActivityProvider({
             setActiveActivityState(nextActivity);
             service.emit("activity.activated", { activity: nextActivity });
           } else {
-            console.log("🏁 No more activities to complete");
+            console.log("↩️ Clearing selection after completion");
+            setActiveActivityState(null);
+            service.emit("activity.cleared", {});
           }
         } else {
           console.log(
@@ -507,6 +512,12 @@ export function ActivityProvider({
     },
     [activities, service]
   );
+
+  const clearActiveActivity = useCallback(() => {
+    setActiveActivityState(null);
+    service.emit("activity.cleared", {});
+    console.log("↩️ Cleared active activity (return to list)");
+  }, [service]);
 
   const markActivityAsViewed = useCallback(
     (activityId: string) => {
@@ -687,6 +698,7 @@ export function ActivityProvider({
       markActivityAsViewed,
       refetchActivities,
       completeActivity,
+      clearActiveActivity,
 
       // Service instance
       service,
@@ -702,6 +714,7 @@ export function ActivityProvider({
       visitedActivities,
       newActivities,
       setActiveActivity,
+      clearActiveActivity,
       markActivityAsViewed,
       refetchActivities,
       completeActivity,

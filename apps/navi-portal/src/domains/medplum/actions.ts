@@ -30,7 +30,6 @@ export async function fetchPatientAction(
   // await requireStytchSession();
   console.log("fetchPatientAction", patientId);
   const medplum = await getServerMedplum();
-  console.log("medplum", medplum);
   const resp = await medplum.getPatient(patientId);
   console.log("Fetched Medplum Patient", resp);
   return resp;
@@ -42,9 +41,11 @@ export async function fetchPatientTasksAction(
   // await requireStytchSession();
   console.log("fetchPatientTasksAction", patientId);
   const medplum = await getServerMedplum();
-  console.log("medplum", medplum);
   const resp = await medplum.getTasksForPatient(patientId);
-  console.log("Fetched Medplum Tasks", resp);
+  console.log(
+    "Fetched Medplum Tasks with IDs:",
+    resp.map((t) => t.id)
+  );
   return resp;
 }
 
@@ -54,7 +55,6 @@ export async function fetchPatientByIdentifierAction(
   // await requireStytchSession();
   console.log("fetchPatientByIdentifierAction", identifier);
   const medplum = await getServerMedplum();
-  console.log("medplum", medplum);
   const resp = await medplum.getPatientByIdentifier(identifier);
   console.log("Fetched Medplum Patient by Identifier", resp);
   return resp;

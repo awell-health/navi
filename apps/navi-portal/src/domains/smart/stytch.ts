@@ -2,8 +2,10 @@
 
 import { env } from "@/env";
 import { SignJWT, importPKCS8 } from "jose";
-import { B2BClient } from "stytch";
+import { B2BClient, B2BOrganizationsMembersGetRequest } from "stytch";
 import { cookies } from "next/headers";
+import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
+import { TokenEnvironment } from "@awell-health/navi-core";
 
 const TRUSTED_ISS = env.BASE_URL ?? "https://navi-portal.awellhealth.com";
 const TRUSTED_AUD = "navi-stytch-attest";
@@ -74,4 +76,76 @@ export async function requireStytchSession() {
     throw new Error("Invalid session");
   }
   return { sessionToken };
+}
+
+export async function buildStytchCookieOptions(params: {
+  sessionToken: string;
+  httpOnly: boolean;
+  domain?: string;
+}): Promise<ResponseCookie> {
+  return {
+    name: "stytch_session",
+    value: params.sessionToken,
+    maxAge: 60 * 60 * 24 * 30,
+    path: "/",
+    sameSite: "none",
+    httpOnly: params.httpOnly,
+    secure: true,
+    domain: params.domain,
+  };
+}
+
+export type StytchMember = {
+  member_id: string;
+  email_address: string;
+  name?: string | null;
+  status?: string | null;
+  external_id?: string | null;
+};
+
+export async function fetchStytchMemberByExternalId(params: {
+  organization_id: string;
+  externalId?: string | null;
+}): Promise<StytchMember | null> {
+  if (!params.externalId) return null;
+  const stytch = await loadStytch();
+  const request: B2BOrganizationsMembersGetRequest = {
+    organization_id: params.organization_id,
+    member_id: String(params.externalId),
+  };
+  try {
+    console.log("Fetching Stytch member by external ID", request);
+    const res = await stytch.organizations.members.get(request);
+    console.log("Stytch member response", res);
+    const member = (res?.member ?? null) as StytchMember | null;
+    console.log("Stytch member", member);
+    return member;
+  } catch (err) {
+    console.error(
+      "Error in fetchStytchMemberByExternalId",
+      JSON.stringify(err)
+    );
+    return null;
+  }
+}
+
+export async function getTenantIdForEnvironment(params: {
+  organization_id: string;
+  environment: TokenEnvironment;
+}): Promise<string | null> {
+  const stytch = await loadStytch();
+  try {
+    const org = await stytch.organizations.get({
+      organization_id: params.organization_id,
+    });
+    const trusted = org?.organization?.trusted_metadata as
+      | { tenant_ids?: Record<string, string> }
+      | undefined;
+    const map = trusted?.tenant_ids ?? {};
+    const tenantId = map[params.environment] ?? null;
+    return tenantId ?? null;
+  } catch (err) {
+    console.error("Error fetching Stytch organization", err);
+    return null;
+  }
 }
