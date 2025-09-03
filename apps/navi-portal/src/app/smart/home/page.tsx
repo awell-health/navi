@@ -51,6 +51,7 @@ export default async function SmartHomePage({
       </div>
     );
   }
+  console.log("session", session);
 
   let httpOnly = false;
   let patient: Patient | null = null;
@@ -58,11 +59,17 @@ export default async function SmartHomePage({
   let medplumPatient: Patient | null = null;
 
   if (session) {
-    patient = await fetchPatient(
-      session.iss,
-      session.accessToken,
-      session.patient
-    );
+    patientIdentifier = {
+      system: session.iss,
+      value: session.patient ?? "",
+    };
+    if (session.scope?.includes("patient/*.read")) {
+      patient = await fetchPatient(
+        session.iss,
+        session.accessToken,
+        session.patient
+      );
+    }
     httpOnly = Statsig.checkGateSync(
       {
         userID: session.fhirUser,
@@ -72,13 +79,7 @@ export default async function SmartHomePage({
       },
       "http_only_cookies"
     );
-    patientIdentifier = {
-      system: session.iss,
-      value: session.patient ?? "",
-    };
-
     medplumPatient = await fetchPatientByIdentifierAction(patientIdentifier);
-
   } else if (sp?.testPatient) {
     patient = getTestPatient();
     patientIdentifier = {
@@ -86,7 +87,11 @@ export default async function SmartHomePage({
       value: patient.id!,
     };
   }
-  if (!patient || !patientIdentifier) {
+  console.log("httpOnly", httpOnly);
+  console.log("cookie domain", env.HTTP_COOKIE_DOMAIN);
+  console.log("patient", patient);
+  console.log("patientIdentifier", patientIdentifier);
+  if (!patientIdentifier) {
     return (
       <div className="p-6">
         <div className="text-center">
@@ -100,8 +105,6 @@ export default async function SmartHomePage({
       </div>
     );
   }
-
-  console.log("httpOnly", httpOnly, "cookie domain", env.HTTP_COOKIE_DOMAIN);
 
   return (
     <MedplumClientProvider>

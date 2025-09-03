@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { User } from "lucide-react";
 import { TaskList } from "./task-list";
 import { PatientIdentifier } from "@awell-health/navi-core";
@@ -8,6 +8,7 @@ import { ReusableTabs } from "./reusable-tabs";
 import { Coding, Extension, Identifier, Patient, Task } from "@medplum/fhirtypes";
 import { TaskView } from "./task-view";
 import { InfoCard } from "./info-card";
+import { useMedplum } from "@/domains/medplum/MedplumClientProvider";
 
 type PatientResource = {
   id?: string;
@@ -43,28 +44,40 @@ type PatientResource = {
 };
 
 interface SmartHomeTabsProps {
-  patient: PatientResource;
+  patient: PatientResource | null;
   patientIdentifier: PatientIdentifier;
   medplumPatient?: Patient | null;
 }
 
 export function SmartHomeTabs({
-  patient,
+  patient: initialPatient,
   patientIdentifier,
   medplumPatient,
 }: SmartHomeTabsProps) {
+  const [patient, setPatient] = useState<PatientResource | null>(
+    initialPatient
+  );
   const [activeTab, setActiveTab] = React.useState("context");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [banner, setBanner] = useState<string | null>(null);
+  const { getPatientByIdentifier } = useMedplum();
+
+  useEffect(() => {
+    if (patient === null) {
+      getPatientByIdentifier(patientIdentifier).then((p) => {
+        setPatient(p);
+      });
+    }
+  }, [getPatientByIdentifier, patientIdentifier, patient]);
 
   // Helper function to format patient name
   const getPatientName = () => {
-    if (patient.name?.[0]?.text) {
+    if (patient?.name?.[0]?.text) {
       return patient.name[0].text;
     }
 
-    const given = patient.name?.[0]?.given?.join(" ") || "";
-    const family = patient.name?.[0]?.family || "";
+    const given = patient?.name?.[0]?.given?.join(" ") || "";
+    const family = patient?.name?.[0]?.family || "";
 
     return (
       [given, family].filter(Boolean).join(" ").trim() || "Unknown Patient"
@@ -126,7 +139,7 @@ export function SmartHomeTabs({
           <User className="w-4 h-4" />
           <span className="font-medium">{getPatientName()}</span>
           <span>•</span>
-          <span>ID {patient.id || "unknown"}</span>
+          <span>ID {patient?.id || "unknown"}</span>
         </div>
       </div>
 
@@ -165,9 +178,10 @@ export function SmartHomeTabs({
                 {
                   label: "MPI",
                   value:
-                    patient.identifier?.length && patient.identifier?.length > 0
+                    patient?.identifier?.length &&
+                    patient?.identifier?.length > 0
                       ? renderMPIIdentifierValue(patient.identifier)
-                      : patient.identifier?.[0]?.value || "-",
+                      : patient?.identifier?.[0]?.value || "-",
                 },
                 {
                   label: "Program VBC",

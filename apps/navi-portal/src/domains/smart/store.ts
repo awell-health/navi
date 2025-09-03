@@ -51,7 +51,7 @@ export async function deleteClientConfigForHost(host: string) {
  */
 export async function createSmartTicket(
   data: SmartSessionData,
-  ttlSeconds: number = 120
+  ttlSeconds: number = 86400
 ): Promise<string> {
   const id = crypto.randomUUID();
   console.log(`Creating smart ticket ${id}`, data);
@@ -73,6 +73,6 @@ export async function consumeSmartTicket(
   if (!id) return null;
   const data = await getSmartTicket(id);
   if (!data) return null;
-  await kv.del(ticketKey(id));
+  // await kv.del(ticketKey(id));
   return data;
 }
