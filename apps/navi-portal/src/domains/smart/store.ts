@@ -73,6 +73,6 @@ export async function consumeSmartTicket(
   if (!id) return null;
   const data = await getSmartTicket(id);
   if (!data) return null;
-  await kv.del(ticketKey(id));
+  // await kv.del(ticketKey(id));
   return data;
 }

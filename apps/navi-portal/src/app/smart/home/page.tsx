@@ -50,17 +50,20 @@ export default async function SmartHomePage({
       </div>
     );
   }
+  console.log("session", session);
 
   let httpOnly = false;
   let patient: Patient | null = null;
   let patientIdentifier: PatientIdentifier | null = null;
 
   if (session) {
-    patient = await fetchPatient(
-      session.iss,
-      session.accessToken,
-      session.patient
-    );
+    if (session.scope?.includes("patient/*.read")) {
+      patient = await fetchPatient(
+        session.iss,
+        session.accessToken,
+        session.patient
+      );
+    }
     httpOnly = Statsig.checkGateSync(
       {
         userID: session.fhirUser,
@@ -96,7 +99,10 @@ export default async function SmartHomePage({
     );
   }
 
-  console.log("httpOnly", httpOnly, "cookie domain", env.HTTP_COOKIE_DOMAIN);
+  console.log("httpOnly", httpOnly);
+  console.log("cookie domain", env.HTTP_COOKIE_DOMAIN);
+  console.log("patient", patient);
+  console.log("patientIdentifier", patientIdentifier);
 
   return (
     <MedplumClientProvider>
