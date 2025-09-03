@@ -107,6 +107,12 @@ export const env = createEnv({
         "Whether to use HTTP-only cookies (optional, defaults to false)"
       ),
     STATSIG_SERVER_KEY: z.string().optional().describe("Statsig Server Key"),
+    // Admin auth domain restriction
+    ADMIN_ALLOWED_GOOGLE_DOMAIN: z
+      .string()
+      .optional()
+      .default("awellhealth.com")
+      .describe("Allowed Google Workspace domain for admin access"),
   },
   client: {
     NEXT_PUBLIC_STATSIG_CLIENT_KEY: z
