@@ -7,6 +7,8 @@ import { TaskCard } from "./task-card";
 import { TaskFilters } from "./task-filters";
 import { PatientIdentifier } from "@awell-health/navi-core";
 import { Task } from "@medplum/fhirtypes";
+import { Button } from "../../../../components/ui";
+import { RefreshCcwIcon } from "lucide-react";
 
 interface TaskListProps {
   patientIdentifier: PatientIdentifier;
@@ -14,7 +16,7 @@ interface TaskListProps {
 }
 
 export function TaskList({ patientIdentifier, setSelectedTask }: TaskListProps) {
-  const { tasks, loading, error } = usePatientTasks(patientIdentifier);
+  const { tasks, loading, error, refetchTasks } = usePatientTasks(patientIdentifier);
   const {
     filteredTasks,
     sortOrder,
@@ -57,13 +59,20 @@ export function TaskList({ patientIdentifier, setSelectedTask }: TaskListProps) 
   return (
     <>
       <div className="space-y-4">
-        <TaskFilters
-          sortOrder={sortOrder}
-          setSortOrder={setSortOrder}
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          availableStatuses={availableStatuses}
-        />
+        <div className="flex justify-between items-center">
+          <TaskFilters
+            sortOrder={sortOrder}
+            setSortOrder={setSortOrder}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            availableStatuses={availableStatuses}
+          />
+          <div>
+            <Button size="icon" variant="ghost" onClick={refetchTasks} title="Refresh Tasks">
+              <RefreshCcwIcon className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
 
         <div className="space-y-2">
           {filteredTasks.map((task) => (

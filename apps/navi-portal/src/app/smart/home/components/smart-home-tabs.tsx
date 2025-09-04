@@ -5,7 +5,13 @@ import { User } from "lucide-react";
 import { TaskList } from "./task-list";
 import { PatientIdentifier } from "@awell-health/navi-core";
 import { ReusableTabs } from "./reusable-tabs";
-import { Coding, Identifier, Task } from "@medplum/fhirtypes";
+import {
+  Coding,
+  Extension,
+  Identifier,
+  Patient,
+  Task,
+} from "@medplum/fhirtypes";
 import { TaskView } from "./task-view";
 import { InfoCard } from "./info-card";
 import { useMedplum } from "@/domains/medplum/MedplumClientProvider";
@@ -46,11 +52,13 @@ type PatientResource = {
 interface SmartHomeTabsProps {
   patient: PatientResource | null;
   patientIdentifier: PatientIdentifier;
+  medplumPatient?: Patient | null;
 }
 
 export function SmartHomeTabs({
   patient: initialPatient,
   patientIdentifier,
+  medplumPatient,
 }: SmartHomeTabsProps) {
   const [patient, setPatient] = useState<PatientResource | null>(
     initialPatient
@@ -116,7 +124,26 @@ export function SmartHomeTabs({
     { id: "tasks", label: "Tasks" },
   ];
 
-  console.log("patient", patient);
+  const awellExtension = medplumPatient?.extension?.find(
+    (ext: Extension) =>
+      ext.url ===
+      "https://awellhealth.com/fhir/StructureDefinition/awell-data-points"
+  );
+
+  let programVbc;
+  let programDiseaseStage;
+  let programSite;
+
+  if (awellExtension) {
+    const { extension } = awellExtension as Extension;
+    programVbc =
+      extension?.find((ext) => ext.url === "programVbc")?.valueString || "-";
+    programDiseaseStage =
+      extension?.find((ext) => ext.url === "programDiseaseStage")
+        ?.valueString || "-";
+    programSite =
+      extension?.find((ext) => ext.url === "programSite")?.valueString || "-";
+  }
 
   return (
     <div className="bg-white min-h-screen">
@@ -155,20 +182,32 @@ export function SmartHomeTabs({
               title="Patient Details & Demographics"
               items={[
                 {
-                  label: "MPI",
-                  value:
-                    patient?.identifier?.length &&
-                    patient?.identifier?.length > 0
-                      ? renderMPIIdentifierValue(patient.identifier)
-                      : patient?.identifier?.[0]?.value || "-",
-                },
-                {
                   label: "Full Name",
                   value: getPatientName(),
                 },
                 {
                   label: "Date of Birth",
                   value: formatDate(patient?.birthDate),
+                },
+                {
+                  label: "MPI",
+                  value:
+                    patient?.identifier?.length &&
+                    patient?.identifier?.length > 0
+                      ? renderMPIIdentifierValue(patient?.identifier)
+                      : patient?.identifier?.[0]?.value || "-",
+                },
+                {
+                  label: "Program VBC",
+                  value: programVbc,
+                },
+                {
+                  label: "Program Disease Stage",
+                  value: programDiseaseStage,
+                },
+                {
+                  label: "Program Site",
+                  value: programSite,
                 },
               ]}
             />

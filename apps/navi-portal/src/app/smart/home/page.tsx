@@ -7,8 +7,9 @@ import { PatientIdentifier } from "@awell-health/navi-core";
 import { Bootstrap } from "@/app/demo/_components/Bootstrap";
 import { env } from "@/env";
 import { initializeStatsig, Statsig } from "@/lib/statsig.edge";
-import { Patient } from "@medplum/fhirtypes";
+import { Extension, Patient } from "@medplum/fhirtypes";
 import { getTestPatient } from "./TestPatient";
+import { fetchPatientByIdentifierAction } from "../../../domains/medplum/actions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -55,6 +56,7 @@ export default async function SmartHomePage({
   let httpOnly = false;
   let patient: Patient | null = null;
   let patientIdentifier: PatientIdentifier | null = null;
+  let medplumPatient: Patient | null = null;
 
   if (session) {
     patientIdentifier = {
@@ -77,6 +79,7 @@ export default async function SmartHomePage({
       },
       "http_only_cookies"
     );
+    medplumPatient = await fetchPatientByIdentifierAction(patientIdentifier);
   } else if (sp?.testPatient) {
     patient = getTestPatient();
     patientIdentifier = {
@@ -121,6 +124,7 @@ export default async function SmartHomePage({
             <SmartHomeTabs
               patient={patient}
               patientIdentifier={patientIdentifier}
+              medplumPatient={medplumPatient}
             />
           </Bootstrap>
         )}

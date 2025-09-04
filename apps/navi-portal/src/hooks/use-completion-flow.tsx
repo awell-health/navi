@@ -12,6 +12,8 @@ interface UseCompletionFlowOptions {
   waitingDuration?: number; // Countdown duration in seconds
   onSessionCompleted?: () => void; // Callback when session completion is triggered
   onIframeClose?: () => void; // Callback when iframe should close
+  isSingleActivityMode?: boolean; // Whether we're in single activity mode
+  allowCompletedActivitiesInSingleMode?: boolean; // Whether to allow completed activities in single mode without logout
 }
 
 interface UseCompletionFlowResult {
@@ -34,7 +36,7 @@ export function useCompletionFlow(
   isLoading: boolean,
   options: UseCompletionFlowOptions = {}
 ): UseCompletionFlowResult {
-  const { waitingDuration = 5, onSessionCompleted, onIframeClose } = options;
+  const { waitingDuration = 5, onSessionCompleted, onIframeClose, isSingleActivityMode = false, allowCompletedActivitiesInSingleMode = true } = options;
 
   const [completionState, setCompletionState] =
     useState<CompletionState>("active");
@@ -46,10 +48,27 @@ export function useCompletionFlow(
       const completableActivities =
         service.getCompletableActivities(activities);
 
+      // In single activity mode, we need to be more careful about triggering completion
+      if (isSingleActivityMode) {
+        // Single activity mode logic - no additional logging needed
+      }
+
       if (completableActivities.length === 0 && completionState === "active") {
-        console.log(
-          "🏁 No more completable activities - starting waiting period"
-        );
+        // In single activity mode, only trigger completion if the activity is actually completed
+        if (isSingleActivityMode) {
+          const singleActivity = activities[0];
+          const isCompleted = service.isActivityCompleted(singleActivity);
+          
+          // In single activity mode, check if we should allow completed activities without logout
+          if (allowCompletedActivitiesInSingleMode) {
+            return; // Don't trigger completion, allow user to view completed activity
+          }
+          
+          if (!isCompleted) {
+            return;
+          }
+        }
+        
         setCompletionState("waiting");
         setWaitingCountdown(waitingDuration);
       } else if (
@@ -57,12 +76,11 @@ export function useCompletionFlow(
         completionState !== "active"
       ) {
         // New activities came in, reset to active state
-        console.log("🔄 New activities available - returning to active state");
         setCompletionState("active");
         setWaitingCountdown(null);
       }
     }
-  }, [activities, isLoading, service, completionState, waitingDuration]);
+  }, [activities, isLoading, service, completionState, waitingDuration, isSingleActivityMode]);
 
   // Handle countdown timer and session cleanup
   useEffect(() => {
@@ -73,17 +91,14 @@ export function useCompletionFlow(
       return () => clearTimeout(timer);
     } else if (waitingCountdown === 0) {
       // Countdown finished, perform cleanup and move to completed state
-      console.log("✅ Countdown finished - performing session cleanup");
 
       const performSessionCleanup = async () => {
         try {
           // Complete logout: clear JWT, session cookies, and KV store
           await logout();
-          console.log("🧹 Session logout completed");
 
           // Notify parent window that session is completed
           onSessionCompleted?.();
-          console.log("📡 Session completed event sent to parent");
 
           // Move to completed state
           setCompletionState("completed");
@@ -92,7 +107,6 @@ export function useCompletionFlow(
           // Send iframe close event after a brief delay to let parent process completion
           setTimeout(() => {
             onIframeClose?.();
-            console.log("🔒 Iframe close event sent to parent");
           }, 2000); // 2 second delay
         } catch (error) {
           console.error("❌ Session cleanup failed:", error);
@@ -104,7 +118,6 @@ export function useCompletionFlow(
           // Send close event even if logout fails
           setTimeout(() => {
             onIframeClose?.();
-            console.log("🔒 Iframe close event sent to parent (after error)");
           }, 2000);
         }
       };

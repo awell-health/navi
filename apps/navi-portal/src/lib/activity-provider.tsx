@@ -12,6 +12,7 @@ import { useSessionId } from "@/hooks/use-session-id";
 import {
   ActivityFragment,
   usePathwayActivitiesQuery,
+  useGetActivityQuery,
   useOnActivityCreatedSubscription,
   useOnActivityUpdatedSubscription,
   useOnActivityCompletedSubscription,
@@ -217,14 +218,32 @@ interface ActivityProviderProps {
   onActivityActivate?: (activityId: string, activity: ActivityFragment) => void;
   service?: ActivityService; // Allow injection for testing
   autoAdvanceOnComplete?: boolean; // If true, move to next task; otherwise clear selection
+  activityId?: string; // Optional: if provided, fetch only this activity
 }
 
+/**
+ * ActivityProvider - Manages activity state and lifecycle for careflows
+ * 
+ * @param careflowId - The ID of the careflow to fetch activities for
+ * @param stakeholderId - Optional stakeholder ID to filter activities by ownership
+ * @param activityId - Optional activity ID to fetch only a single activity instead of all careflow activities
+ * @param autoAdvanceOnComplete - Whether to automatically advance to the next activity on completion
+ * @param service - Optional injected service instance for testing
+ * @param onActivityActivate - Optional callback when an activity is activated
+ * 
+ * When activityId is provided, the provider will:
+ * - Skip fetching all careflow activities
+ * - Fetch only the specified activity
+ * - Maintain the same subscription-based updates for that activity
+ * - Apply the same stakeholder filtering and business logic
+ */
 export function ActivityProvider({
   children,
   careflowId,
   stakeholderId,
   service: injectedService,
   autoAdvanceOnComplete = true,
+  activityId,
 }: ActivityProviderProps) {
   // Create service instance only once
   const [service] = useState(() => injectedService || new ActivityService());
@@ -242,7 +261,7 @@ export function ActivityProvider({
   // GraphQL query for initial activities
   const {
     data: activitiesData,
-    loading: isLoading,
+    loading: isPathwayActivitiesLoading,
     error: gqlError,
     refetch,
   } = usePathwayActivitiesQuery({
@@ -256,6 +275,18 @@ export function ActivityProvider({
       // We read both from session cookies via a tiny helper to avoid plumbing.
       // For now, only server-side track filtering is applied here.
     },
+    skip: !!activityId, // Skip fetching all activities if we're fetching a single one
+  });
+
+  // GraphQL query for a single activity if activityId is provided
+  const {
+    data: singleActivityData,
+    loading: isSingleActivityLoading,
+    error: singleActivityError,
+    refetch: refetchSingleActivity,
+  } = useGetActivityQuery({
+    variables: { id: activityId || "" },
+    skip: !activityId, // Skip if no activityId is provided
   });
 
   // GraphQL mutation for completing activities
@@ -289,12 +320,16 @@ export function ActivityProvider({
         console.debug("🆕 New activity created:", newActivity.id);
         if (newActivity.is_user_activity) {
           service.emit("activity.created", { activity: newActivity });
-          setActivities((prev) => {
-            if (prev.find((a) => a.id === newActivity.id)) {
-              return prev;
-            }
-            return [newActivity, ...prev];
-          });
+                  setActivities((prev) => {
+          if (prev.find((a) => a.id === newActivity.id)) {
+            return prev;
+          }
+          // In single activity mode, only add if it's the target activity
+          if (activityId && newActivity.id !== activityId) {
+            return prev;
+          }
+          return [newActivity, ...prev];
+        });
           setNewActivities((prev) => new Set([...prev, newActivity.id]));
         }
       }
@@ -331,6 +366,12 @@ export function ActivityProvider({
           next[index] = updatedActivity;
           return next;
         });
+
+        // In single activity mode, also update the single activity query cache
+        if (activityId && updatedActivity.id === activityId) {
+          // This will trigger a refetch of the single activity if needed
+          console.log("🔄 Single activity updated, cache should be updated");
+        }
 
         if (activeActivity?.id === updatedActivity.id) {
           setActiveActivityState(updatedActivity);
@@ -458,7 +499,50 @@ export function ActivityProvider({
   // =================== INITIAL DATA HANDLING ===================
 
   useEffect(() => {
-    if (activitiesData?.pathwayActivities?.activities) {
+    if (activityId && singleActivityData?.activity?.activity) {
+      // Single activity mode: fetch and set the specific activity
+      const singleActivity = singleActivityData.activity.activity;
+      console.log("📋 Single activity loaded from GraphQL:", singleActivity.id);
+      console.log("🔍 Raw single activity data:", {
+        id: singleActivity.id,
+        status: singleActivity.status,
+        resolution: singleActivity.resolution,
+        type: singleActivity.object.type,
+        is_user_activity: singleActivity.is_user_activity,
+        careflow_id: singleActivity.careflow_id
+      });
+
+      // Verify the activity belongs to the current careflow and stakeholder
+      if (singleActivity.careflow_id !== careflowId) {
+        console.warn("⚠️ Activity does not belong to current careflow:", {
+          activityCareflowId: singleActivity.careflow_id,
+          currentCareflowId: careflowId,
+        });
+        return;
+      }
+
+      // Apply stakeholder filter
+      const filteredActivity = service.filterUserActivities(
+        [singleActivity],
+        stakeholderId
+      );
+
+      if (filteredActivity.length === 0) {
+        console.warn("⚠️ Activity not accessible for current stakeholder");
+        return;
+      }
+
+      const activity = filteredActivity[0];
+      setActivities([activity]);
+
+      // Auto-select the single activity
+      if (!activeActivity) {
+        setActiveActivityState(activity);
+        service.emit("activity.activated", { activity });
+        console.log("🎯 Auto-selected single activity:", activity.id);
+      }
+    } else if (!activityId && activitiesData?.pathwayActivities?.activities) {
+      // Multiple activities mode: fetch all careflow activities
       const allActivities = activitiesData.pathwayActivities.activities;
       console.log("📋 Activities loaded from GraphQL:", allActivities.length);
 
@@ -495,7 +579,7 @@ export function ActivityProvider({
         }
       }
     }
-  }, [activitiesData, stakeholderId, activeActivity, service]);
+  }, [activityId, singleActivityData, activitiesData, stakeholderId, activeActivity, service, careflowId]);
 
   // =================== ACTION HANDLERS ===================
 
@@ -535,8 +619,12 @@ export function ActivityProvider({
 
   const refetchActivities = useCallback(async () => {
     console.log("🔄 Refetching activities...");
-    await refetch();
-  }, [refetch]);
+    if (activityId) {
+      await refetchSingleActivity();
+    } else {
+      await refetch();
+    }
+  }, [refetch, refetchSingleActivity, activityId]);
 
   const completeActivity = useCallback(
     async (
@@ -677,7 +765,11 @@ export function ActivityProvider({
 
   // =================== CONTEXT VALUE ===================
 
-  const error = gqlError?.message || null;
+  // Combine loading states from both queries
+  const isLoading = activityId ? isSingleActivityLoading : isPathwayActivitiesLoading;
+  
+  // Combine error states from both queries
+  const error = (activityId ? singleActivityError?.message : gqlError?.message) || null;
 
   const contextValue: ActivityContextType = useMemo(
     () => ({

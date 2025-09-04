@@ -21,6 +21,7 @@ interface UsePatientTasksResult {
   tasks: Task[];
   loading: boolean;
   error: Error | null;
+  refetchTasks: () => void;
 }
 
 export function usePatientTasks(
@@ -31,41 +32,45 @@ export function usePatientTasks(
   const [error, setError] = useState<Error | null>(null);
   const { getPatientByIdentifier, getTasksForPatient } = useMedplum();
 
-  useEffect(() => {
-    async function fetchTasks() {
-      if (!patientIdentifier.value || !patientIdentifier.system) {
+  async function fetchTasks() {
+    if (!patientIdentifier.value || !patientIdentifier.system) {
+      setTasks([]);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const medplumPatient = await getPatientByIdentifier(patientIdentifier);
+      console.log("Fetched Medplum Patient", medplumPatient);
+      if (!medplumPatient?.id) {
         setTasks([]);
         setLoading(false);
         return;
       }
 
-      try {
-        setLoading(true);
-        setError(null);
-
-        const medplumPatient = await getPatientByIdentifier(patientIdentifier);
-        console.log("Fetched Medplum Patient", medplumPatient);
-        if (!medplumPatient?.id) {
-          setTasks([]);
-          setLoading(false);
-          return;
-        }
-
-        const medplumTasks = await getTasksForPatient(medplumPatient.id);
-        console.log("Fetched Medplum Tasks", medplumTasks);
-        setTasks(medplumTasks);
-      } catch (err) {
-        console.error("Error fetching patient tasks:", err);
-        setError(
-          err instanceof Error ? err : new Error("Failed to fetch tasks")
-        );
-      } finally {
-        setLoading(false);
-      }
+      const medplumTasks = await getTasksForPatient(medplumPatient.id);
+      console.log("Fetched Medplum Tasks", medplumTasks);
+      setTasks(medplumTasks);
+    } catch (err) {
+      console.error("Error fetching patient tasks:", err);
+      setError(
+        err instanceof Error ? err : new Error("Failed to fetch tasks")
+      );
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     fetchTasks();
-  }, [patientIdentifier, getPatientByIdentifier, getTasksForPatient]);
+  }, [patientIdentifier]);
 
-  return { tasks, loading, error };
+  const refetchTasks = () => {
+    fetchTasks();
+  };
+
+  return { tasks, loading, error, refetchTasks };
 }
