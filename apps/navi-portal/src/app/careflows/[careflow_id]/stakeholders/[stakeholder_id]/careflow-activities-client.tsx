@@ -9,6 +9,7 @@ import {
   assertFormActivity,
   assertMessageActivity,
   assertChecklistActivity,
+  assertExtensionActivity,
 } from "@awell-health/navi-core";
 import {
   ActivityFragment,
@@ -65,6 +66,14 @@ function canDisplayActivity(activity: ActivityFragment): boolean {
 
   // Can display checklist activities (even without specific input data)
   if (activity.object.type === "CHECKLIST") {
+    return true;
+  }
+
+  // Can display extension activities (PLUGIN or PLUGIN_ACTION)
+  if (
+    activity.object.type === "PLUGIN" ||
+    activity.object.type === "PLUGIN_ACTION"
+  ) {
     return true;
   }
 
@@ -252,6 +261,22 @@ function CareflowActivitiesContent() {
           />
         );
       }
+      case "PLUGIN_ACTION": {
+        const extensionActivity = assertExtensionActivity(activeActivity);
+        if (extensionActivity) {
+          return (
+            <Activities.Extension
+              activity={extensionActivity}
+              disabled={isCompleted}
+              onSubmit={(data) =>
+                completeActivity(activeActivity.id, data, "EXTENSION")
+              }
+            />
+          );
+        }
+        break;
+      }
+      // duplicate case removed
       default:
         return (
           <div className="h-full flex items-center justify-center p-8">

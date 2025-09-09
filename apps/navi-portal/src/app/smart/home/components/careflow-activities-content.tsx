@@ -6,6 +6,7 @@ import {
   assertFormActivity,
   assertMessageActivity,
   assertChecklistActivity,
+  assertExtensionActivity,
 } from "@awell-health/navi-core";
 import {
   ActivityFragment,
@@ -76,7 +77,6 @@ export function CareflowActivitiesContent({
     completeActivity,
     service,
   } = useActivity();
-
 
   useEffect(() => {
     if (activityId) {
@@ -170,7 +170,20 @@ export function CareflowActivitiesContent({
           />
         );
       }
-
+      case "PLUGIN_ACTION": {
+        const extensionActivity = assertExtensionActivity(activeActivity);
+        if (extensionActivity) {
+          return (
+            <Activities.Extension
+              activity={extensionActivity}
+              onSubmit={(data) =>
+                completeActivity(activeActivity.id, data, "EXTENSION")
+              }
+            />
+          );
+        }
+        break;
+      }
       default:
         return (
           <div className="flex items-center justify-center h-64">

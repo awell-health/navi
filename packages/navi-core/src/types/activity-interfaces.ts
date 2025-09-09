@@ -161,6 +161,19 @@ export function assertChecklistActivity(
   return activity;
 }
 
+export function assertExtensionActivity(
+  activity: ActivityData
+): ExtensionActivityData {
+  if (!isExtensionActivity(activity)) {
+    throw new Error(
+      `Expected extension activity but got activity type: ${
+        (activity.inputs as any)?.__typename || "unknown"
+      }. Make sure this activity has extension inputs.`
+    );
+  }
+  return activity;
+}
+
 /**
  * Updated BaseActivityProps using ActivityData instead of Activity class
  */

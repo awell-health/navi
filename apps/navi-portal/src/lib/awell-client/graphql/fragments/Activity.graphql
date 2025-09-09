@@ -25,6 +25,13 @@ fragment Activity on Activity {
   session_id
   status
   tenant_id
+  stakeholders {
+    id
+    type
+    name
+    email
+    preferred_language
+  }
   is_user_activity
   sub_activities {
     id
@@ -89,7 +96,8 @@ fragment Activity on Activity {
     }
     ... on ExtensionActivityInput {
       type
-      extensionFields: fields
+      activityRecord
+      componentKey
     }
     ... on ChecklistActivityInput {
       type

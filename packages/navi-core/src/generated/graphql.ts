@@ -396,7 +396,8 @@ export type ExclusiveOptionConfig = {
 };
 
 export type ExtensionActivityInput = ActivityInput & {
-  fields?: Maybe<Scalars['JSON']['output']>;
+  activityRecord?: Maybe<Scalars['JSON']['output']>;
+  componentKey?: Maybe<Scalars['String']['output']>;
   type: ActivityInputType;
 };
 
@@ -710,25 +711,25 @@ export type Subscription = {
 
 
 export type SubscriptionActivityCompletedArgs = {
-  careflow_id?: InputMaybe<Scalars['String']['input']>;
+  careflow_id: Scalars['String']['input'];
   only_patient_activities?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
 export type SubscriptionActivityCreatedArgs = {
-  careflow_id?: InputMaybe<Scalars['String']['input']>;
+  careflow_id: Scalars['String']['input'];
   only_patient_activities?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
 export type SubscriptionActivityExpiredArgs = {
-  careflow_id?: InputMaybe<Scalars['String']['input']>;
+  careflow_id: Scalars['String']['input'];
   only_patient_activities?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
 export type SubscriptionActivityUpdatedArgs = {
-  careflow_id?: InputMaybe<Scalars['String']['input']>;
+  careflow_id: Scalars['String']['input'];
   only_patient_activities?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
