@@ -1,6 +1,6 @@
 import { PatientIdentifier } from "@awell-health/navi-core";
 import type { MedplumClient } from "@medplum/core";
-import type { Patient, Task } from "@medplum/fhirtypes";
+import type { Patient, Task, MedicationStatement, Medication } from "@medplum/fhirtypes";
 
 export type ResourceHandler = (resource: unknown) => void;
 
@@ -117,6 +117,38 @@ export class MedplumStoreClient {
       return patient ?? null;
     } catch (error) {
       console.error("Error fetching patient by identifier:", error);
+      throw error;
+    }
+  }
+
+  async getMedicationsForPatient(patientId: string): Promise<{
+    medicationStatements: MedicationStatement[];
+    medications: Medication[];
+  }> {
+    try {
+      console.log("Fetching Medplum MedicationStatements for Patient", patientId);
+      const bundle = await this.client.search("MedicationStatement", {
+        subject: `Patient/${patientId}`,
+        _count: 100,
+        _sort: "-_lastUpdated",
+        _include: "MedicationStatement:medication",
+      });
+
+      const medicationStatements: MedicationStatement[] = [];
+      const medications: Medication[] = [];
+
+      (bundle.entry || []).forEach((entry) => {
+        const resource = entry.resource;
+        if (resource?.resourceType === "MedicationStatement") {
+          medicationStatements.push(resource as unknown as MedicationStatement);
+        } else if (resource?.resourceType === "Medication") {
+          medications.push(resource as unknown as Medication);
+        }
+      });
+
+      return { medicationStatements, medications };
+    } catch (error) {
+      console.error("Error fetching patient medications:", error);
       throw error;
     }
   }

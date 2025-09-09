@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { User } from "lucide-react";
 import { TaskList } from "./task-list";
+import { MedicationsList } from "./medications-list";
 import { PatientIdentifier } from "@awell-health/navi-core";
 import { ReusableTabs } from "./reusable-tabs";
 import {
@@ -211,6 +212,11 @@ export function SmartHomeTabs({
                 },
               ]}
             />
+
+            {/* Medications Card */}
+            <div className="border border-gray-200 rounded-lg bg-white p-4">
+              <MedicationsList patientIdentifier={patientIdentifier} />
+            </div>
           </div>
 
           {/* Tasks Tab Content */}

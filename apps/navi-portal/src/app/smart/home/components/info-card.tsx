@@ -9,25 +9,27 @@ interface InfoItem {
 
 interface InfoCardProps {
   title: string;
-  items: InfoItem[];
+  items?: InfoItem[];
+  children?: React.ReactNode;
 }
 
-export function InfoCard({ title, items }: InfoCardProps) {
+export function InfoCard({ title, items, children }: InfoCardProps) {
   return (
     <div className="border border-gray-200 rounded-lg bg-white">
       <div className="px-4 py-3 border-b border-gray-100">
-        <h3 className="font-semibold text-gray-900">{title}</h3>
+        <h3 className="text-sm font-medium text-gray-900">{title}</h3>
       </div>
-      <div className="px-4 py-4 space-y-3">
-        {items.map((item, index) => (
+      {items && <div className="px-4 py-4 space-y-3">
+        {items?.map((item, index) => (
           <div key={index} className="flex justify-between items-start">
-            <span className="text-sm text-gray-600 font-medium">{item.label}</span>
-            <span className="text-sm text-gray-900 text-right max-w-[60%]">
+            <span className="text-xs text-gray-600 font-normal">{item.label}</span>
+            <span className="text-sm font-medium text-gray-900 text-right max-w-[60%]">
               {item.value}
             </span>
           </div>
         ))}
-      </div>
+      </div>}
+      {children && <div className="px-4 py-4">{children}</div>}
     </div>
   );
 }
