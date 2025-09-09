@@ -1,11 +1,12 @@
 "use client";
-import type { Patient, Task } from "@medplum/fhirtypes";
+import type { Patient, Task, MedicationStatement, Medication } from "@medplum/fhirtypes";
 import { Loader2 } from "lucide-react";
 import { env } from "@/env";
 import {
   fetchPatientByIdentifierAction,
   fetchPatientTasksAction,
   fetchPatientAction,
+  fetchPatientMedicationsAction,
 } from "@/domains/medplum/actions";
 import {
   createContext,
@@ -28,6 +29,10 @@ type MedplumContextType = {
   getPatientByIdentifier: (
     identifier: PatientIdentifier
   ) => Promise<Patient | null>;
+  getMedicationsForPatient: (patientId: string) => Promise<{
+    medicationStatements: MedicationStatement[];
+    medications: Medication[];
+  }>;
 };
 
 const MedplumContext = createContext<MedplumContextType | null>(null);
@@ -122,6 +127,18 @@ export function MedplumClientProvider({
     [isLoading]
   );
 
+  const getMedicationsForPatient = useCallback(
+    async (patientId: string) => {
+      console.log("Fetching Medplum Medications for Patient", patientId);
+      if (isLoading) throw new Error("Medplum client is still initializing");
+      const result = await fetchPatientMedicationsAction(patientId);
+      console.log("Fetched Medplum MedicationStatements", result.medicationStatements.length);
+      console.log("Fetched Medplum Medications", result.medications.length);
+      return result;
+    },
+    [isLoading]
+  );
+
   const value = {
     isLoading,
     error,
@@ -129,6 +146,7 @@ export function MedplumClientProvider({
     getTasks,
     getTasksForPatient,
     getPatientByIdentifier,
+    getMedicationsForPatient,
   };
 
   if (isLoading) {

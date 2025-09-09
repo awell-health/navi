@@ -9,6 +9,7 @@ import { PatientIdentifier } from "@awell-health/navi-core";
 import { Task } from "@medplum/fhirtypes";
 import { Button } from "../../../../components/ui";
 import { RefreshCcwIcon } from "lucide-react";
+import Loading from "./loading";
 
 interface TaskListProps {
   patientIdentifier: PatientIdentifier;
@@ -26,13 +27,6 @@ export function TaskList({ patientIdentifier, setSelectedTask }: TaskListProps) 
     availableStatuses,
   } = useTaskFiltering(tasks);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -69,20 +63,22 @@ export function TaskList({ patientIdentifier, setSelectedTask }: TaskListProps) 
           />
           <div>
             <Button size="icon" variant="ghost" onClick={refetchTasks} title="Refresh Tasks">
-              <RefreshCcwIcon className="w-4 h-4" />
+              <RefreshCcwIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
           </div>
         </div>
 
-        <div className="space-y-2">
+        <Loading loading={loading}>
+          <div className="space-y-2">
           {filteredTasks.map((task) => (
             <TaskCard
               key={task.id}
               task={task}
               onClick={() => setSelectedTask(task)}
             />
-          ))}
-        </div>
+            ))}
+          </div>
+        </Loading>
       </div>
     </>
   );
