@@ -175,6 +175,11 @@ async function getJWTToken(): Promise<{
   }
 }
 
+export async function getCurrentTokenEnvironment(): Promise<TokenEnvironment | null> {
+  const result = await getJWTToken();
+  return result?.environment ?? null;
+}
+
 function createApolloClient(): ApolloClient<NormalizedCacheObject> {
   const DEBUG_SSE = process.env.NEXT_PUBLIC_DEBUG_SSE === "true";
 

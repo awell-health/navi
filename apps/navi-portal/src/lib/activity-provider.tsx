@@ -64,7 +64,8 @@ class ActivityService {
       return userActivities.filter(
         (activity) =>
           activity.indirect_object?.id === stakeholderId ||
-          activity.object?.id === stakeholderId
+          activity.object?.id === stakeholderId ||
+          activity.stakeholders?.some((s) => s.id === stakeholderId)
       );
     }
 
@@ -223,14 +224,14 @@ interface ActivityProviderProps {
 
 /**
  * ActivityProvider - Manages activity state and lifecycle for careflows
- * 
+ *
  * @param careflowId - The ID of the careflow to fetch activities for
  * @param stakeholderId - Optional stakeholder ID to filter activities by ownership
  * @param activityId - Optional activity ID to fetch only a single activity instead of all careflow activities
  * @param autoAdvanceOnComplete - Whether to automatically advance to the next activity on completion
  * @param service - Optional injected service instance for testing
  * @param onActivityActivate - Optional callback when an activity is activated
- * 
+ *
  * When activityId is provided, the provider will:
  * - Skip fetching all careflow activities
  * - Fetch only the specified activity
@@ -320,16 +321,16 @@ export function ActivityProvider({
         console.debug("🆕 New activity created:", newActivity.id);
         if (newActivity.is_user_activity) {
           service.emit("activity.created", { activity: newActivity });
-                  setActivities((prev) => {
-          if (prev.find((a) => a.id === newActivity.id)) {
-            return prev;
-          }
-          // In single activity mode, only add if it's the target activity
-          if (activityId && newActivity.id !== activityId) {
-            return prev;
-          }
-          return [newActivity, ...prev];
-        });
+          setActivities((prev) => {
+            if (prev.find((a) => a.id === newActivity.id)) {
+              return prev;
+            }
+            // In single activity mode, only add if it's the target activity
+            if (activityId && newActivity.id !== activityId) {
+              return prev;
+            }
+            return [newActivity, ...prev];
+          });
           setNewActivities((prev) => new Set([...prev, newActivity.id]));
         }
       }
@@ -509,7 +510,7 @@ export function ActivityProvider({
         resolution: singleActivity.resolution,
         type: singleActivity.object.type,
         is_user_activity: singleActivity.is_user_activity,
-        careflow_id: singleActivity.careflow_id
+        careflow_id: singleActivity.careflow_id,
       });
 
       // Verify the activity belongs to the current careflow and stakeholder
@@ -546,6 +547,7 @@ export function ActivityProvider({
       const allActivities = activitiesData.pathwayActivities.activities;
       console.log("📋 Activities loaded from GraphQL:", allActivities.length);
 
+      console.log("Activities for stakeholder:", stakeholderId);
       // WHY: apply stakeholder filter first (ownership), then apply client-side
       // focus filter when activityId is provided to limit to a single activity
       // without changing server-side ACL. The server already enforced trackId.
@@ -579,7 +581,15 @@ export function ActivityProvider({
         }
       }
     }
-  }, [activityId, singleActivityData, activitiesData, stakeholderId, activeActivity, service, careflowId]);
+  }, [
+    activityId,
+    singleActivityData,
+    activitiesData,
+    stakeholderId,
+    activeActivity,
+    service,
+    careflowId,
+  ]);
 
   // =================== ACTION HANDLERS ===================
 
@@ -689,6 +699,17 @@ export function ActivityProvider({
             break;
           }
 
+          case "extension":
+          case "EXTENSION": {
+            input = {
+              activity_id: activityId,
+              input_type: "EXTENSION" as const,
+              input_data: data,
+              completion_context: completionContext,
+            };
+            break;
+          }
+
           case "CHECKLIST": {
             input = {
               activity_id: activityId,
@@ -766,10 +787,13 @@ export function ActivityProvider({
   // =================== CONTEXT VALUE ===================
 
   // Combine loading states from both queries
-  const isLoading = activityId ? isSingleActivityLoading : isPathwayActivitiesLoading;
-  
+  const isLoading = activityId
+    ? isSingleActivityLoading
+    : isPathwayActivitiesLoading;
+
   // Combine error states from both queries
-  const error = (activityId ? singleActivityError?.message : gqlError?.message) || null;
+  const error =
+    (activityId ? singleActivityError?.message : gqlError?.message) || null;
 
   const contextValue: ActivityContextType = useMemo(
     () => ({
