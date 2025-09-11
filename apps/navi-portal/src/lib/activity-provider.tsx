@@ -414,7 +414,7 @@ export function ActivityProvider({
         });
 
         // Auto-advance to next activity if the completed one was active
-        if (activeActivity?.id === completedActivity.id) {
+        if (activeActivity?.id === completedActivity.id || !activeActivity) {
           console.log("🔄 Completed activity was active, checking for next...");
           console.log("✅ Completed activity details:", {
             id: completedActivity.id,
@@ -422,9 +422,6 @@ export function ActivityProvider({
             status: completedActivity.status,
             resolution: completedActivity.resolution,
           });
-
-          // Update current activity state first
-          setActiveActivityState(completedActivity);
 
           // Find next completable activity using business logic
           const nextActivity = service.getNextCompletableActivity(
