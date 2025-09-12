@@ -152,4 +152,29 @@ export class MedplumStoreClient {
       throw error;
     }
   }
+
+  async updateTaskStatus(taskId: string, status: Task["status"]): Promise<Task> {
+    try {
+      console.log("Updating Medplum Task status", taskId, status);
+
+      // First, read the current task
+      const currentTask = await this.client.readResource("Task", taskId) as Task;
+
+      // Update the status
+      const updatedTask = {
+        ...currentTask,
+        status,
+        lastModified: new Date().toISOString(),
+      };
+
+      // Update the task
+      const result = await this.client.updateResource(updatedTask);
+      console.log("Updated Medplum Task", result.id, "to status", status);
+
+      return result as Task;
+    } catch (error) {
+      console.error("Error updating task status:", error);
+      throw error;
+    }
+  }
 }

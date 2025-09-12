@@ -46,7 +46,6 @@ export function usePatientMedications(
       setError(null);
 
       const medplumPatient = await getPatientByIdentifier(patientIdentifier);
-      console.log("Fetched Medplum Patient for medications", medplumPatient);
       if (!medplumPatient?.id) {
         setMedicationStatements([]);
         setMedications([]);
@@ -55,8 +54,6 @@ export function usePatientMedications(
       }
 
       const result = await getMedicationsForPatient(medplumPatient.id);
-      console.log("Fetched Medplum MedicationStatements", result.medicationStatements);
-      console.log("Fetched Medplum Medications", result.medications);
       setMedicationStatements(result.medicationStatements);
       setMedications(result.medications);
     } catch (err) {

@@ -80,3 +80,15 @@ export async function fetchPatientMedicationsAction(
   );
   return resp;
 }
+
+export async function updateTaskStatusAction(
+  taskId: string,
+  status: Task["status"]
+): Promise<Task> {
+  // await requireStytchSession();
+  console.log("updateTaskStatusAction", taskId, status);
+  const medplum = await getServerMedplum();
+  const resp = await medplum.updateTaskStatus(taskId, status);
+  console.log("Updated Medplum Task", resp.id, "to status", status);
+  return resp;
+}

@@ -3,6 +3,7 @@
 import React from "react";
 import { Calendar, User, ChevronRight } from "lucide-react";
 import { TaskStatusBadge } from "./task-status-badge";
+import { TaskTypeBadge } from "./task-type-badge";
 import { Task } from "@medplum/fhirtypes";
 
 interface TaskCardProps {
@@ -47,8 +48,9 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
             {task.description || "Unnamed Task"}
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <TaskStatusBadge status={task.status} />
+            <TaskTypeBadge task={task} />
           </div>
 
           <div className="flex items-center gap-1 text-xs text-gray-600 font-normal">
