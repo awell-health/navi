@@ -85,6 +85,7 @@ export function Extension({
   if (!Component) return null;
 
   const handleSubmit = (data: Record<string, unknown>) => {
+    console.log("📝 ExtensionActivity handleSubmit", activity.id, data);
     if (disabled) return;
     onSubmit?.(data);
   };

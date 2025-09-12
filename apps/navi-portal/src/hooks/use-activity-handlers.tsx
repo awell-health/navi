@@ -66,7 +66,12 @@ export function useActivityHandlers({
 
   const handleExtensionSubmit = useCallback(
     async (activityId: string, data: Record<string, unknown>) => {
-      console.log("📝 Extension submitted:", activityId, data);
+      try {
+        await completeActivity(activityId, data, "EXTENSION");
+        console.log("✅ Extension completion successful");
+      } catch (error) {
+        console.error("❌ Extension completion failed:", error);
+      }
     },
     [completeActivity]
   );
