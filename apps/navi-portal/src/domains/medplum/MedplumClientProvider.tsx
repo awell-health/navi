@@ -7,6 +7,7 @@ import {
   fetchPatientTasksAction,
   fetchPatientAction,
   fetchPatientMedicationsAction,
+  updateTaskStatusAction,
 } from "@/domains/medplum/actions";
 import {
   createContext,
@@ -33,6 +34,7 @@ type MedplumContextType = {
     medicationStatements: MedicationStatement[];
     medications: Medication[];
   }>;
+  updateTaskStatus: (taskId: string, status: Task["status"]) => Promise<Task>;
 };
 
 const MedplumContext = createContext<MedplumContextType | null>(null);
@@ -139,6 +141,17 @@ export function MedplumClientProvider({
     [isLoading]
   );
 
+  const updateTaskStatus = useCallback(
+    async (taskId: string, status: Task["status"]) => {
+      console.log("Updating Medplum Task Status", taskId, status);
+      if (isLoading) throw new Error("Medplum client is still initializing");
+      const result = await updateTaskStatusAction(taskId, status);
+      console.log("Updated Medplum Task", result.id, "to status", status);
+      return result;
+    },
+    [isLoading]
+  );
+
   const value = {
     isLoading,
     error,
@@ -147,6 +160,7 @@ export function MedplumClientProvider({
     getTasksForPatient,
     getPatientByIdentifier,
     getMedicationsForPatient,
+    updateTaskStatus,
   };
 
   if (isLoading) {

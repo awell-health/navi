@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { usePatientTasks } from "../hooks/use-patient-tasks";
 import { useTaskFiltering } from "../hooks/use-task-filtering";
 import { TaskCard } from "./task-card";
+import { TaskCardSkeleton } from "./task-card-skeleton";
 import { TaskFilters } from "./task-filters";
 import { PatientIdentifier } from "@awell-health/navi-core";
 import { Task } from "@medplum/fhirtypes";
@@ -39,7 +40,7 @@ export function TaskList({ patientIdentifier, setSelectedTask }: TaskListProps) 
     );
   }
 
-  if (tasks.length === 0) {
+  if (!loading && tasks.length === 0) {
     return (
       <div className="text-center py-8">
         <div className="text-gray-900 font-medium mb-2">No Tasks Found</div>
@@ -52,7 +53,7 @@ export function TaskList({ patientIdentifier, setSelectedTask }: TaskListProps) 
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-2">
         <div className="flex justify-between items-center">
           <TaskFilters
             sortOrder={sortOrder}
@@ -68,17 +69,24 @@ export function TaskList({ patientIdentifier, setSelectedTask }: TaskListProps) 
           </div>
         </div>
 
-        <Loading loading={loading}>
-          <div className="space-y-2">
-          {filteredTasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onClick={() => setSelectedTask(task)}
-            />
-            ))}
-          </div>
-        </Loading>
+          {loading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <TaskCardSkeleton key={index} />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {filteredTasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onClick={() => setSelectedTask(task)}
+                />
+              ))}
+            </div>
+          )}
+        
       </div>
     </>
   );
