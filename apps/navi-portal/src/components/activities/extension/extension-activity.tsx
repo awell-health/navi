@@ -6,9 +6,10 @@ import {
   loadActionComponent,
 } from "@/lib/extensions/manifest";
 import { ExtensionActivityData } from "@awell-health/navi-core";
+import { ExtensionActivityInput } from "@/lib/awell-client/generated/graphql";
 
 type ComponentProps = {
-  activityDetails: ExtensionActivityData;
+  activityDetails: ExtensionActivityInput['activityRecord'];
   onSubmit: (data: Record<string, unknown>) => void;
 };
 
@@ -88,5 +89,5 @@ export function Extension({
     onSubmit?.(data);
   };
 
-  return <Component activityDetails={activity} onSubmit={handleSubmit} />;
+  return <Component activityDetails={activity.inputs.activityRecord} onSubmit={handleSubmit} />;
 }
