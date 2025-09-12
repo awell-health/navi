@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { ArrowLeft, Check, Loader2 } from "lucide-react";
-import { Extension, Task } from "@medplum/fhirtypes";
+import { Coding, Extension, Task } from "@medplum/fhirtypes";
 import { TaskStatusBadge } from "./task-status-badge";
 import { InfoCard } from "./info-card";
 import { ApolloProvider } from "@/lib/awell-client/provider";
@@ -11,6 +11,7 @@ import { CareflowActivitiesContent } from "./careflow-activities-content";
 import { BrandingProvider } from "@/lib/branding-provider";
 import { awellDefaultBranding } from "@/lib/branding/defaults";
 import { toast } from "sonner";
+import TaskApproval from "./task-approval";
 
 interface TaskViewProps {
   task: Task;
@@ -62,6 +63,12 @@ export function TaskView({ task, onBack }: TaskViewProps) {
       setSubmitted(false);
     }, 500);
   };
+
+  const isDavitaApprovalRejectTask = task?.code?.coding?.find(
+    (c: Coding) =>
+      c.system === 'http://davita.com/fhir/task-code' &&
+      (c.code === 'approval-reject' || c.code === 'approve-reject'),
+  )
 
   const hideActivity =
     task.status === "completed" || task.status === "cancelled" || submitted;
@@ -126,7 +133,10 @@ export function TaskView({ task, onBack }: TaskViewProps) {
           )}
           {!hideActivity && (
             <div className="px-4 py-4">
-              {careflowId && stakeholderId && activityId ? (
+              {isDavitaApprovalRejectTask && (
+                <TaskApproval task={task} onSubmit={handleTaskCompleted} />
+              )}
+              {careflowId && stakeholderId && activityId && !isDavitaApprovalRejectTask && (
                 <ApolloProvider>
                   <BrandingProvider
                     branding={awellDefaultBranding.branding}
@@ -145,10 +155,6 @@ export function TaskView({ task, onBack }: TaskViewProps) {
                     </ActivityProvider>
                   </BrandingProvider>
                 </ApolloProvider>
-              ) : (
-                <div>
-                  <p>No task found</p>
-                </div>
               )}
             </div>
           )}

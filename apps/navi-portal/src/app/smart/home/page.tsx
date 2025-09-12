@@ -51,7 +51,6 @@ export default async function SmartHomePage({
       </div>
     );
   }
-  console.log("session", session);
 
   let httpOnly = false;
   let patient: Patient | null = null;
@@ -87,10 +86,7 @@ export default async function SmartHomePage({
       value: patient.id!,
     };
   }
-  console.log("httpOnly", httpOnly);
-  console.log("cookie domain", env.HTTP_COOKIE_DOMAIN);
-  console.log("patient", patient);
-  console.log("patientIdentifier", patientIdentifier);
+
   if (!patientIdentifier) {
     return (
       <div className="p-6">

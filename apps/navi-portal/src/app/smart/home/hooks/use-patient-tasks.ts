@@ -44,7 +44,6 @@ export function usePatientTasks(
       setError(null);
 
       const medplumPatient = await getPatientByIdentifier(patientIdentifier);
-      console.log("Fetched Medplum Patient", medplumPatient);
       if (!medplumPatient?.id) {
         setTasks([]);
         setLoading(false);
@@ -52,7 +51,6 @@ export function usePatientTasks(
       }
 
       const medplumTasks = await getTasksForPatient(medplumPatient.id);
-      console.log("Fetched Medplum Tasks", medplumTasks);
       setTasks(medplumTasks);
     } catch (err) {
       console.error("Error fetching patient tasks:", err);
