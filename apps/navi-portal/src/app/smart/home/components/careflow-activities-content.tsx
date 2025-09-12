@@ -85,7 +85,7 @@ export function CareflowActivitiesContent({
   }, [activityId, setActiveActivity]);
 
   // Activity handlers
-  const { handleFormSubmit, handleMessageMarkAsRead, handleChecklistComplete } =
+  const { handleFormSubmit, handleMessageMarkAsRead, handleChecklistComplete, handleExtensionSubmit } =
     useActivityHandlers({ completeActivity });
 
   // Completion flow management
@@ -177,7 +177,7 @@ export function CareflowActivitiesContent({
             <Activities.Extension
               activity={extensionActivity}
               onSubmit={(data) =>
-                completeActivity(activeActivity.id, data, "EXTENSION")
+                handleExtensionSubmit(activeActivity.id, data)
               }
             />
           );

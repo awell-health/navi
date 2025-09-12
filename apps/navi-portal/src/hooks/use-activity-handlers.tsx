@@ -64,9 +64,17 @@ export function useActivityHandlers({
     [completeActivity]
   );
 
+  const handleExtensionSubmit = useCallback(
+    async (activityId: string, data: Record<string, unknown>) => {
+      console.log("📝 Extension submitted:", activityId, data);
+    },
+    [completeActivity]
+  );
+
   return {
     handleFormSubmit,
     handleMessageMarkAsRead,
     handleChecklistComplete,
+    handleExtensionSubmit,
   };
 }
