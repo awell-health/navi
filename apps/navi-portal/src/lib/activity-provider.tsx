@@ -332,6 +332,9 @@ export function ActivityProvider({
             return [newActivity, ...prev];
           });
           setNewActivities((prev) => new Set([...prev, newActivity.id]));
+          if (!activeActivity) {
+            setActiveActivityState(newActivity);
+          }
         }
       }
     },
