@@ -1,24 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
-import { usePatientTasks } from "../hooks/use-patient-tasks";
+import { useTasks } from "../contexts/tasks-context";
 import { useTaskFiltering } from "../hooks/use-task-filtering";
 import { TaskCard } from "./task-card";
 import { TaskCardSkeleton } from "./task-card-skeleton";
 import { TaskFilters } from "./task-filters";
-import { PatientIdentifier } from "@awell-health/navi-core";
-import { Task } from "@medplum/fhirtypes";
 import { Button } from "../../../../components/ui";
 import { RefreshCcwIcon } from "lucide-react";
-import Loading from "./loading";
+import { TaskView } from "./task-view";
 
-interface TaskListProps {
-  patientIdentifier: PatientIdentifier;
-  setSelectedTask: (task: Task) => void;
-}
 
-export function TaskList({ patientIdentifier, setSelectedTask }: TaskListProps) {
-  const { tasks, loading, error, refetchTasks } = usePatientTasks(patientIdentifier);
+  export function TaskList() {
+  const { tasks, loading, error, refetchTasks, selectedTaskId, setSelectedTask } = useTasks();
+
   const {
     filteredTasks,
     sortOrder,
@@ -53,7 +47,7 @@ export function TaskList({ patientIdentifier, setSelectedTask }: TaskListProps) 
 
   return (
     <>
-      <div className="space-y-2">
+      {!selectedTaskId && <div className="space-y-2">
         <div className="flex justify-between items-center">
           <TaskFilters
             sortOrder={sortOrder}
@@ -81,13 +75,16 @@ export function TaskList({ patientIdentifier, setSelectedTask }: TaskListProps) 
                 <TaskCard
                   key={task.id}
                   task={task}
-                  onClick={() => setSelectedTask(task)}
+                  onClick={() => setSelectedTask(task.id ?? null)}
                 />
               ))}
             </div>
           )}
         
-      </div>
+      </div>}
+      {selectedTaskId && (
+        <TaskView />
+      )}
     </>
   );
 }

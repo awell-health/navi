@@ -6,30 +6,33 @@ import { useState } from 'react'
 import clsx from 'clsx'
 import { useMedplum } from '../../../../domains/medplum/MedplumClientProvider'
 import { Button } from '../../../../components/ui'
+import { useTasks } from '../contexts/tasks-context'
 
-interface ApproveRejectTaskProps {
-  task: Task;
-  onSubmit: () => void;
-}
 
-const TaskApproval = ({ task, onSubmit }: ApproveRejectTaskProps) => {
+const TaskApproval = () => {
   const { updateTaskStatus } = useMedplum()
+  const { updateTask, getSelectedTask } = useTasks()
+  const task = getSelectedTask()
+  
   const [isUpdating, setIsUpdating] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [localTask, setLocalTask] = useState<Task>(task)
+  
+  if (!task) return <div>Task not found</div>
+
+  const taskId = task.id
 
   const handleApprove = async () => {
-    if (!localTask.id) return
+    if (!taskId) return
 
     setIsUpdating(true)
     setError(null)
 
     try {
-      const updatedTask = await updateTaskStatus(localTask.id, 'completed')
-      setLocalTask(updatedTask)
+      await updateTaskStatus(taskId, 'completed')
+      updateTask(taskId, { status: 'completed' })
+
       setIsSubmitted(true)
-      onSubmit()
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to approve task'
@@ -40,16 +43,15 @@ const TaskApproval = ({ task, onSubmit }: ApproveRejectTaskProps) => {
   }
 
   const handleReject = async () => {
-    if (!localTask.id) return
+    if (!taskId) return
 
     setIsUpdating(true)
     setError(null)
 
     try {
-      const updatedTask = await updateTaskStatus(localTask.id, 'cancelled')
-      setLocalTask(updatedTask)
+      await updateTaskStatus(taskId, 'cancelled')
+      updateTask(taskId, { status: 'cancelled' })
       setIsSubmitted(true)
-      onSubmit()
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to reject task'
@@ -59,13 +61,13 @@ const TaskApproval = ({ task, onSubmit }: ApproveRejectTaskProps) => {
     }
   }
 
-  const matchedDataPayload = localTask.input?.find((input: TaskInput) =>
+  const matchedDataPayload = task.input?.find((input: TaskInput) =>
     input.type?.coding?.some(
       (coding: Coding) => coding.code === 'matched-patient-summary',
     ),
   )
 
-  const incomingDataPayload = localTask.input?.find((input: TaskInput) =>
+  const incomingDataPayload = task.input?.find((input: TaskInput) =>
     input.type?.coding?.some(
       (coding: Coding) => coding.code === 'incoming-payload',
     ),
@@ -81,7 +83,7 @@ const TaskApproval = ({ task, onSubmit }: ApproveRejectTaskProps) => {
   ) => {
     return (
       <div className="flex flex-col gap-2 border border-gray-200 rounded-md">
-        <div className="p-3 border-b border-gray-200">{title}</div>
+        <div className="p-3 border-b border-gray-200 text-sm font-medium text-gray-900">{title}</div>
         <div className="flex flex-col gap-2 p-3">
           {Object.keys(data).map((key) => {
             const hasKeyMatch = keysMatch.includes(key)
@@ -107,7 +109,7 @@ const TaskApproval = ({ task, onSubmit }: ApproveRejectTaskProps) => {
     )
   }
 
-  const isRequested = localTask.status === 'requested'
+  const isRequested = task.status === 'requested'
 
   return (
     <div className="flex flex-col gap-2">
@@ -131,6 +133,8 @@ const TaskApproval = ({ task, onSubmit }: ApproveRejectTaskProps) => {
                 size="sm"
                 onClick={handleReject}
                 disabled={isUpdating}
+                className="text-sm"
+                style={{ fontFamily: "Lato, system-ui, sans-serif" }}
               >
                 Reject
               </Button>
@@ -139,6 +143,8 @@ const TaskApproval = ({ task, onSubmit }: ApproveRejectTaskProps) => {
                 size="sm"
                 onClick={handleApprove}
                 disabled={isUpdating}
+                className="text-sm"
+                style={{ fontFamily: "Lato, system-ui, sans-serif" }}
               >
                 Approve
               </Button>
