@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import { useState } from "react";
 import { ArrowLeft, Check, Loader2 } from "lucide-react";
-import { Extension, Task } from "@medplum/fhirtypes";
+import { Coding, Extension } from "@medplum/fhirtypes";
 import { TaskStatusBadge } from "./task-status-badge";
 import { InfoCard } from "./info-card";
 import { ApolloProvider } from "@/lib/awell-client/provider";
@@ -11,14 +11,17 @@ import { CareflowActivitiesContent } from "./careflow-activities-content";
 import { BrandingProvider } from "@/lib/branding-provider";
 import { awellDefaultBranding } from "@/lib/branding/defaults";
 import { toast } from "sonner";
+import TaskApproval from "./task-approval";
+import { useTasks } from "../contexts/tasks-context";
 
-interface TaskViewProps {
-  task: Task;
-  onBack: () => void;
-}
 
-export function TaskView({ task, onBack }: TaskViewProps) {
+export function TaskView() {
+  const { setSelectedTask, getSelectedTask } = useTasks();
   const [submitted, setSubmitted] = useState(false);
+  const task = getSelectedTask();
+  
+  if (!task) return <div>No task selected</div>;
+
   // Helper function to format date
   const formatDate = (dateString?: string) => {
     if (!dateString) return "-";
@@ -57,11 +60,18 @@ export function TaskView({ task, onBack }: TaskViewProps) {
   const handleTaskCompleted = () => {
     setSubmitted(true);
     toast.success("Task completed");
+
     setTimeout(() => {
-      onBack();
+      setSelectedTask(null);
       setSubmitted(false);
     }, 500);
   };
+
+  const isDavitaApprovalRejectTask = task?.code?.coding?.find(
+    (c: Coding) =>
+      c.system === 'http://davita.com/fhir/task-code' &&
+      (c.code === 'approval-reject' || c.code === 'approve-reject'),
+  )
 
   const hideActivity =
     task.status === "completed" || task.status === "cancelled" || submitted;
@@ -71,11 +81,11 @@ export function TaskView({ task, onBack }: TaskViewProps) {
       {/* Back Button */}
       <div className="py-4 -mt-2">
         <button
-          onClick={onBack}
+          onClick={() => setSelectedTask(null)}
           className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 transition-colors hover:cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to patient
+          Back to tasks list
         </button>
       </div>
 
@@ -111,7 +121,7 @@ export function TaskView({ task, onBack }: TaskViewProps) {
         {/* Activity Resolution Interface */}
         <div className="border border-gray-200 rounded-lg bg-white">
           <div className="px-4 py-3 border-b border-gray-100">
-            <h3 className="font-semibold text-gray-900">Resolve Task</h3>
+            <div className="font-semibold text-gray-900 text-sm">Resolve Task</div>
           </div>
           {submitted && (
             <div className="px-4 py-4 flex items-center gap-2 justify-center">
@@ -126,7 +136,10 @@ export function TaskView({ task, onBack }: TaskViewProps) {
           )}
           {!hideActivity && (
             <div className="px-4 py-4">
-              {careflowId && stakeholderId && activityId ? (
+              {isDavitaApprovalRejectTask && (
+                <TaskApproval />
+              )}
+              {careflowId && stakeholderId && activityId && !isDavitaApprovalRejectTask && (
                 <ApolloProvider>
                   <BrandingProvider
                     branding={awellDefaultBranding.branding}
@@ -145,10 +158,6 @@ export function TaskView({ task, onBack }: TaskViewProps) {
                     </ActivityProvider>
                   </BrandingProvider>
                 </ApolloProvider>
-              ) : (
-                <div>
-                  <p>No task found</p>
-                </div>
               )}
             </div>
           )}

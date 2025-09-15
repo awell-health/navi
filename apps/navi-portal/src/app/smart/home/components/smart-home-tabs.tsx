@@ -10,12 +10,11 @@ import {
   Coding,
   Extension,
   Identifier,
-  Patient,
-  Task,
+  Patient
 } from "@medplum/fhirtypes";
-import { TaskView } from "./task-view";
 import { InfoCard } from "./info-card";
 import { useMedplum } from "@/domains/medplum/MedplumClientProvider";
+import { TasksProvider } from "../contexts/tasks-context";
 
 type PatientResource = {
   id?: string;
@@ -65,9 +64,8 @@ export function SmartHomeTabs({
     initialPatient
   );
   const [activeTab, setActiveTab] = React.useState("context");
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [banner, setBanner] = useState<string | null>(null);
   const { getPatientByIdentifier } = useMedplum();
+  const [banner, setBanner] = useState<string | null>(null);
 
   useEffect(() => {
     if (patient === null) {
@@ -166,78 +164,63 @@ export function SmartHomeTabs({
         </div>
       )}
 
-      {!selectedTask && (
-        <ReusableTabs
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          tabs={tabs}
-        >
-          {/* Context Tab Content */}
-          <div
-            className={`space-y-4 ${
-              activeTab === "context" ? "block" : "hidden"
+      <ReusableTabs
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        tabs={tabs}
+      >
+        {/* Context Tab Content */}
+        <div
+          className={`space-y-4 ${activeTab === "context" ? "block" : "hidden"
             }`}
-          >
-            {/* Patient Details Box - Non-collapsible */}
-            <InfoCard
-              title="Patient Details & Demographics"
-              items={[
-                {
-                  label: "Full Name",
-                  value: getPatientName(),
-                },
-                {
-                  label: "Date of Birth",
-                  value: formatDate(patient?.birthDate),
-                },
-                {
-                  label: "MPI",
-                  value:
-                    patient?.identifier?.length &&
-                    patient?.identifier?.length > 0
-                      ? renderMPIIdentifierValue(patient?.identifier)
-                      : patient?.identifier?.[0]?.value || "-",
-                },
-                {
-                  label: "Program VBC",
-                  value: programVbc,
-                },
-                {
-                  label: "Program Disease Stage",
-                  value: programDiseaseStage,
-                },
-                {
-                  label: "Program Site",
-                  value: programSite,
-                },
-              ]}
-            />
+        >
+          {/* Patient Details Box - Non-collapsible */}
+          <InfoCard
+            title="Patient Details & Demographics"
+            items={[
+              {
+                label: "Full Name",
+                value: getPatientName(),
+              },
+              {
+                label: "Date of Birth",
+                value: formatDate(patient?.birthDate),
+              },
+              {
+                label: "MPI",
+                value:
+                  patient?.identifier?.length && patient?.identifier?.length > 0
+                    ? renderMPIIdentifierValue(patient?.identifier)
+                    : patient?.identifier?.[0]?.value || "-",
+              },
+              {
+                label: "Program VBC",
+                value: programVbc,
+              },
+              {
+                label: "Program Disease Stage",
+                value: programDiseaseStage,
+              },
+              {
+                label: "Program Site",
+                value: programSite,
+              },
+            ]}
+          />
 
-            {/* Medications Card */}
-            <div className="border border-gray-200 rounded-lg bg-white p-4">
-              <MedicationsList patientIdentifier={patientIdentifier} />
-            </div>
+          {/* Medications Card */}
+          <div className="border border-gray-200 rounded-lg bg-white p-4">
+            <MedicationsList patientIdentifier={patientIdentifier} />
           </div>
+        </div>
 
-          {/* Tasks Tab Content */}
-          <div className={activeTab === "tasks" ? "block" : "hidden"}>
-            <TaskList
-              patientIdentifier={patientIdentifier}
-              setSelectedTask={setSelectedTask}
-            />
-          </div>
-        </ReusableTabs>
-      )}
-
-      {selectedTask && (
-        <TaskView
-          task={selectedTask}
-          onBack={() => {
-            setSelectedTask(null);
-            setBanner(null);
-          }}
-        />
-      )}
+        {/* Tasks Tab Content */}
+        <div className={activeTab === "tasks" ? "block" : "hidden"}>
+          <TasksProvider patientIdentifier={patientIdentifier}>
+            <TaskList />
+          </TasksProvider>
+        </div>
+      </ReusableTabs>
     </div>
   );
 }

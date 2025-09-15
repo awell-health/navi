@@ -58,8 +58,6 @@ export function MedicationsList({ patientIdentifier }: MedicationsListProps) {
 
   // Helper function to get medication name with enhanced data from Medication resource
   const getMedicationName = (medicationStatement: MedicationStatement): string => {
-    console.log("MedicationStatement", medicationStatement);
-    
     // First try to get name from the associated Medication resource
     const medicationResource = findMedicationResource(medicationStatement);
     if (medicationResource) {
