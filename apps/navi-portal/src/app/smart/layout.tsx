@@ -2,7 +2,7 @@ import { generateThemeCSS } from "@/lib/branding";
 import { getBrandingByOrgId } from "@/lib/branding/branding-service";
 import "../globals.css";
 import { Toaster } from "@/components/ui/sonner";
-import { Suspense } from "react";
+import React, { Suspense } from "react";
 import { LoaderCircle } from "lucide-react";
 
 export const runtime = "nodejs";
