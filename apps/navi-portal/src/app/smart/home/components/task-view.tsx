@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { ArrowLeft, Check, Loader2 } from "lucide-react";
-import { Coding, Extension, Task } from "@medplum/fhirtypes";
+import { Coding, Extension } from "@medplum/fhirtypes";
 import { TaskStatusBadge } from "./task-status-badge";
 import { InfoCard } from "./info-card";
 import { ApolloProvider } from "@/lib/awell-client/provider";
@@ -17,12 +17,11 @@ import { useTasks } from "../contexts/tasks-context";
 
 export function TaskView() {
   const { setSelectedTask, getSelectedTask } = useTasks();
-
+  const [submitted, setSubmitted] = useState(false);
   const task = getSelectedTask();
   
   if (!task) return <div>No task selected</div>;
 
-  const [submitted, setSubmitted] = useState(false);
   // Helper function to format date
   const formatDate = (dateString?: string) => {
     if (!dateString) return "-";
