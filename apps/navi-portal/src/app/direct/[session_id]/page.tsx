@@ -7,6 +7,7 @@ import type {
 import { AuthService } from "@awell-health/navi-core";
 import { env } from "@/env";
 import DirectSessionClient from "./DirectSessionClient";
+import { SessionProvider } from "@/lib/session-provider";
 import { SessionService } from "@/domains/session/service";
 
 type Params = Promise<{ session_id: string }>;
@@ -15,8 +16,10 @@ export const dynamic = "force-dynamic";
 
 export default async function DirectSessionPage({
   params,
+  searchParams,
 }: {
   params: Params;
+  searchParams: { session_switched?: string };
 }) {
   const { session_id: sessionId } = await params;
 
@@ -24,13 +27,15 @@ export default async function DirectSessionPage({
   try {
     const cookieStore = await cookies();
     const jwtCookie = cookieStore.get("awell.jwt");
-    if (jwtCookie?.value) {
+    if (jwtCookie?.value && searchParams.session_switched !== "1") {
       const auth = new AuthService();
       await auth.initialize(env.JWT_SIGNING_KEY);
       const payload = await auth.verifyToken(jwtCookie.value);
+      console.log("🔑 JWT cookie found with verified payload", payload);
       const jwtSessionId = payload.sub as string | undefined;
       if (jwtSessionId && jwtSessionId !== sessionId) {
-        // Do not redirect; the URL wins. Append notification param for client log.
+        console.warn("🔑 JWT session ID mismatch. JWT session ID:", jwtSessionId, "URL session ID:", sessionId);
+        // Today the URL is the source of truth. Append notification param for client log.
         redirect(`/direct/${sessionId}?session_switched=1`);
       }
     }
@@ -38,6 +43,7 @@ export default async function DirectSessionPage({
     // Ignore and continue with requested session
   }
   const session = await SessionService.get(sessionId);
+  console.log("🔑 Session", session);
   if (!session) {
     notFound();
   }
@@ -75,19 +81,21 @@ export default async function DirectSessionPage({
   const careflowDefinitionId = embedFields?.careflowDefinitionId;
 
   return (
-    <div className="w-full h-full flex items-center justify-center p-6">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-4">
-          <h1 className="text-xl font-semibold">Preparing your experience</h1>
-          <p className="text-muted-foreground">
-            We’re getting things ready. This should only take a moment.
-          </p>
+    <SessionProvider initialSessionIdFromUrl={sessionId}>
+      <div className="w-full h-full flex items-center justify-center p-6">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-4">
+            <h1 className="text-xl font-semibold">Preparing your experience</h1>
+            <p className="text-muted-foreground">
+              We’re getting things ready. This should only take a moment.
+            </p>
+          </div>
+          <DirectSessionClient
+            sessionId={sessionId}
+            careflowDefinitionId={careflowDefinitionId}
+          />
         </div>
-        <DirectSessionClient
-          sessionId={sessionId}
-          careflowDefinitionId={careflowDefinitionId}
-        />
       </div>
-    </div>
+    </SessionProvider>
   );
 }

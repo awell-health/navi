@@ -164,6 +164,7 @@ export function assertChecklistActivity(
 export function assertExtensionActivity(
   activity: ActivityData
 ): ExtensionActivityData {
+  console.log("🔍 Asserting extension activity", activity);
   if (!isExtensionActivity(activity)) {
     throw new Error(
       `Expected extension activity but got activity type: ${

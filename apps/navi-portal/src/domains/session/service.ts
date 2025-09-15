@@ -114,7 +114,7 @@ export const SessionService = {
     sessionId: string;
     sessionExpiresAtIso: string;
   }> {
-    const { sessionId, authenticationState } =
+    const { sessionId, authenticationState, naviStytchUserId } =
       await this.resolveSessionFromRequest(request);
     if (!sessionId) {
       throw new SessionError(SessionErrorCode.NO_SESSION_FOUND);
@@ -139,7 +139,7 @@ export const SessionService = {
       tokenData,
       sessionId,
       env.JWT_KEY_ID,
-      { authenticationState }
+      { authenticationState, naviStytchUserId }
     );
 
     const sessionExpiresAtIso = new Date(

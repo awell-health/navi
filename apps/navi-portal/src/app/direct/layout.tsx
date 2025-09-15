@@ -4,6 +4,7 @@ import { BrandingProvider } from "@/lib/branding-provider";
 import "../globals.css";
 import { cn } from "@/lib/utils";
 import { loadOrgFontConfig } from "@/lib/branding/fonts/dynamic-fonts";
+import { Toaster } from "sonner";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +42,7 @@ export default async function RootLayout({
           hasCustomBranding={hasCustomBranding}
         >
           <div className="p-6 w-full h-full">{children}</div>
+          <Toaster theme="light" richColors closeButton position="top-center" />
         </BrandingProvider>
       </body>
     </html>

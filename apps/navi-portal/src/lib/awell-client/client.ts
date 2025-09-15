@@ -99,7 +99,7 @@ function scheduleTokenRefresh(expiresAt: number): void {
 
   if (refreshTime > 0) {
     _refreshTimer = setTimeout(async () => {
-      console.debug("🔄 Auto-refreshing JWT token...");
+      console.debug("🔄 Auto-refreshing JWT token...", _jwtCache?.token);
       try {
         const response = await fetch("/api/session/refresh", {
           method: "POST",

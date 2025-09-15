@@ -12,7 +12,6 @@ export default async function CareflowActivitiesPage({
   params,
 }: CareflowActivitiesPageProps) {
   const { careflow_id, stakeholder_id } = await params;
-
   console.log("🏥 Careflow Activities Page Loading");
   console.log("📋 URL Params:", { careflow_id, stakeholder_id });
 
