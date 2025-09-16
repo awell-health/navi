@@ -14,8 +14,6 @@ import {
   MessageActivityInput,
 } from "@/lib/awell-client/generated/graphql";
 import { useActivity } from "@/lib/activity-provider";
-// import { ActivityDrawer } from "@/components/activity-drawer";
-// import { ActivityHeader } from "@/components/activity-header";
 import { CompletionStateRenderer } from "@/components/completion-state-renderer";
 import { useCompletionFlow } from "@/hooks/use-completion-flow";
 import { useActivityHandlers } from "@/hooks/use-activity-handlers";
@@ -40,25 +38,6 @@ function getMessageFromActivity(
   return null;
 }
 
-// Helper function to check if activity can be displayed
-function canDisplayActivity(activity: ActivityFragment): boolean {
-  // Can display if it's a form with form data
-  if (activity.object.type === "FORM" && getFormFromActivity(activity)) {
-    return true;
-  }
-
-  // Can display if it's a message with message data
-  if (activity.object.type === "MESSAGE" && getMessageFromActivity(activity)) {
-    return true;
-  }
-
-  // Can display checklist activities (even without specific input data)
-  if (activity.object.type === "CHECKLIST") {
-    return true;
-  }
-
-  return false;
-}
 
 export function CareflowActivitiesContent({
   activityId,
@@ -91,8 +70,6 @@ export function CareflowActivitiesContent({
   // Completion flow management
   const { completionState, waitingCountdown } = useCompletionFlow(
     activities,
-    service,
-    isLoading,
     {
       waitingDuration: 5,
       onSessionCompleted: () => {

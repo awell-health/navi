@@ -28,6 +28,7 @@ export function Extension({
   const [loading, setLoading] = useState(true);
 
   const componentId: string | null = useMemo(() => {
+    console.log("🔍 ExtensionActivity", activity);
     return activity?.inputs?.componentKey || null;
   }, [activity]);
 

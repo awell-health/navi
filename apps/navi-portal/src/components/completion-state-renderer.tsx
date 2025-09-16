@@ -21,21 +21,36 @@ export function CompletionStateRenderer({
   waitingCountdown,
 }: CompletionStateRendererProps) {
   if (completionState === "waiting") {
+    const showFinalMessage = (waitingCountdown ?? 0) <= 3; // Show final copy only in last 3s
     return (
       <div className="min-h-[500px] h-full flex items-center justify-center p-8">
         <div className="text-center">
-          <div className="animate-pulse rounded-full h-16 w-16 bg-primary/20 mx-auto mb-4 flex items-center justify-center">
-            <div className="text-2xl font-bold text-primary">
-              {waitingCountdown}
-            </div>
-          </div>
-          <h2 className="text-xl font-semibold text-foreground mb-2">
-            All done!
-          </h2>
-          <p className="text-muted-foreground">
-            Your session will close in {waitingCountdown} second
-            {waitingCountdown !== 1 ? "s" : ""}...
-          </p>
+          {showFinalMessage ? (
+            <>
+              <div className="animate-pulse rounded-full h-16 w-16 bg-primary/20 mx-auto mb-4 flex items-center justify-center">
+                <div className="text-2xl font-bold text-primary">
+                  {waitingCountdown}
+                </div>
+              </div>
+              <h2 className="text-xl font-semibold text-foreground mb-2">
+                All done!
+              </h2>
+              <p className="text-muted-foreground">
+                Your session will close in {waitingCountdown} second
+                {waitingCountdown !== 1 ? "s" : ""}...
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="rounded-full h-16 w-16 bg-primary/10 mx-auto mb-4 flex items-center justify-center">
+                <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+              <h2 className="text-xl font-semibold text-foreground mb-2">
+                Finishing up
+              </h2>
+              <p className="text-muted-foreground">Preparing final state…</p>
+            </>
+          )}
         </div>
       </div>
     );

@@ -138,16 +138,12 @@ function CareflowActivitiesContent() {
     useActivityHandlers({ completeActivity });
 
   // Completion flow management
-  const { completionState, waitingCountdown } = useCompletionFlow(
-    activities,
-    service,
-    isLoading,
-    {
-      waitingDuration: 5,
-      onSessionCompleted: sendSessionCompleted,
-      onIframeClose: sendIframeClose,
-    }
-  );
+  // Derive careflowId from list when invoking useCompletionFlow
+  const { completionState, waitingCountdown } = useCompletionFlow(activities, {
+    waitingDuration: 5,
+    onSessionCompleted: sendSessionCompleted,
+    onIframeClose: sendIframeClose,
+  });
 
   // Mark the active activity as viewed when it changes
   useEffect(() => {

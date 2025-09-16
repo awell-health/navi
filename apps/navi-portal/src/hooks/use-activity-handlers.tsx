@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback } from "react";
+import { UserActivityType } from "@awell-health/navi-core";
 
 interface UseActivityHandlersProps {
   completeActivity: (
     activityId: string,
     data: Record<string, unknown>,
-    activityType?: string
+    activityType: UserActivityType
   ) => Promise<void>;
 }
 

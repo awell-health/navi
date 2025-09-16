@@ -1,9 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ActivityFragment } from "@/lib/awell-client/generated/graphql";
-import { ActivityService } from "@/lib/activity-provider";
+import { usePendingActivities } from "@/lib/activities/use-pending-activities";
 import { logout } from "@/lib/awell-client/client";
+import {
+  createCompletionController,
+  type CompletionEvent,
+} from "@/lib/completion/completion-controller";
 
 // Completion flow states
 type CompletionState = "active" | "waiting" | "completed";
@@ -14,6 +18,7 @@ interface UseCompletionFlowOptions {
   onIframeClose?: () => void; // Callback when iframe should close
   isSingleActivityMode?: boolean; // Whether we're in single activity mode
   allowCompletedActivitiesInSingleMode?: boolean; // Whether to allow completed activities in single mode without logout
+  careflowId?: string; // Optional override to derive pending state without relying on activities array
 }
 
 interface UseCompletionFlowResult {
@@ -32,66 +37,66 @@ interface UseCompletionFlowResult {
  */
 export function useCompletionFlow(
   activities: ActivityFragment[],
-  service: ActivityService,
-  isLoading: boolean,
   options: UseCompletionFlowOptions = {}
 ): UseCompletionFlowResult {
-  const { waitingDuration = 5, onSessionCompleted, onIframeClose, isSingleActivityMode = false, allowCompletedActivitiesInSingleMode = true } = options;
+  const { waitingDuration = 5, onSessionCompleted, onIframeClose, isSingleActivityMode = false, allowCompletedActivitiesInSingleMode = true, careflowId } = options;
 
-  const [completionState, setCompletionState] =
-    useState<CompletionState>("active");
+  const [completionState, setCompletionState] = useState<CompletionState>("active");
   const [waitingCountdown, setWaitingCountdown] = useState<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const controllerRef = useRef(createCompletionController("active"));
 
-  // Check for completion state when activities change
+  // Drive from cache-derived pending state
+  const careflowIdEffective = careflowId ?? activities[0]?.careflow_id ?? "";
+  const { pendingCount } = usePendingActivities(careflowIdEffective);
+
   useEffect(() => {
-    if (!isLoading && activities.length > 0) {
-      const completableActivities =
-        service.getCompletableActivities(activities);
-
-      // In single activity mode, we need to be more careful about triggering completion
-      if (isSingleActivityMode) {
-        // Single activity mode logic - no additional logging needed
-      }
-
-      if (completableActivities.length === 0 && completionState === "active") {
-        // In single activity mode, only trigger completion if the activity is actually completed
-        if (isSingleActivityMode) {
-          const singleActivity = activities[0];
-          const isCompleted = service.isActivityCompleted(singleActivity);
-          
-          // In single activity mode, check if we should allow completed activities without logout
-          if (allowCompletedActivitiesInSingleMode) {
-            return; // Don't trigger completion, allow user to view completed activity
-          }
-          
-          if (!isCompleted) {
-            return;
-          }
-        }
-        
-        setCompletionState("waiting");
-        setWaitingCountdown(waitingDuration);
-      } else if (
-        completableActivities.length > 0 &&
-        completionState !== "active"
-      ) {
-        // New activities came in, reset to active state
-        setCompletionState("active");
-        setWaitingCountdown(null);
-      }
+    if (!careflowIdEffective) return;
+    const event: CompletionEvent = {
+      type: "activitiesChanged",
+      total: activities.length,
+      completable: pendingCount,
+    };
+    const { state, actions } = controllerRef.current.transition(event);
+    setCompletionState(state);
+    const debug = process.env.NEXT_PUBLIC_DEBUG_NAVI === "true";
+    if (debug) {
+      // eslint-disable-next-line no-console
+      console.debug("[Completion] activitiesChanged", { total: activities.length, pendingCount, state, actions });
     }
-  }, [activities, isLoading, service, completionState, waitingDuration, isSingleActivityMode]);
+    if (actions.includes("start_timer")) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      setWaitingCountdown(waitingDuration);
+    }
+    if (actions.includes("stop_timer")) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      setWaitingCountdown(null);
+    }
+  }, [activities.length, pendingCount, careflowIdEffective, waitingDuration]);
+
+  // Abort waiting if the list size changes (any items, completable or not)
+  // (Handled by controller via activitiesChanged) keep for safety if needed
+
+  // No lifecycle listeners; pendingCount changes are sufficient
 
   // Handle countdown timer and session cleanup
   useEffect(() => {
     if (waitingCountdown !== null && waitingCountdown > 0) {
+      if (timerRef.current) clearTimeout(timerRef.current);
       const timer = setTimeout(() => {
         setWaitingCountdown(waitingCountdown - 1);
       }, 1000);
+      timerRef.current = timer;
       return () => clearTimeout(timer);
     } else if (waitingCountdown === 0) {
       // Countdown finished, perform cleanup and move to completed state
-
+      const { state } = controllerRef.current.transition({ type: "timeout" });
+      setCompletionState(state);
+      const debug = process.env.NEXT_PUBLIC_DEBUG_NAVI === "true";
+      if (debug) {
+        // eslint-disable-next-line no-console
+        console.debug("[Completion] timeout reached, cleaning up");
+      }
       const performSessionCleanup = async () => {
         try {
           // Complete logout: clear JWT, session cookies, and KV store

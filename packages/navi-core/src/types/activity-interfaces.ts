@@ -95,9 +95,10 @@ export function isExtensionActivity(
   activity: ActivityData
 ): activity is ExtensionActivityData {
   return (
-    activity.inputs !== null &&
-    activity.inputs !== undefined &&
-    (activity.inputs as any).__typename === "ExtensionActivityInput"
+    activity.object.type === "PLUGIN_ACTION" &&
+    activity.indirect_object?.type === "PLUGIN" && (
+      activity.inputs !== null && activity.inputs !== undefined ? (activity.inputs as any).__typename === "ExtensionActivityInput" : true
+    )
   );
 }
 
@@ -166,6 +167,7 @@ export function assertExtensionActivity(
 ): ExtensionActivityData {
   console.log("🔍 Asserting extension activity", activity);
   if (!isExtensionActivity(activity)) {
+    console.error("❌ Expected extension activity", activity);
     throw new Error(
       `Expected extension activity but got activity type: ${
         (activity.inputs as any)?.__typename || "unknown"

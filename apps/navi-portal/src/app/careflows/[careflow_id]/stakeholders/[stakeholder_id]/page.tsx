@@ -1,5 +1,6 @@
 import CareflowActivitiesClient from "./careflow-activities-client";
 import { ApolloProvider } from "../../../../../lib/awell-client/provider";
+import { SessionProvider } from "@/lib/session-provider";
 
 interface CareflowActivitiesPageProps {
   params: Promise<{
@@ -16,13 +17,15 @@ export default async function CareflowActivitiesPage({
   console.log("📋 URL Params:", { careflow_id, stakeholder_id });
 
   return (
-    <ApolloProvider>
-      {/* Note: onActivityActivate handler will be provided by CareflowActivitiesClient */}
-      <CareflowActivitiesClient
-        careflowId={careflow_id}
-        stakeholderId={stakeholder_id}
-      />
-    </ApolloProvider>
+    <SessionProvider>
+      <ApolloProvider>
+        {/* Note: onActivityActivate handler will be provided by CareflowActivitiesClient */}
+        <CareflowActivitiesClient
+          careflowId={careflow_id}
+          stakeholderId={stakeholder_id}
+        />
+      </ApolloProvider>
+    </SessionProvider>
   );
 }
 

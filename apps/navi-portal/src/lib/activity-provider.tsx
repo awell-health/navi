@@ -13,12 +13,14 @@ import {
   ActivityFragment,
   usePathwayActivitiesQuery,
   useGetActivityQuery,
-  useOnActivityCreatedSubscription,
   useOnActivityUpdatedSubscription,
   useOnActivityCompletedSubscription,
   useOnActivityExpiredSubscription,
+  useOnActivityReadySubscription,
   useCompleteActivityMutation,
 } from "@/lib/awell-client/generated/graphql";
+import { upsertActivityInCache } from "@/lib/awell-client/cache-policies";
+import { UserActivityType } from "@awell-health/navi-core";
 
 // =================== SERVICE LAYER ===================
 
@@ -133,9 +135,7 @@ class ActivityService {
       if (this.isActivityCompleted(activity)) {
         return false;
       }
-
-      // Only include ACTIVE activities (user can act on them)
-      return activity.status === "ACTIVE";
+      return activity.is_user_activity;
     });
   }
 
@@ -200,7 +200,7 @@ interface ActivityContextType {
   completeActivity: (
     activityId: string,
     data: Record<string, unknown>,
-    activityType?: string
+    activityType: UserActivityType
   ) => Promise<void>;
 
   // Service instance (for advanced use cases)
@@ -250,8 +250,7 @@ export function ActivityProvider({
   const [service] = useState(() => injectedService || new ActivityService());
   const sessionId = useSessionId();
 
-  // State
-  const [activities, setActivities] = useState<ActivityFragment[]>([]);
+  // State (UI only)
   const [activeActivity, setActiveActivityState] =
     useState<ActivityFragment | null>(null);
   const [visitedActivities, setVisitedActivities] = useState<Set<string>>(
@@ -295,197 +294,101 @@ export function ActivityProvider({
 
   // =================== SUBSCRIPTION HANDLERS ===================
 
-  // These could be extracted to a custom hook: useActivitySubscriptions
-  function shouldReplaceActivity(
-    existing: ActivityFragment,
-    incoming: ActivityFragment
-  ): boolean {
-    // Compare only fields that affect rendering in our UI
-    if (existing.status !== incoming.status) return true;
-    if (existing.resolution !== incoming.resolution) return true;
-    if (existing.date !== incoming.date) return true;
-    if (existing.is_user_activity !== incoming.is_user_activity) return true;
-    const exObj = existing.object;
-    const inObj = incoming.object;
-    if (exObj?.id !== inObj?.id) return true;
-    if (exObj?.name !== inObj?.name) return true;
-    if (exObj?.type !== inObj?.type) return true;
-    // Default: keep existing reference
-    return false;
-  }
-  useOnActivityCreatedSubscription({
+  useOnActivityReadySubscription({
     variables: { careflow_id: careflowId },
-    onData: ({ data }) => {
-      if (data.data?.activityCreated) {
-        const newActivity = data.data.activityCreated;
-        console.debug("🆕 New activity created:", newActivity.id);
-        if (newActivity.is_user_activity) {
-          service.emit("activity.created", { activity: newActivity });
-          setActivities((prev) => {
-            if (prev.find((a) => a.id === newActivity.id)) {
-              return prev;
-            }
-            // In single activity mode, only add if it's the target activity
-            if (activityId && newActivity.id !== activityId) {
-              return prev;
-            }
-            return [newActivity, ...prev];
-          });
-          setNewActivities((prev) => new Set([...prev, newActivity.id]));
-          if (!activeActivity) {
-            setActiveActivityState(newActivity);
-          }
-        }
+    onData: ({ data, client }) => {
+      const ready = data.data?.activityReady;
+      if (!ready) return;
+      const readyId = ready.id;
+      if (ready.is_user_activity === false) return;
+      upsertActivityInCache(client.cache, {
+        careflowId,
+        activity: ready as unknown as { __typename: "Activity"; id: string } & Record<string, unknown>,
+      });
+      console.log("🔍 Activity ready. Emitting event", ready);
+      service.emit("activity.ready", { activity: ready });
+      if (readyId) setNewActivities((prev) => new Set([...prev, readyId]));
+      // If nothing is active, immediately activate the newly ready activity
+      if (!activeActivity && ready.status === "ACTIVE") {
+        setActiveActivityState(ready as ActivityFragment);
+        service.emit("activity.activated", { activity: ready });
       }
     },
     onError: (error) => {
-      console.error("❌ Activity created subscription error:", error);
-      // Don't reset state on subscription errors - preserve form data
+      console.error("❌ Activity ready subscription error:", error);
     },
   });
 
   useOnActivityUpdatedSubscription({
     variables: { careflow_id: careflowId },
-    onData: ({ data }) => {
-      if (data.data?.activityUpdated) {
-        const updatedActivity = data.data.activityUpdated;
-        console.log("🔄 Activity updated:", updatedActivity.id);
-
-        // Update service cache
-        // service.updateCache(updatedActivity); // No longer needed
-
-        // Emit event
-        service.emit("activity.updated", { activity: updatedActivity });
-
-        setActivities((previousActivities) => {
-          const index = previousActivities.findIndex(
-            (a) => a.id === updatedActivity.id
-          );
-          if (index === -1) return previousActivities;
-          const current = previousActivities[index];
-          if (!shouldReplaceActivity(current, updatedActivity)) {
-            return previousActivities; // no-op; preserve reference to avoid unnecessary re-renders
-          }
-          const next = previousActivities.slice();
-          next[index] = updatedActivity;
-          return next;
-        });
-
-        // In single activity mode, also update the single activity query cache
-        if (activityId && updatedActivity.id === activityId) {
-          // This will trigger a refetch of the single activity if needed
-          console.log("🔄 Single activity updated, cache should be updated");
-        }
-
-        if (activeActivity?.id === updatedActivity.id) {
-          setActiveActivityState(updatedActivity);
-        }
+    onData: ({ data, client }) => {
+      const updatedActivity = data.data?.activityUpdated;
+      if (!updatedActivity) return;
+      console.log("🔄 Activity updated:", updatedActivity.id);
+      upsertActivityInCache(client.cache, {
+        careflowId,
+        activity: updatedActivity as unknown as { __typename: "Activity"; id: string } & Record<string, unknown>,
+      });
+      service.emit("activity.updated", { activity: updatedActivity });
+      if (activeActivity?.id === updatedActivity.id) {
+        setActiveActivityState(updatedActivity as ActivityFragment);
       }
     },
     onError: (error) => {
       console.error("❌ Activity updated subscription error:", error);
-      // Don't reset state on subscription errors - preserve form data
     },
   });
 
   useOnActivityCompletedSubscription({
     variables: { careflow_id: careflowId },
-    onData: ({ data }) => {
-      if (data.data?.activityCompleted) {
-        const completedActivity = data.data.activityCompleted;
-        console.log("✅ Activity completed:", completedActivity.id);
+    onData: ({ data, client }) => {
+      const completedActivity = data.data?.activityCompleted;
+      if (!completedActivity) return;
+      console.log("✅ Activity completed:", completedActivity.id);
+      upsertActivityInCache(client.cache, {
+        careflowId,
+        activity: completedActivity as unknown as { __typename: "Activity"; id: string } & Record<string, unknown>,
+      });
 
-        // Emit event for other services (e.g., CommunicationService)
-        service.emit("activity.completed", {
-          activity: completedActivity,
-          timestamp: Date.now(),
-        });
+      service.emit("activity.completed", {
+        activity: completedActivity,
+        timestamp: Date.now(),
+      });
 
-        // Update activities state
-        setActivities((previousActivities) => {
-          const index = previousActivities.findIndex(
-            (a) => a.id === completedActivity.id
-          );
-          if (index === -1) return previousActivities;
-          const current = previousActivities[index];
-          if (!shouldReplaceActivity(current, completedActivity)) {
-            return previousActivities;
-          }
-          const next = previousActivities.slice();
-          next[index] = completedActivity;
-          return next;
-        });
+      // Auto-advance to next activity if the completed one was active
+      if (activeActivity?.id === completedActivity.id || !activeActivity) {
+        const nextActivity = service.getNextCompletableActivity(
+          completedActivity.id,
+          activities.map((a) =>
+            a.id === completedActivity.id ? (completedActivity as ActivityFragment) : a
+          )
+        );
 
-        // Auto-advance to next activity if the completed one was active
-        if (activeActivity?.id === completedActivity.id || !activeActivity) {
-          console.log("🔄 Completed activity was active, checking for next...");
-          console.log("✅ Completed activity details:", {
-            id: completedActivity.id,
-            name: completedActivity.object.name,
-            status: completedActivity.status,
-            resolution: completedActivity.resolution,
-          });
-
-          // Find next completable activity using business logic
-          const nextActivity = service.getNextCompletableActivity(
-            completedActivity.id,
-            // Use the latest activities list including the completed update
-            activities.map((a) =>
-              a.id === completedActivity.id ? completedActivity : a
-            )
-          );
-
-          if (autoAdvanceOnComplete && nextActivity) {
-            console.log("🎯 Auto-advancing to next activity:", {
-              id: nextActivity.id,
-              name: nextActivity.object.name,
-              type: nextActivity.object.type,
-              status: nextActivity.status,
-            });
-            setActiveActivityState(nextActivity);
-            service.emit("activity.activated", { activity: nextActivity });
-          } else {
-            console.log("↩️ Clearing selection after completion");
-            setActiveActivityState(null);
-            service.emit("activity.cleared", {});
-          }
+        if (autoAdvanceOnComplete && nextActivity) {
+          setActiveActivityState(nextActivity);
+          service.emit("activity.activated", { activity: nextActivity });
         } else {
-          console.log(
-            "⏭️ Completed activity was not active, no auto-advance needed"
-          );
+          setActiveActivityState(null);
+          service.emit("activity.cleared", {});
         }
       }
     },
     onError: (error) => {
       console.error("❌ Activity completed subscription error:", error);
-      // Don't reset state on subscription errors - preserve form data
     },
   });
 
   useOnActivityExpiredSubscription({
     variables: { careflow_id: careflowId },
-    onData: ({ data }) => {
+    onData: ({ data, client }) => {
       if (data.data?.activityExpired) {
         const expiredActivity = data.data.activityExpired;
         console.log("⏰ Activity expired:", expiredActivity.id);
-
-        // service.updateCache(expiredActivity); // No longer needed
-        service.emit("activity.expired", { activity: expiredActivity });
-
-        setActivities((previousActivities) => {
-          const index = previousActivities.findIndex(
-            (a) => a.id === expiredActivity.id
-          );
-          if (index === -1) return previousActivities;
-          const current = previousActivities[index];
-          if (!shouldReplaceActivity(current, expiredActivity)) {
-            return previousActivities;
-          }
-          const next = previousActivities.slice();
-          next[index] = expiredActivity;
-          return next;
+        upsertActivityInCache(client.cache, {
+          careflowId,
+          activity: expiredActivity as unknown as { __typename: "Activity"; id: string } & Record<string, unknown>,
         });
-
+        service.emit("activity.expired", { activity: expiredActivity });
         if (activeActivity?.id === expiredActivity.id) {
           setActiveActivityState(expiredActivity);
         }
@@ -497,99 +400,30 @@ export function ActivityProvider({
     },
   });
 
-  // =================== INITIAL DATA HANDLING ===================
-
-  useEffect(() => {
+  // =================== DERIVED ACTIVITIES FROM CACHE/QUERY ===================
+  const activities: ActivityFragment[] = useMemo(() => {
     if (activityId && singleActivityData?.activity?.activity) {
-      // Single activity mode: fetch and set the specific activity
-      const singleActivity = singleActivityData.activity.activity;
-      console.log("📋 Single activity loaded from GraphQL:", singleActivity.id);
-      console.log("🔍 Raw single activity data:", {
-        id: singleActivity.id,
-        status: singleActivity.status,
-        resolution: singleActivity.resolution,
-        type: singleActivity.object.type,
-        is_user_activity: singleActivity.is_user_activity,
-        careflow_id: singleActivity.careflow_id,
-      });
+      const single = singleActivityData.activity.activity as ActivityFragment;
+      if (single.careflow_id !== careflowId) return [];
+      const filtered = service.filterUserActivities([single], stakeholderId);
+      return filtered;
+    }
+    const list = activitiesData?.pathwayActivities?.activities ?? [];
+    const filtered = service.filterUserActivities(list as ActivityFragment[], stakeholderId);
+    // Do not narrow by URL params here; the provider manages focus internally.
+    return filtered;
+  }, [activityId, singleActivityData, activitiesData, stakeholderId, careflowId, service]);
 
-      // Verify the activity belongs to the current careflow and stakeholder
-      if (singleActivity.careflow_id !== careflowId) {
-        console.warn("⚠️ Activity does not belong to current careflow:", {
-          activityCareflowId: singleActivity.careflow_id,
-          currentCareflowId: careflowId,
-        });
-        return;
-      }
-
-      // Apply stakeholder filter
-      const filteredActivity = service.filterUserActivities(
-        [singleActivity],
-        stakeholderId
-      );
-
-      if (filteredActivity.length === 0) {
-        console.warn("⚠️ Activity not accessible for current stakeholder");
-        return;
-      }
-
-      const activity = filteredActivity[0];
-      setActivities([activity]);
-
-      // Auto-select the single activity
-      if (!activeActivity) {
-        setActiveActivityState(activity);
-        service.emit("activity.activated", { activity });
-        console.log("🎯 Auto-selected single activity:", activity.id);
-      }
-    } else if (!activityId && activitiesData?.pathwayActivities?.activities) {
-      // Multiple activities mode: fetch all careflow activities
-      const allActivities = activitiesData.pathwayActivities.activities;
-      console.log("📋 Activities loaded from GraphQL:", allActivities.length);
-
-      console.log("Activities for stakeholder:", stakeholderId);
-      // WHY: apply stakeholder filter first (ownership), then apply client-side
-      // focus filter when activityId is provided to limit to a single activity
-      // without changing server-side ACL. The server already enforced trackId.
-      const filteredActivities = service.filterUserActivities(
-        allActivities,
-        stakeholderId
-      );
-
-      // Optional single-activity focus: if an activityId is specified in the
-      // session context, focus the UI on that activity only.
-      const url = new URL(window.location.href);
-      const focusActivityId = url.searchParams.get("activity_id");
-      const focusedList = focusActivityId
-        ? filteredActivities.filter((a) => a.id === focusActivityId)
-        : filteredActivities;
-
-      console.log("👤 User activities for stakeholder:", focusedList.length);
-      setActivities(focusedList);
-
-      // Auto-select first completable activity (respects completion logic)
-      if (!activeActivity) {
-        const firstCompletable =
-          service.findFirstCompletableActivity(focusedList);
-        if (firstCompletable) {
-          setActiveActivityState(firstCompletable);
-          service.emit("activity.activated", { activity: firstCompletable });
-          console.log(
-            "🎯 Auto-selected first completable activity:",
-            firstCompletable.id
-          );
-        }
+  // Fallback auto-select for initial render: pick first completable when none selected
+  useEffect(() => {
+    if (!activeActivity && activities.length > 0) {
+      const firstCompletable = service.findFirstCompletableActivity(activities);
+      if (firstCompletable) {
+        setActiveActivityState(firstCompletable);
+        service.emit("activity.activated", { activity: firstCompletable });
       }
     }
-  }, [
-    activityId,
-    singleActivityData,
-    activitiesData,
-    stakeholderId,
-    activeActivity,
-    service,
-    careflowId,
-  ]);
+  }, [activities, activeActivity, service]);
 
   // =================== ACTION HANDLERS ===================
 
@@ -640,25 +474,16 @@ export function ActivityProvider({
     async (
       activityId: string,
       data: Record<string, unknown>,
-      activityType?: string
+      activityType: UserActivityType
     ) => {
       console.log("🔄 Completing activity:", activityId, activityType, data);
 
       try {
-        // Find the activity to determine its type
-        const activity = activities.find((a) => a.id === activityId);
-        if (!activity) {
-          console.error("❌ Activity not found:", activityId);
-          return;
-        }
-
         // Ensure we have a session ID for completion tracking
         if (!sessionId) {
           console.error("❌ No session ID available for activity completion");
           return;
         }
-
-        const type = activityType || activity.object.type;
 
         // Prepare completion context
         const completionContext = {
@@ -670,7 +495,7 @@ export function ActivityProvider({
 
         let input;
 
-        switch (type) {
+        switch (activityType) {
           case "FORM": {
             // For forms, convert form data to question responses
             const formResponse = data.formData
@@ -699,7 +524,6 @@ export function ActivityProvider({
             break;
           }
 
-          case "extension":
           case "EXTENSION": {
             input = {
               activity_id: activityId,
@@ -734,7 +558,7 @@ export function ActivityProvider({
           }
 
           default:
-            console.error("❌ Unsupported activity type for completion:", type);
+            console.error("❌ Unsupported activity type for completion:", activityType);
             return;
         }
 
@@ -742,6 +566,14 @@ export function ActivityProvider({
 
         const result = await completeActivityMutation({
           variables: { input },
+          update: (cache, { data }) => {
+            const a = data?.completeActivity?.activity as
+              | ({ __typename: "Activity"; id: string } & Record<string, unknown>)
+              | undefined;
+            if (a) {
+              upsertActivityInCache(cache, { careflowId, activity: a });
+            }
+          },
         });
 
         if (
@@ -750,17 +582,7 @@ export function ActivityProvider({
         ) {
           console.log("✅ Activity completed successfully:", activityId);
 
-          // Immediately update local cache with completed activity
-          const completedActivity = result.data.completeActivity.activity;
-          setActivities((prev) =>
-            prev.map((activity) => {
-              if (activity.id === activityId) {
-                return completedActivity;
-              }
-              return activity;
-            })
-          );
-
+          const completedActivity = result.data.completeActivity.activity as ActivityFragment;
           service.emit("activity.completed", {
             activityId,
             activity: completedActivity,
