@@ -16,6 +16,7 @@ import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
 import { TokenEnvironment } from "@awell-health/navi-core";
 import { getEndpoint } from "../api/environments";
+import { createNaviInMemoryCache } from "./cache-policies";
 
 let _apolloClient: ApolloClient<NormalizedCacheObject> | null = null;
 let _jwtCache: {
@@ -327,6 +328,7 @@ function createApolloClient(): ApolloClient<NormalizedCacheObject> {
 
   const isSubscriptionOperation = ({ query }: { query: DocumentNode }) => {
     const definition = getMainDefinition(query);
+    console.log("🔍 isSubscriptionOperation", definition);
     return (
       definition.kind === "OperationDefinition" &&
       definition.operation === "subscription"
@@ -341,7 +343,7 @@ function createApolloClient(): ApolloClient<NormalizedCacheObject> {
 
   return new ApolloClient({
     link,
-    cache: new InMemoryCache(),
+    cache: createNaviInMemoryCache(),
     defaultOptions: {
       watchQuery: {
         errorPolicy: "all",

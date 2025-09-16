@@ -702,6 +702,7 @@ export type Subscription = {
   activityCompleted: Activity;
   activityCreated: Activity;
   activityExpired: Activity;
+  activityReady: Activity;
   activityUpdated: Activity;
   sessionActivityCompleted: Activity;
   sessionActivityCreated: Activity;
@@ -723,6 +724,12 @@ export type SubscriptionActivityCreatedArgs = {
 
 
 export type SubscriptionActivityExpiredArgs = {
+  careflow_id: Scalars['String']['input'];
+  only_patient_activities?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type SubscriptionActivityReadyArgs = {
   careflow_id: Scalars['String']['input'];
   only_patient_activities?: InputMaybe<Scalars['Boolean']['input']>;
 };
