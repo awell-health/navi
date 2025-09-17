@@ -13,9 +13,9 @@ import {
   FormActivityInput,
   MessageActivityInput,
 } from "@/lib/awell-client/generated/graphql";
-import { useActivity } from "@/lib/activity-provider";
-import { CompletionStateRenderer } from "@/components/completion-state-renderer";
-import { useCompletionFlow } from "@/hooks/use-completion-flow";
+import { useActivity } from "@/lib/activity-context-provider";
+import { SessionCompletionUI } from "@/components/session-completion-ui";
+import { useSessionCompletionTimer } from "@/hooks/use-session-completion-timer";
 import { useActivityHandlers } from "@/hooks/use-activity-handlers";
 
 // Helper function to check if activity has form input
@@ -54,7 +54,7 @@ export function CareflowActivitiesContent({
     setActiveActivity,
     markActivityAsViewed,
     completeActivity,
-    service,
+    coordinator,
   } = useActivity();
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export function CareflowActivitiesContent({
     useActivityHandlers({ completeActivity });
 
   // Completion flow management
-  const { completionState, waitingCountdown } = useCompletionFlow(
+  const { completionState, waitingCountdown } = useSessionCompletionTimer(
     activities,
     {
       waitingDuration: 5,
@@ -92,14 +92,14 @@ export function CareflowActivitiesContent({
 
   // When an activity is completed: notify parent (TaskView) to go back
   useEffect(() => {
-    const unsubscribe = service.on("activity.completed", async (data) => {
+    const unsubscribe = coordinator.on("activity.completed", async (data) => {
       console.log("🎉 Activity completed", data);
       onCompleted?.();
     });
     return () => {
       unsubscribe();
     };
-  }, [service, onCompleted]);
+  }, [coordinator, onCompleted]);
 
   // Render the appropriate activity component based on the active activity type
   const renderActiveActivity = () => {
@@ -180,7 +180,7 @@ export function CareflowActivitiesContent({
   // Show completion state if session is completed
   if (completionState === "completed") {
     return (
-      <CompletionStateRenderer
+      <SessionCompletionUI
         waitingCountdown={waitingCountdown || 0}
         completionState={completionState}
       />

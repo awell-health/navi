@@ -10,7 +10,7 @@ import {
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { ArrowLeftToLine } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useActivity } from "@/lib/activity-provider";
+import { useActivity } from "@/lib/activity-context-provider";
 import {
   clearAuthenticationCache,
   apolloClient,

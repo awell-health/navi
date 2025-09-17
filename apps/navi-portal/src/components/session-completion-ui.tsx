@@ -4,22 +4,22 @@ import React from "react";
 
 type CompletionState = "active" | "waiting" | "completed";
 
-interface CompletionStateRendererProps {
+interface SessionCompletionUIProps {
   completionState: CompletionState;
   waitingCountdown: number | null;
 }
 
 /**
- * Renders UI for different completion flow states
+ * Renders UI for different session completion states
  *
  * - waiting: Shows countdown with "session will end in X seconds" message
  * - completed: Shows "session ended" message (parent handles redirects)
  * - active: Returns null (normal activity flow)
  */
-export function CompletionStateRenderer({
+export function SessionCompletionUI({
   completionState,
   waitingCountdown,
-}: CompletionStateRendererProps) {
+}: SessionCompletionUIProps) {
   if (completionState === "waiting") {
     const showFinalMessage = (waitingCountdown ?? 0) <= 3; // Show final copy only in last 3s
     return (
@@ -88,3 +88,6 @@ export function CompletionStateRenderer({
 
   return null; // Active state - no special UI
 }
+
+// Backward compatibility
+export const CompletionStateRenderer = SessionCompletionUI;

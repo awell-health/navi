@@ -3,7 +3,7 @@
 import React from "react";
 import { ListTodo } from "lucide-react";
 import { useBranding } from "@/lib/branding-provider";
-import { useActivity } from "@/lib/activity-provider";
+import { useActivity } from "@/lib/activity-context-provider";
 
 interface ActivityHeaderProps {
   onActivityListClick?: () => void;

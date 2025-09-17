@@ -2,7 +2,7 @@ import { useMemo, useRef } from "react";
 import { ActivityFragment, usePathwayActivitiesQuery } from "@/lib/awell-client/generated/graphql";
 import { isUserCompletable } from "./helpers";
 
-export function usePendingActivities(careflowId: string) {
+export function useActivityCounts(careflowId: string) {
   const { data, loading } = usePathwayActivitiesQuery({
     variables: { careflow_id: careflowId },
   });
@@ -34,5 +34,8 @@ export function usePendingActivities(careflowId: string) {
     lastChangeAt: lastChangeAtRef.current,
   };
 }
+
+// Backward compatibility
+export const usePendingActivities = useActivityCounts;
 
 

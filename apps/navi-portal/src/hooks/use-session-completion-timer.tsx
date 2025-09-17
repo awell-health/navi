@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { ActivityFragment } from "@/lib/awell-client/generated/graphql";
-import { usePendingActivities } from "@/lib/activities/use-pending-activities";
+import { useActivityCounts } from "@/lib/activities/use-activity-counts";
 import { logout } from "@/lib/awell-client/client";
 import {
   createCompletionController,
@@ -12,7 +12,7 @@ import {
 // Completion flow states
 type CompletionState = "active" | "waiting" | "completed";
 
-interface UseCompletionFlowOptions {
+interface UseSessionCompletionTimerOptions {
   waitingDuration?: number; // Countdown duration in seconds
   onSessionCompleted?: () => void; // Callback when session completion is triggered
   onIframeClose?: () => void; // Callback when iframe should close
@@ -21,13 +21,13 @@ interface UseCompletionFlowOptions {
   careflowId?: string; // Optional override to derive pending state without relying on activities array
 }
 
-interface UseCompletionFlowResult {
+interface UseSessionCompletionTimerResult {
   completionState: CompletionState;
   waitingCountdown: number | null;
 }
 
 /**
- * Custom hook to manage activity completion flow
+ * Custom hook to manage session completion timer
  *
  * Handles:
  * - Detecting when all activities are complete
@@ -35,11 +35,11 @@ interface UseCompletionFlowResult {
  * - Triggering session cleanup and logout
  * - Coordinating with parent window via postMessage
  */
-export function useCompletionFlow(
+export function useSessionCompletionTimer(
   activities: ActivityFragment[],
-  options: UseCompletionFlowOptions = {}
-): UseCompletionFlowResult {
-  const { waitingDuration = 5, onSessionCompleted, onIframeClose, isSingleActivityMode = false, allowCompletedActivitiesInSingleMode = true, careflowId } = options;
+  options: UseSessionCompletionTimerOptions = {}
+): UseSessionCompletionTimerResult {
+  const { waitingDuration = 10, onSessionCompleted, onIframeClose, isSingleActivityMode = false, allowCompletedActivitiesInSingleMode = true, careflowId } = options;
 
   const [completionState, setCompletionState] = useState<CompletionState>("active");
   const [waitingCountdown, setWaitingCountdown] = useState<number | null>(null);
@@ -48,7 +48,7 @@ export function useCompletionFlow(
 
   // Drive from cache-derived pending state
   const careflowIdEffective = careflowId ?? activities[0]?.careflow_id ?? "";
-  const { pendingCount } = usePendingActivities(careflowIdEffective);
+  const { pendingCount } = useActivityCounts(careflowIdEffective);
 
   useEffect(() => {
     if (!careflowIdEffective) return;
@@ -136,3 +136,6 @@ export function useCompletionFlow(
     waitingCountdown,
   };
 }
+
+// Backward compatibility
+export const useCompletionFlow = useSessionCompletionTimer;

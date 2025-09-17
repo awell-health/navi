@@ -21,14 +21,25 @@ import {
 } from "@/lib/awell-client/generated/graphql";
 import { upsertActivityInCache } from "@/lib/awell-client/cache-policies";
 import { UserActivityType } from "@awell-health/navi-core";
+import {
+  filterUserActivities,
+  findFirstActiveActivity,
+  findFirstCompletableActivity,
+  getNextCompletableActivity,
+  getActivitiesRequiringCompletion,
+  calculateProgress,
+  canTransitionTo,
+  isActivityCompleted,
+  getCompletableActivities,
+} from "./activities/helpers";
 
 // =================== SERVICE LAYER ===================
 
 /**
- * ActivityService - Business logic and event coordination
- * Leverages Apollo's cache instead of maintaining its own
+ * ActivityEventCoordinator - Event coordination and communication
+ * Manages cross-component event coordination via event bus
  */
-class ActivityService {
+class ActivityEventCoordinator {
   private listeners: Map<string, Set<(data: unknown) => void>> = new Map();
 
   // Event bus for cross-service communication
@@ -53,127 +64,6 @@ class ActivityService {
     return () => {
       this.listeners.get(event)?.delete(handler);
     };
-  }
-
-  // Pure business logic methods (no caching needed)
-  filterUserActivities(
-    activities: ActivityFragment[],
-    stakeholderId?: string
-  ): ActivityFragment[] {
-    const userActivities = activities.filter((a) => a.is_user_activity);
-
-    if (stakeholderId) {
-      return userActivities.filter(
-        (activity) =>
-          activity.indirect_object?.id === stakeholderId ||
-          activity.object?.id === stakeholderId ||
-          activity.stakeholders?.some((s) => s.id === stakeholderId)
-      );
-    }
-
-    return userActivities;
-  }
-
-  findFirstActiveActivity(
-    activities: ActivityFragment[]
-  ): ActivityFragment | null {
-    return activities.find((a) => a.status === "ACTIVE") || null;
-  }
-
-  findFirstCompletableActivity(
-    activities: ActivityFragment[]
-  ): ActivityFragment | null {
-    // Find first activity that needs user action (ACTIVE and not completed)
-    const completableActivities = this.getCompletableActivities(activities);
-    return completableActivities[0] || null;
-  }
-
-  getNextCompletableActivity(
-    currentActivityId: string,
-    activities: ActivityFragment[]
-  ): ActivityFragment | null {
-    // Get all completable activities (order-agnostic)
-    const completableActivities = this.getCompletableActivities(activities);
-    console.log(
-      "✅ Completable activities:",
-      completableActivities.map((a) => ({
-        id: a.id,
-        name: a.object.name,
-        status: a.status,
-        type: a.object.type,
-      }))
-    );
-
-    // Simply return the first completable activity (order doesn't matter)
-    const nextActivity = completableActivities[0] || null;
-    console.log(
-      "🎯 Next activity to advance to:",
-      nextActivity ? nextActivity.object.name : "none"
-    );
-
-    return nextActivity;
-  }
-
-  // Activity completion business logic
-  isActivityCompleted(activity: ActivityFragment): boolean {
-    // Message activities: check resolution instead of just status
-    if (activity.object.type === "MESSAGE") {
-      // Messages don't block orchestration, so status is always "DONE"
-      // We need to check resolution to see if user actually completed it
-      return activity.resolution === "SUCCESS";
-    }
-
-    // Other activity types: status "DONE" means completed
-    // (FORM, CHECKLIST, etc. that do block orchestration)
-    return activity.status === "DONE";
-  }
-
-  getCompletableActivities(activities: ActivityFragment[]): ActivityFragment[] {
-    // Filter for activities that still need user action
-    return activities.filter((activity) => {
-      // Skip if already completed
-      if (this.isActivityCompleted(activity)) {
-        return false;
-      }
-      return activity.is_user_activity;
-    });
-  }
-
-  getActivitiesRequiringCompletion(
-    activities: ActivityFragment[]
-  ): ActivityFragment[] {
-    // Activities that are not yet completed (regardless of ACTIVE status)
-    return activities.filter((activity) => !this.isActivityCompleted(activity));
-  }
-
-  // Computed properties that might not exist in GraphQL
-  calculateProgress(activities: ActivityFragment[]): {
-    completed: number;
-    total: number;
-    percentage: number;
-  } {
-    // Use proper completion logic instead of just counting status === "DONE"
-    const completed = activities.filter((a) =>
-      this.isActivityCompleted(a)
-    ).length;
-    const total = activities.length;
-    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-    return { completed, total, percentage };
-  }
-
-  // Business rules that don't belong in components
-  canTransitionTo(
-    currentActivity: ActivityFragment | null,
-    targetActivity: ActivityFragment
-  ): boolean {
-    // Example business logic
-    if (!currentActivity) return targetActivity.status === "ACTIVE";
-    if (currentActivity.status !== "DONE") return false;
-    if (targetActivity.status !== "ACTIVE") return false;
-
-    // More complex rules could go here
-    return true;
   }
 }
 
@@ -203,8 +93,8 @@ interface ActivityContextType {
     activityType: UserActivityType
   ) => Promise<void>;
 
-  // Service instance (for advanced use cases)
-  service: ActivityService;
+  // Event coordinator instance (for advanced use cases)
+  coordinator: ActivityEventCoordinator;
 
   // Computed values
   progress: { completed: number; total: number; percentage: number };
@@ -212,24 +102,24 @@ interface ActivityContextType {
 
 const ActivityContext = createContext<ActivityContextType | null>(null);
 
-interface ActivityProviderProps {
+interface ActivityContextProviderProps {
   children: React.ReactNode;
   careflowId: string;
   stakeholderId?: string;
   onActivityActivate?: (activityId: string, activity: ActivityFragment) => void;
-  service?: ActivityService; // Allow injection for testing
+  coordinator?: ActivityEventCoordinator; // Allow injection for testing
   autoAdvanceOnComplete?: boolean; // If true, move to next task; otherwise clear selection
   activityId?: string; // Optional: if provided, fetch only this activity
 }
 
 /**
- * ActivityProvider - Manages activity state and lifecycle for careflows
+ * ActivityContextProvider - Manages activity state and lifecycle for careflows
  *
  * @param careflowId - The ID of the careflow to fetch activities for
  * @param stakeholderId - Optional stakeholder ID to filter activities by ownership
  * @param activityId - Optional activity ID to fetch only a single activity instead of all careflow activities
  * @param autoAdvanceOnComplete - Whether to automatically advance to the next activity on completion
- * @param service - Optional injected service instance for testing
+ * @param coordinator - Optional injected coordinator instance for testing
  * @param onActivityActivate - Optional callback when an activity is activated
  *
  * When activityId is provided, the provider will:
@@ -238,16 +128,16 @@ interface ActivityProviderProps {
  * - Maintain the same subscription-based updates for that activity
  * - Apply the same stakeholder filtering and business logic
  */
-export function ActivityProvider({
+export function ActivityContextProvider({
   children,
   careflowId,
   stakeholderId,
-  service: injectedService,
+  coordinator: injectedCoordinator,
   autoAdvanceOnComplete = true,
   activityId,
-}: ActivityProviderProps) {
-  // Create service instance only once
-  const [service] = useState(() => injectedService || new ActivityService());
+}: ActivityContextProviderProps) {
+  // Create coordinator instance only once
+  const [coordinator] = useState(() => injectedCoordinator || new ActivityEventCoordinator());
   const sessionId = useSessionId();
 
   // State (UI only)
@@ -306,12 +196,12 @@ export function ActivityProvider({
         activity: ready as unknown as { __typename: "Activity"; id: string } & Record<string, unknown>,
       });
       console.log("🔍 Activity ready. Emitting event", ready);
-      service.emit("activity.ready", { activity: ready });
+      coordinator.emit("activity.ready", { activity: ready });
       if (readyId) setNewActivities((prev) => new Set([...prev, readyId]));
       // If nothing is active, immediately activate the newly ready activity
       if (!activeActivity && ready.status === "ACTIVE") {
         setActiveActivityState(ready as ActivityFragment);
-        service.emit("activity.activated", { activity: ready });
+        coordinator.emit("activity.activated", { activity: ready });
       }
     },
     onError: (error) => {
@@ -329,7 +219,7 @@ export function ActivityProvider({
         careflowId,
         activity: updatedActivity as unknown as { __typename: "Activity"; id: string } & Record<string, unknown>,
       });
-      service.emit("activity.updated", { activity: updatedActivity });
+      coordinator.emit("activity.updated", { activity: updatedActivity });
       if (activeActivity?.id === updatedActivity.id) {
         setActiveActivityState(updatedActivity as ActivityFragment);
       }
@@ -350,27 +240,15 @@ export function ActivityProvider({
         activity: completedActivity as unknown as { __typename: "Activity"; id: string } & Record<string, unknown>,
       });
 
-      service.emit("activity.completed", {
+      coordinator.emit("activity.completed", {
         activity: completedActivity,
         timestamp: Date.now(),
       });
 
-      // Auto-advance to next activity if the completed one was active
-      if (activeActivity?.id === completedActivity.id || !activeActivity) {
-        const nextActivity = service.getNextCompletableActivity(
-          completedActivity.id,
-          activities.map((a) =>
-            a.id === completedActivity.id ? (completedActivity as ActivityFragment) : a
-          )
-        );
-
-        if (autoAdvanceOnComplete && nextActivity) {
-          setActiveActivityState(nextActivity);
-          service.emit("activity.activated", { activity: nextActivity });
-        } else {
-          setActiveActivityState(null);
-          service.emit("activity.cleared", {});
-        }
+      // Clear active activity - let activity.ready subscription handle advancement
+      if (activeActivity?.id === completedActivity.id) {
+        setActiveActivityState(null);
+        coordinator.emit("activity.cleared", {});
       }
     },
     onError: (error) => {
@@ -388,7 +266,7 @@ export function ActivityProvider({
           careflowId,
           activity: expiredActivity as unknown as { __typename: "Activity"; id: string } & Record<string, unknown>,
         });
-        service.emit("activity.expired", { activity: expiredActivity });
+        coordinator.emit("activity.expired", { activity: expiredActivity });
         if (activeActivity?.id === expiredActivity.id) {
           setActiveActivityState(expiredActivity);
         }
@@ -405,25 +283,25 @@ export function ActivityProvider({
     if (activityId && singleActivityData?.activity?.activity) {
       const single = singleActivityData.activity.activity as ActivityFragment;
       if (single.careflow_id !== careflowId) return [];
-      const filtered = service.filterUserActivities([single], stakeholderId);
+      const filtered = filterUserActivities([single], stakeholderId);
       return filtered;
     }
-    const list = activitiesData?.pathwayActivities?.activities ?? [];
-    const filtered = service.filterUserActivities(list as ActivityFragment[], stakeholderId);
+    const list: ActivityFragment[] = activitiesData?.pathwayActivities?.activities ?? [];
+    const filtered = filterUserActivities(list, stakeholderId);
     // Do not narrow by URL params here; the provider manages focus internally.
     return filtered;
-  }, [activityId, singleActivityData, activitiesData, stakeholderId, careflowId, service]);
+  }, [activityId, singleActivityData, activitiesData, stakeholderId, careflowId]);
 
   // Fallback auto-select for initial render: pick first completable when none selected
   useEffect(() => {
     if (!activeActivity && activities.length > 0) {
-      const firstCompletable = service.findFirstCompletableActivity(activities);
+      const firstCompletable = findFirstCompletableActivity(activities);
       if (firstCompletable) {
         setActiveActivityState(firstCompletable);
-        service.emit("activity.activated", { activity: firstCompletable });
+        coordinator.emit("activity.activated", { activity: firstCompletable });
       }
     }
-  }, [activities, activeActivity, service]);
+  }, [activities, activeActivity, coordinator]);
 
   // =================== ACTION HANDLERS ===================
 
@@ -432,20 +310,20 @@ export function ActivityProvider({
       const activity = activities.find((a) => a.id === activityId);
       if (activity) {
         setActiveActivityState(activity);
-        service.emit("activity.activated", { activity });
+        coordinator.emit("activity.activated", { activity });
         console.log("🎯 Active activity set to:", activityId);
       } else {
         console.warn("⚠️ Activity not found:", activityId);
       }
     },
-    [activities, service]
+    [activities, coordinator]
   );
 
   const clearActiveActivity = useCallback(() => {
     setActiveActivityState(null);
-    service.emit("activity.cleared", {});
+    coordinator.emit("activity.cleared", {});
     console.log("↩️ Cleared active activity (return to list)");
-  }, [service]);
+  }, [coordinator]);
 
   const markActivityAsViewed = useCallback(
     (activityId: string) => {
@@ -455,10 +333,10 @@ export function ActivityProvider({
         newSet.delete(activityId);
         return newSet;
       });
-      service.emit("activity.viewed", { activityId });
+      coordinator.emit("activity.viewed", { activityId });
       console.log("👁️ Activity marked as viewed:", activityId);
     },
-    [service]
+    [coordinator]
   );
 
   const refetchActivities = useCallback(async () => {
@@ -583,7 +461,7 @@ export function ActivityProvider({
           console.log("✅ Activity completed successfully:", activityId);
 
           const completedActivity = result.data.completeActivity.activity as ActivityFragment;
-          service.emit("activity.completed", {
+          coordinator.emit("activity.completed", {
             activityId,
             activity: completedActivity,
             timestamp: Date.now(),
@@ -596,14 +474,14 @@ export function ActivityProvider({
         }
       } catch (error) {
         console.error("❌ Error completing activity:", error);
-        service.emit("activity.error", {
+        coordinator.emit("activity.error", {
           activityId,
           error: error instanceof Error ? error.message : "Unknown error",
           timestamp: Date.now(),
         });
       }
     },
-    [activities, stakeholderId, completeActivityMutation, service]
+    [activities, stakeholderId, completeActivityMutation, coordinator]
   );
 
   // =================== CONTEXT VALUE ===================
@@ -638,11 +516,11 @@ export function ActivityProvider({
       completeActivity,
       clearActiveActivity,
 
-      // Service instance
-      service,
+      // Event coordinator instance
+      coordinator,
 
       // Computed values
-      progress: service.calculateProgress(activities),
+      progress: calculateProgress(activities),
     }),
     [
       activities,
@@ -656,7 +534,7 @@ export function ActivityProvider({
       markActivityAsViewed,
       refetchActivities,
       completeActivity,
-      service,
+      coordinator,
     ]
   );
 
@@ -667,13 +545,17 @@ export function ActivityProvider({
   );
 }
 
-export function useActivity() {
+export function useActivityContext() {
   const context = useContext(ActivityContext);
   if (!context) {
-    throw new Error("useActivity must be used within an ActivityProvider");
+    throw new Error("useActivityContext must be used within an ActivityContextProvider");
   }
   return context;
 }
 
-// Export service class for testing or external use
-export { ActivityService };
+// Backward compatibility
+export const useActivity = useActivityContext;
+export const ActivityProvider = ActivityContextProvider;
+
+// Export coordinator class for testing or external use
+export { ActivityEventCoordinator };

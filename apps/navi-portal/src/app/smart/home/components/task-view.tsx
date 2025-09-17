@@ -6,7 +6,7 @@ import { Coding, Extension } from "@medplum/fhirtypes";
 import { TaskStatusBadge } from "./task-status-badge";
 import { InfoCard } from "./info-card";
 import { ApolloProvider } from "@/lib/awell-client/provider";
-import { ActivityProvider } from "@/lib/activity-provider";
+import { ActivityContextProvider } from "@/lib/activity-context-provider";
 import { CareflowActivitiesContent } from "./careflow-activities-content";
 import { BrandingProvider } from "@/lib/branding-provider";
 import { awellDefaultBranding } from "@/lib/branding/defaults";
@@ -146,7 +146,7 @@ export function TaskView() {
                     orgId={awellDefaultBranding.orgId}
                     hasCustomBranding={false}
                   >
-                    <ActivityProvider
+                    <ActivityContextProvider
                       careflowId={careflowId}
                       stakeholderId={stakeholderId}
                       activityId={activityId}
@@ -155,7 +155,7 @@ export function TaskView() {
                         activityId={activityId}
                         onCompleted={handleTaskCompleted}
                       />
-                    </ActivityProvider>
+                    </ActivityContextProvider>
                   </BrandingProvider>
                 </ApolloProvider>
               )}
