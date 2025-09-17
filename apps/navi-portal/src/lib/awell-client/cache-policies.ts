@@ -54,6 +54,14 @@ export function upsertActivityInCache(
       nextList = list.slice();
       nextList[index] = { ...list[index], ...args.activity };
     }
+    // Ensure activities remain sorted by ascending date
+    nextList = nextList.slice().sort((a: unknown, b: unknown) => {
+      const aa = a as { date?: string };
+      const bb = b as { date?: string };
+      const aTime = aa?.date ? Date.parse(aa.date) : 0;
+      const bTime = bb?.date ? Date.parse(bb.date) : 0;
+      return aTime - bTime;
+    });
     return {
       ...data,
       pathwayActivities: {

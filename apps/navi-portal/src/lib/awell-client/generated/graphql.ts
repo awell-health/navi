@@ -1507,7 +1507,7 @@ export const PathwayActivitiesDocument = gql`
     query PathwayActivities($careflow_id: String!) {
   pathwayActivities(
     careflow_id: $careflow_id
-    sorting: {field: "date", direction: "DESC"}
+    sorting: {field: "date", direction: "ASC"}
   ) {
     success
     activities {
