@@ -5,6 +5,8 @@ import type {
   NaviEventType,
   ActivityEvent,
   SessionEvent,
+  ActivityReadyEvent,
+  ActivityCompleteEvent,
 } from "@awell-health/navi-core";
 
 interface NaviEmbedInstance {
@@ -19,7 +21,8 @@ export interface NaviEmbedProps extends RenderOptions {
   style?: React.CSSProperties;
 
   // Event handlers using centralized navi-core types
-  onActivityCompleted?: (event: ActivityEvent<{ submissionData: any }>) => void;
+  onActivityReady?: (event: ActivityReadyEvent) => void;
+  onActivityCompleted?: (event: ActivityCompleteEvent) => void;
   onSessionReady?: (
     event: SessionEvent<{ sessionId: string; environment: string }>
   ) => void;
@@ -41,6 +44,7 @@ export interface NaviEmbedProps extends RenderOptions {
 export function NaviEmbed({
   className,
   style,
+  onActivityReady,
   onActivityCompleted,
   onSessionReady,
   onSessionCompleted,
@@ -127,6 +131,10 @@ export function NaviEmbed({
         // Set up event listeners using centralized event types
 
         // Activity events
+        if (onActivityReady) {
+          embedInstance.on("activity-ready", onActivityReady);
+        }
+
         if (onActivityCompleted) {
           embedInstance.on("activity-complete", onActivityCompleted);
         }

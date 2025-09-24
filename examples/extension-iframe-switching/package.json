@@ -1,0 +1,24 @@
+{
+  "name": "example-extension-iframe-switching",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3001",
+    "build": "next build",
+    "start": "NODE_ENV=production next start --port 3001",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@awell-health/navi-js": "workspace:*",
+    "@awell-health/navi-js-react": "workspace:*",
+    "next": "^15.3.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.3.0"
+  }
+}
