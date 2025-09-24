@@ -11,7 +11,7 @@ const ExtensionIframeSwitchingDemo = () => {
   const [showNavi, setShowNavi] = useState(true);
   const [showGoogle, setShowGoogle] = useState(false);
 
-  const handleActivityReady = (event: any) => {
+  const handleActivityReady = (event: { activityType: string; type: string }) => {
     console.log("Activity ready event:", event);
     
     if (event.activityType === "EXTENSION") {
@@ -21,7 +21,7 @@ const ExtensionIframeSwitchingDemo = () => {
     }
   };
 
-  const handleActivityCompleted = (event: any) => {
+  const handleActivityCompleted = (event: { activityType: string; type: string; data?: { submissionData: unknown } }) => {
     console.log("Activity completed:", event);
     
     if (event.activityType === "EXTENSION") {
@@ -32,7 +32,7 @@ const ExtensionIframeSwitchingDemo = () => {
   };
 
   React.useEffect(() => {
-    const handleTestReady = (event: any) => {
+    const handleTestReady = (event: CustomEvent<{ activityType: string; type: string }>) => {
       console.log("🧪 Test extension activity ready:", event.detail);
       if (event.detail.activityType === "EXTENSION") {
         console.log("Extension activity started - showing Google iframe");
@@ -41,7 +41,7 @@ const ExtensionIframeSwitchingDemo = () => {
       }
     };
 
-    const handleTestComplete = (event: any) => {
+    const handleTestComplete = (event: CustomEvent<{ activityType: string; type: string }>) => {
       console.log("🧪 Test extension activity complete:", event.detail);
       if (event.detail.activityType === "EXTENSION") {
         console.log("Extension activity completed - showing Navi iframe");
@@ -50,12 +50,12 @@ const ExtensionIframeSwitchingDemo = () => {
       }
     };
 
-    window.addEventListener('test-activity-ready', handleTestReady);
-    window.addEventListener('test-activity-complete', handleTestComplete);
+    window.addEventListener('test-activity-ready', handleTestReady as EventListener);
+    window.addEventListener('test-activity-complete', handleTestComplete as EventListener);
 
     return () => {
-      window.removeEventListener('test-activity-ready', handleTestReady);
-      window.removeEventListener('test-activity-complete', handleTestComplete);
+      window.removeEventListener('test-activity-ready', handleTestReady as EventListener);
+      window.removeEventListener('test-activity-complete', handleTestComplete as EventListener);
     };
   }, []);
 
