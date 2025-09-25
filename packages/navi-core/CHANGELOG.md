@@ -1,5 +1,11 @@
 # @awell-health/navi-core
 
+## 0.0.10
+
+### Patch Changes
+
+- c324c93: navi.activity.{string} for navi react
+
 ## 0.0.9
 
 ### Patch Changes

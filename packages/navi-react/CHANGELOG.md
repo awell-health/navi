@@ -1,5 +1,14 @@
 # @awell-health/navi-js-react
 
+## 0.0.10
+
+### Patch Changes
+
+- c324c93: navi.activity.{string} for navi react
+- Updated dependencies [c324c93]
+  - @awell-health/navi-core@0.0.10
+  - @awell-health/navi-js@0.0.10
+
 ## 0.0.9
 
 ### Patch Changes
