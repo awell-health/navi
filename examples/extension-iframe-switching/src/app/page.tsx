@@ -107,8 +107,13 @@ const ExtensionIframeSwitchingDemo = () => {
             backgroundColor: showNavi ? '#10b981' : '#e5e7eb',
             color: showNavi ? 'white' : '#6b7280',
             borderRadius: '4px',
-            fontWeight: '500'
-          }}>
+            fontWeight: '500',
+          }}
+            onClick={() => {
+              setShowNavi(true);
+              setShowGoogle(false);
+            }}
+          >
             Navi: {showNavi ? 'Visible' : 'Hidden'}
           </div>
           <div style={{
@@ -117,7 +122,12 @@ const ExtensionIframeSwitchingDemo = () => {
             color: showGoogle ? 'white' : '#6b7280',
             borderRadius: '4px',
             fontWeight: '500'
-          }}>
+          }}
+          onClick={() => {
+            setShowGoogle(true);
+            setShowNavi(false);
+          }}
+          >
             Google: {showGoogle ? 'Visible' : 'Hidden'}
           </div>
         </div>
@@ -140,11 +150,8 @@ const ExtensionIframeSwitchingDemo = () => {
             }}
           >
             <NaviEmbed
-              careflowDefinitionId="1CnTTHNYM1Q3"
-              patientIdentifier={{
-                system: "https://www.medplum.com/docs/api/fhir/resources/patient",
-                value: "fake_medplum_jb",
-              }}
+              careflowDefinitionId="VGqIpPHCpPMp"
+              awellPatientId="4IzwYJMCpDpuqvFZn_CWP"
               onSessionReady={() => {
                 console.log("✅ Navi embed is ready");
               }}
@@ -153,7 +160,6 @@ const ExtensionIframeSwitchingDemo = () => {
               }}
               onActivityReady={handleActivityReady}
               onActivityCompleted={handleActivityCompleted}
-              style={{ width: '100%', height: '100%' }}
             />
           </div>
           

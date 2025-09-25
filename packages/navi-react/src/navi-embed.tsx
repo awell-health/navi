@@ -132,11 +132,11 @@ export function NaviEmbed({
 
         // Activity events
         if (onActivityReady) {
-          embedInstance.on("activity-ready", onActivityReady);
+          embedInstance.on("navi.activity.ready", onActivityReady);
         }
 
         if (onActivityCompleted) {
-          embedInstance.on("activity-complete", onActivityCompleted);
+          embedInstance.on("navi.activity.completed", onActivityCompleted);
         }
 
         // Session events
