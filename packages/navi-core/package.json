@@ -1,6 +1,6 @@
 {
   "name": "@awell-health/navi-core",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Core utilities and GraphQL client for Navi care flow integration",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",

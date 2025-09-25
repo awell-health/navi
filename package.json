@@ -15,6 +15,7 @@
     "clean": "turbo clean",
     "dev:portal": "turbo dev --filter=app-navi-portal",
     "dev:test-app": "turbo dev --filter=example-simple-embed",
+    "dev:switch": "turbo dev --filter=example-extension-iframe-switching",
     "build:packages": "turbo build --filter='./packages/*'",
     "build:portal": "turbo build --filter=app-navi-portal",
     "changeset": "changeset",
