@@ -5,7 +5,6 @@ import { ArrowLeft, Check, Loader2 } from "lucide-react";
 import { Coding, Extension } from "@medplum/fhirtypes";
 import { TaskStatusBadge } from "./task-status-badge";
 import { InfoCard } from "./info-card";
-import { ApolloProvider } from "@/lib/awell-client/provider";
 import { ActivityContextProvider } from "@/lib/activity-context-provider";
 import { CareflowActivitiesContent } from "./careflow-activities-content";
 import { BrandingProvider } from "@/lib/branding-provider";
@@ -140,7 +139,7 @@ export function TaskView() {
                 <TaskApproval />
               )}
               {careflowId && stakeholderId && activityId && !isDavitaApprovalRejectTask && (
-                <ApolloProvider>
+                
                   <BrandingProvider
                     branding={awellDefaultBranding.branding}
                     orgId={awellDefaultBranding.orgId}
@@ -157,7 +156,7 @@ export function TaskView() {
                       />
                     </ActivityContextProvider>
                   </BrandingProvider>
-                </ApolloProvider>
+                
               )}
             </div>
           )}

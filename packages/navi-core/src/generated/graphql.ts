@@ -172,6 +172,16 @@ export type ActivityStatus =
   | 'SCHEDULED'
   | 'STOPPED';
 
+export type AddTrackInput = {
+  pathway_id: Scalars['String']['input'];
+  track_id: Scalars['String']['input'];
+};
+
+export type AddTrackPayload = {
+  code: Scalars['String']['output'];
+  success: Scalars['Boolean']['output'];
+};
+
 export type AllowedDatesOptions =
   | 'ALL'
   | 'FUTURE'
@@ -480,6 +490,7 @@ export type MultipleSelectConfig = {
 };
 
 export type Mutation = {
+  addTrack: AddTrackPayload;
   /** Complete an activity with form responses, checklist items, or other input data. Handles different activity types including forms, checklists, clinical notes, and calculations. */
   completeActivity: CompleteActivityPayload;
   /** Evaluate form rules against question responses to determine which rules are satisfied. Returns an array of boolean results indicating rule satisfaction status. */
@@ -488,6 +499,11 @@ export type Mutation = {
   patientMatch: PatientMatchPayload;
   /** Start a new care flow for a patient with optional baseline data points. Creates a new care flow instance and returns the care flow details and stakeholders. */
   startCareFlow: StartCareFlowPayload;
+};
+
+
+export type MutationAddTrackArgs = {
+  input: AddTrackInput;
 };
 
 
@@ -553,6 +569,7 @@ export type Query = {
   activities: ActivitiesPayload;
   /** Retrieve a single activity by its ID from the local navi database. Returns activity details including inputs, outputs, and metadata. */
   activity: ActivityPayload;
+  adHocTracksByPathway: TrackPayload;
   /** Retrieve all activities for a specific pathway from the local navi database. Includes pagination and sorting capabilities, focused on pathway-specific activity retrieval. */
   pathwayActivities: ActivitiesPayload;
 };
@@ -568,6 +585,11 @@ export type QueryActivitiesArgs = {
 
 export type QueryActivityArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryAdHocTracksByPathwayArgs = {
+  pathway_id: Scalars['String']['input'];
 };
 
 
@@ -758,6 +780,24 @@ export type SubscriptionSessionActivityExpiredArgs = {
 
 export type SubscriptionSessionActivityUpdatedArgs = {
   only_stakeholder_activities?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+export type TrackPayload = {
+  message: Scalars['String']['output'];
+  success: Scalars['Boolean']['output'];
+  tracks?: Maybe<Array<TracksWithPathwayPayload>>;
+};
+
+export type TracksWithPathwayPayload = {
+  /** Whether the track can be triggered manually (i.e. via addTrack or scheduleTrack mutations) */
+  can_trigger_manually?: Maybe<Scalars['Boolean']['output']>;
+  /** The definition ID of the Track, can be used for adding or scheduling */
+  id: Scalars['ID']['output'];
+  isPathwayActive: Scalars['Boolean']['output'];
+  pathwayId: Scalars['String']['output'];
+  pathwayStatus: Scalars['String']['output'];
+  release_id?: Maybe<Scalars['String']['output']>;
+  title: Scalars['String']['output'];
 };
 
 export type UserQuestionType =

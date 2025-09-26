@@ -1,0 +1,11 @@
+query AdHocTracksByPathway($pathway_id: String!) {
+  adHocTracksByPathway(pathway_id: $pathway_id) {
+    tracks {
+      id
+      title
+      pathwayId
+      pathwayStatus
+      isPathwayActive
+    }
+  }
+}
