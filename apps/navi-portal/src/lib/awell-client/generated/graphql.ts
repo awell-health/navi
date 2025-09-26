@@ -182,6 +182,17 @@ export type ActivityStatus =
   | 'SCHEDULED'
   | 'STOPPED';
 
+export type AddTrackInput = {
+  pathway_id: Scalars['String']['input'];
+  track_id: Scalars['String']['input'];
+};
+
+export type AddTrackPayload = {
+  __typename?: 'AddTrackPayload';
+  code: Scalars['String']['output'];
+  success: Scalars['Boolean']['output'];
+};
+
 export type AllowedDatesOptions =
   | 'ALL'
   | 'FUTURE'
@@ -524,6 +535,7 @@ export type MultipleSelectConfig = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  addTrack: AddTrackPayload;
   /** Complete an activity with form responses, checklist items, or other input data. Handles different activity types including forms, checklists, clinical notes, and calculations. */
   completeActivity: CompleteActivityPayload;
   /** Evaluate form rules against question responses to determine which rules are satisfied. Returns an array of boolean results indicating rule satisfaction status. */
@@ -532,6 +544,11 @@ export type Mutation = {
   patientMatch: PatientMatchPayload;
   /** Start a new care flow for a patient with optional baseline data points. Creates a new care flow instance and returns the care flow details and stakeholders. */
   startCareFlow: StartCareFlowPayload;
+};
+
+
+export type MutationAddTrackArgs = {
+  input: AddTrackInput;
 };
 
 
@@ -602,6 +619,7 @@ export type Query = {
   activities: ActivitiesPayload;
   /** Retrieve a single activity by its ID from the local navi database. Returns activity details including inputs, outputs, and metadata. */
   activity: ActivityPayload;
+  adHocTracksByPathway: TrackPayload;
   /** Retrieve all activities for a specific pathway from the local navi database. Includes pagination and sorting capabilities, focused on pathway-specific activity retrieval. */
   pathwayActivities: ActivitiesPayload;
 };
@@ -617,6 +635,11 @@ export type QueryActivitiesArgs = {
 
 export type QueryActivityArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryAdHocTracksByPathwayArgs = {
+  pathway_id: Scalars['String']['input'];
 };
 
 
@@ -820,6 +843,26 @@ export type SubscriptionSessionActivityUpdatedArgs = {
   only_stakeholder_activities?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
+export type TrackPayload = {
+  __typename?: 'TrackPayload';
+  message: Scalars['String']['output'];
+  success: Scalars['Boolean']['output'];
+  tracks?: Maybe<Array<TracksWithPathwayPayload>>;
+};
+
+export type TracksWithPathwayPayload = {
+  __typename?: 'TracksWithPathwayPayload';
+  /** Whether the track can be triggered manually (i.e. via addTrack or scheduleTrack mutations) */
+  can_trigger_manually?: Maybe<Scalars['Boolean']['output']>;
+  /** The definition ID of the Track, can be used for adding or scheduling */
+  id: Scalars['ID']['output'];
+  isPathwayActive: Scalars['Boolean']['output'];
+  pathwayId: Scalars['String']['output'];
+  pathwayStatus: Scalars['String']['output'];
+  release_id?: Maybe<Scalars['String']['output']>;
+  title: Scalars['String']['output'];
+};
+
 export type UserQuestionType =
   | 'DATE'
   | 'DESCRIPTION'
@@ -837,6 +880,20 @@ export type UserQuestionType =
   | 'SLIDER'
   | 'TELEPHONE'
   | 'YES_NO';
+
+export type AdHocTracksByPathwayQueryVariables = Exact<{
+  pathway_id: Scalars['String']['input'];
+}>;
+
+
+export type AdHocTracksByPathwayQuery = { __typename?: 'Query', adHocTracksByPathway: { __typename?: 'TrackPayload', tracks?: Array<{ __typename?: 'TracksWithPathwayPayload', id: string, title: string, pathwayId: string, pathwayStatus: string, isPathwayActive: boolean }> | null } };
+
+export type AddTrackMutationVariables = Exact<{
+  input: AddTrackInput;
+}>;
+
+
+export type AddTrackMutation = { __typename?: 'Mutation', addTrack: { __typename?: 'AddTrackPayload', success: boolean } };
 
 export type CompleteActivityMutationVariables = Exact<{
   input: CompleteActivityInput;
@@ -1235,6 +1292,85 @@ export const ActivityFragmentDoc = gql`
 }
     ${QuestionFragmentDoc}
 ${DynamicQuestionFragmentDoc}`;
+export const AdHocTracksByPathwayDocument = gql`
+    query AdHocTracksByPathway($pathway_id: String!) {
+  adHocTracksByPathway(pathway_id: $pathway_id) {
+    tracks {
+      id
+      title
+      pathwayId
+      pathwayStatus
+      isPathwayActive
+    }
+  }
+}
+    `;
+
+/**
+ * __useAdHocTracksByPathwayQuery__
+ *
+ * To run a query within a React component, call `useAdHocTracksByPathwayQuery` and pass it any options that fit your needs.
+ * When your component renders, `useAdHocTracksByPathwayQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAdHocTracksByPathwayQuery({
+ *   variables: {
+ *      pathway_id: // value for 'pathway_id'
+ *   },
+ * });
+ */
+export function useAdHocTracksByPathwayQuery(baseOptions: ApolloReactHooks.QueryHookOptions<AdHocTracksByPathwayQuery, AdHocTracksByPathwayQueryVariables> & ({ variables: AdHocTracksByPathwayQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<AdHocTracksByPathwayQuery, AdHocTracksByPathwayQueryVariables>(AdHocTracksByPathwayDocument, options);
+      }
+export function useAdHocTracksByPathwayLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<AdHocTracksByPathwayQuery, AdHocTracksByPathwayQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<AdHocTracksByPathwayQuery, AdHocTracksByPathwayQueryVariables>(AdHocTracksByPathwayDocument, options);
+        }
+export function useAdHocTracksByPathwaySuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<AdHocTracksByPathwayQuery, AdHocTracksByPathwayQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<AdHocTracksByPathwayQuery, AdHocTracksByPathwayQueryVariables>(AdHocTracksByPathwayDocument, options);
+        }
+export type AdHocTracksByPathwayQueryHookResult = ReturnType<typeof useAdHocTracksByPathwayQuery>;
+export type AdHocTracksByPathwayLazyQueryHookResult = ReturnType<typeof useAdHocTracksByPathwayLazyQuery>;
+export type AdHocTracksByPathwaySuspenseQueryHookResult = ReturnType<typeof useAdHocTracksByPathwaySuspenseQuery>;
+export type AdHocTracksByPathwayQueryResult = ApolloReactCommon.QueryResult<AdHocTracksByPathwayQuery, AdHocTracksByPathwayQueryVariables>;
+export const AddTrackDocument = gql`
+    mutation AddTrack($input: AddTrackInput!) {
+  addTrack(input: $input) {
+    success
+  }
+}
+    `;
+export type AddTrackMutationFn = ApolloReactCommon.MutationFunction<AddTrackMutation, AddTrackMutationVariables>;
+
+/**
+ * __useAddTrackMutation__
+ *
+ * To run a mutation, you first call `useAddTrackMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddTrackMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addTrackMutation, { data, loading, error }] = useAddTrackMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useAddTrackMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<AddTrackMutation, AddTrackMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<AddTrackMutation, AddTrackMutationVariables>(AddTrackDocument, options);
+      }
+export type AddTrackMutationHookResult = ReturnType<typeof useAddTrackMutation>;
+export type AddTrackMutationResult = ApolloReactCommon.MutationResult<AddTrackMutation>;
+export type AddTrackMutationOptions = ApolloReactCommon.BaseMutationOptions<AddTrackMutation, AddTrackMutationVariables>;
 export const CompleteActivityDocument = gql`
     mutation CompleteActivity($input: CompleteActivityInput!) {
   completeActivity(input: $input) {

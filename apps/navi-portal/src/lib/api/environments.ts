@@ -3,7 +3,8 @@ import { TokenEnvironment } from "@awell-health/navi-core";
 export const ENDPOINTS: Record<TokenEnvironment, string> = {
   local: "http://localhost:4000/graphql",
   test: "http://localhost:4000/graphql",
-  development: "https://navi.development.awellhealth.com/graphql",
+  // development: "https://navi.development.awellhealth.com/graphql",
+  development: "http://localhost:4000/graphql",
   staging: "https://navi.staging.awellhealth.com/graphql",
   "production-eu": "https://navi.awellhealth.com/graphql",
   "production-us": "https://navi.us.awellhealth.com/graphql",
