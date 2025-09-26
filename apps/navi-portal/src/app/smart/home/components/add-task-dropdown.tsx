@@ -8,17 +8,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../../../../components/ui/dropdown-menu";
-import { useAddTrackMutation, useAdHocTracksByPathwayLazyQuery } from "../../../../lib/awell-client/generated/graphql";
+import { 
+  useAddTrackMutation, 
+  useAdHocTracksByPathwayLazyQuery,
+  AdHocTracksByPathwayQuery,
+  TracksWithPathwayPayload
+} from "../../../../lib/awell-client/generated/graphql";
+import { ApolloError } from "@apollo/client";
 import { Task } from "@medplum/fhirtypes";
-
-interface TaskTemplate {
-  id: string;
-  name: string;
-  description: string;
-  type: string;
-}
-
-const TASK_TEMPLATES: TaskTemplate[] = [];
 
 interface AddTaskDropdownProps {
   tasks: Task[];
@@ -30,9 +27,9 @@ export function AddTaskDropdown({ tasks, disabled = false, onTaskAdded }: AddTas
   const [isAdding, setIsAdding] = useState(false);
   const [allQueryResults, setAllQueryResults] = useState<Array<{
     pathwayId: string;
-    data: any;
+    data: AdHocTracksByPathwayQuery | null;
     loading: boolean;
-    error: any;
+    error: ApolloError | null;
   }>>([]);
 
   const [addTrack] = useAddTrackMutation();
@@ -89,9 +86,9 @@ export function AddTaskDropdown({ tasks, disabled = false, onTaskAdded }: AddTas
             const result = results.find(r => r.pathwayId === item.pathwayId);
             return result ? {
               ...item,
-              data: result.result.data,
+              data: result.result.data || null,
               loading: false,
-              error: result.result.error
+              error: result.result.error || null
             } : item;
           }));
         } catch (error) {
@@ -104,12 +101,12 @@ export function AddTaskDropdown({ tasks, disabled = false, onTaskAdded }: AddTas
   }, [pathwayIds.join(',')]); // Use pathwayIds as string to avoid infinite loop
 
   // Merge all tracks from all query results into one list
-  const allTracks = allQueryResults
+  const allTracks: TracksWithPathwayPayload[] = allQueryResults
     .filter(result => result.data?.adHocTracksByPathway?.tracks)
-    .flatMap(result => result.data.adHocTracksByPathway.tracks)
-    .filter(track => track !== null && track !== undefined);
+    .flatMap(result => result.data?.adHocTracksByPathway?.tracks || [])
+    .filter((track): track is TracksWithPathwayPayload => track !== null && track !== undefined);
 
-  const handleAddTask = async (track: {id: string, pathwayId: string}) => {
+  const handleAddTask = async (track: TracksWithPathwayPayload) => {
     
     if (track) {
       setIsAdding(true);
