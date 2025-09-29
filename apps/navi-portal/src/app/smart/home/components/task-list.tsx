@@ -5,8 +5,10 @@ import { useTaskFiltering } from "../hooks/use-task-filtering";
 import { TaskCard } from "./task-card";
 import { TaskCardSkeleton } from "./task-card-skeleton";
 import { TaskFilters } from "./task-filters";
+import { AddTaskDropdown } from "./add-task-dropdown";
 import { Button } from "../../../../components/ui";
-import { RefreshCcwIcon } from "lucide-react";
+import { PlusIcon, RefreshCcwIcon } from "lucide-react";
+import { ApolloProvider } from "@/lib/awell-client/provider";
 import { TaskView } from "./task-view";
 
 
@@ -47,6 +49,7 @@ import { TaskView } from "./task-view";
 
   return (
     <>
+      <ApolloProvider>
       {!selectedTaskId && <div className="space-y-2">
         <div className="flex justify-between items-center">
           <TaskFilters
@@ -56,7 +59,12 @@ import { TaskView } from "./task-view";
             setStatusFilter={setStatusFilter}
             availableStatuses={availableStatuses}
           />
-          <div>
+          <div className="flex items-center gap-1">
+            <AddTaskDropdown 
+              disabled={loading}
+              tasks={tasks}
+              onTaskAdded={refetchTasks}
+            />
             <Button size="icon" variant="ghost" onClick={refetchTasks} title="Refresh Tasks">
               <RefreshCcwIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
@@ -85,6 +93,7 @@ import { TaskView } from "./task-view";
       {selectedTaskId && (
         <TaskView />
       )}
+      </ApolloProvider>
     </>
   );
 }

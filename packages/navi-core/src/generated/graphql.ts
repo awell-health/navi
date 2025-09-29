@@ -488,6 +488,8 @@ export type Mutation = {
   patientMatch: PatientMatchPayload;
   /** Start a new care flow for a patient with optional baseline data points. Creates a new care flow instance and returns the care flow details and stakeholders. */
   startCareFlow: StartCareFlowPayload;
+  /** Start a track for an existing care flow */
+  startTrack: StartTrackPayload;
 };
 
 
@@ -508,6 +510,11 @@ export type MutationPatientMatchArgs = {
 
 export type MutationStartCareFlowArgs = {
   input: StartCareFlowInput;
+};
+
+
+export type MutationStartTrackArgs = {
+  input: StartTrackInput;
 };
 
 export type NumberConfig = {
@@ -553,6 +560,7 @@ export type Query = {
   activities: ActivitiesPayload;
   /** Retrieve a single activity by its ID from the local navi database. Returns activity details including inputs, outputs, and metadata. */
   activity: ActivityPayload;
+  adHocTracksByCareflow: TrackPayload;
   /** Retrieve all activities for a specific pathway from the local navi database. Includes pagination and sorting capabilities, focused on pathway-specific activity retrieval. */
   pathwayActivities: ActivitiesPayload;
 };
@@ -568,6 +576,11 @@ export type QueryActivitiesArgs = {
 
 export type QueryActivityArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryAdHocTracksByCareflowArgs = {
+  careflow_id: Scalars['String']['input'];
 };
 
 
@@ -692,6 +705,16 @@ export type StartCareFlowPayload = {
   success: Scalars['Boolean']['output'];
 };
 
+export type StartTrackInput = {
+  careflow_id: Scalars['String']['input'];
+  track_definition_id: Scalars['String']['input'];
+};
+
+export type StartTrackPayload = {
+  code: Scalars['String']['output'];
+  success: Scalars['Boolean']['output'];
+};
+
 export type SubActivity = {
   action: ActivityAction;
   id: Scalars['ID']['output'];
@@ -758,6 +781,24 @@ export type SubscriptionSessionActivityExpiredArgs = {
 
 export type SubscriptionSessionActivityUpdatedArgs = {
   only_stakeholder_activities?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+export type TrackPayload = {
+  message: Scalars['String']['output'];
+  success: Scalars['Boolean']['output'];
+  tracks?: Maybe<Array<TracksWithCareflowPayload>>;
+};
+
+export type TracksWithCareflowPayload = {
+  /** Whether the track can be triggered manually (i.e. via addTrack or scheduleTrack mutations) */
+  can_trigger_manually?: Maybe<Scalars['Boolean']['output']>;
+  careflowId: Scalars['String']['output'];
+  careflowStatus: Scalars['String']['output'];
+  /** The definition ID of the Track, can be used for adding or scheduling */
+  id: Scalars['ID']['output'];
+  isCareflowActive: Scalars['Boolean']['output'];
+  release_id?: Maybe<Scalars['String']['output']>;
+  title: Scalars['String']['output'];
 };
 
 export type UserQuestionType =

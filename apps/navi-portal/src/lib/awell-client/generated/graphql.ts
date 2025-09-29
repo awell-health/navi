@@ -532,6 +532,8 @@ export type Mutation = {
   patientMatch: PatientMatchPayload;
   /** Start a new care flow for a patient with optional baseline data points. Creates a new care flow instance and returns the care flow details and stakeholders. */
   startCareFlow: StartCareFlowPayload;
+  /** Start a track for an existing care flow */
+  startTrack: StartTrackPayload;
 };
 
 
@@ -552,6 +554,11 @@ export type MutationPatientMatchArgs = {
 
 export type MutationStartCareFlowArgs = {
   input: StartCareFlowInput;
+};
+
+
+export type MutationStartTrackArgs = {
+  input: StartTrackInput;
 };
 
 export type NumberConfig = {
@@ -602,6 +609,7 @@ export type Query = {
   activities: ActivitiesPayload;
   /** Retrieve a single activity by its ID from the local navi database. Returns activity details including inputs, outputs, and metadata. */
   activity: ActivityPayload;
+  adHocTracksByCareflow: TrackPayload;
   /** Retrieve all activities for a specific pathway from the local navi database. Includes pagination and sorting capabilities, focused on pathway-specific activity retrieval. */
   pathwayActivities: ActivitiesPayload;
 };
@@ -617,6 +625,11 @@ export type QueryActivitiesArgs = {
 
 export type QueryActivityArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryAdHocTracksByCareflowArgs = {
+  careflow_id: Scalars['String']['input'];
 };
 
 
@@ -750,6 +763,17 @@ export type StartCareFlowPayload = {
   success: Scalars['Boolean']['output'];
 };
 
+export type StartTrackInput = {
+  careflow_id: Scalars['String']['input'];
+  track_definition_id: Scalars['String']['input'];
+};
+
+export type StartTrackPayload = {
+  __typename?: 'StartTrackPayload';
+  code: Scalars['String']['output'];
+  success: Scalars['Boolean']['output'];
+};
+
 export type SubActivity = {
   __typename?: 'SubActivity';
   action: ActivityAction;
@@ -820,6 +844,26 @@ export type SubscriptionSessionActivityUpdatedArgs = {
   only_stakeholder_activities?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
+export type TrackPayload = {
+  __typename?: 'TrackPayload';
+  message: Scalars['String']['output'];
+  success: Scalars['Boolean']['output'];
+  tracks?: Maybe<Array<TracksWithCareflowPayload>>;
+};
+
+export type TracksWithCareflowPayload = {
+  __typename?: 'TracksWithCareflowPayload';
+  /** Whether the track can be triggered manually (i.e. via addTrack or scheduleTrack mutations) */
+  can_trigger_manually?: Maybe<Scalars['Boolean']['output']>;
+  careflowId: Scalars['String']['output'];
+  careflowStatus: Scalars['String']['output'];
+  /** The definition ID of the Track, can be used for adding or scheduling */
+  id: Scalars['ID']['output'];
+  isCareflowActive: Scalars['Boolean']['output'];
+  release_id?: Maybe<Scalars['String']['output']>;
+  title: Scalars['String']['output'];
+};
+
 export type UserQuestionType =
   | 'DATE'
   | 'DESCRIPTION'
@@ -837,6 +881,13 @@ export type UserQuestionType =
   | 'SLIDER'
   | 'TELEPHONE'
   | 'YES_NO';
+
+export type AdHocTracksByCareflowQueryVariables = Exact<{
+  careflow_id: Scalars['String']['input'];
+}>;
+
+
+export type AdHocTracksByCareflowQuery = { __typename?: 'Query', adHocTracksByCareflow: { __typename?: 'TrackPayload', tracks?: Array<{ __typename?: 'TracksWithCareflowPayload', id: string, title: string, careflowId: string, careflowStatus: string, isCareflowActive: boolean }> | null } };
 
 export type CompleteActivityMutationVariables = Exact<{
   input: CompleteActivityInput;
@@ -914,6 +965,13 @@ export type StartCareFlowMutationVariables = Exact<{
 
 
 export type StartCareFlowMutation = { __typename?: 'Mutation', startCareFlow: { __typename?: 'StartCareFlowPayload', success: boolean, code: string, message?: string | null, careflow: { __typename?: 'CareFlow', id: string, release_id: string }, stakeholders: Array<{ __typename?: 'Stakeholder', id: string, definition_id: string, clinical_app_role: StakeholderClinicalAppRole, label: { __typename?: 'StakeholderLabel', en: string } }> } };
+
+export type StartTrackMutationVariables = Exact<{
+  input: StartTrackInput;
+}>;
+
+
+export type StartTrackMutation = { __typename?: 'Mutation', startTrack: { __typename?: 'StartTrackPayload', success: boolean } };
 
 export type ActivityFragment = { __typename?: 'Activity', id: string, action: ActivityAction, careflow_id: string, container_name?: string | null, date: string, pathway_definition_id: string, reference_id: string, reference_type: ActivityReferenceType, resolution?: ActivityResolution | null, session_id?: string | null, status: ActivityStatus, tenant_id: string, is_user_activity: boolean, indirect_object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null, object: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null }, stakeholders?: Array<{ __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null }> | null, sub_activities: Array<{ __typename?: 'SubActivity', id: string, action: ActivityAction, object?: { __typename?: 'ActivityObject', id: string, type: ActivityObjectType, name: string, email?: string | null, preferred_language?: string | null } | null }>, inputs?: { __typename: 'CalculationActivityInput', type: ActivityInputType, calculationFields?: Array<{ __typename?: 'CalculationField', id: string, key: string, label: string, value: unknown }> | null } | { __typename: 'ChecklistActivityInput', type: ActivityInputType, checklist?: { __typename?: 'Checklist', title: string, items: Array<string> } | null } | { __typename: 'ClinicalNoteActivityInput', type: ActivityInputType, clinicalNote?: { __typename?: 'ClinicalNote', id: string, narratives: Array<{ __typename?: 'GeneratedClinicalNoteNarrative', id: string, key: string, title: string, body: string }>, context: Array<{ __typename?: 'GeneratedClinicalNoteContextField', key: string, value: string }> } | null } | { __typename: 'DynamicFormActivityInput', type: ActivityInputType, dynamic_form?: { __typename?: 'DynamicForm', key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'DynamicQuestion', id: string, key: string, title: string, question_type: QuestionType, user_question_type?: UserQuestionType | null, data_point_value_type?: DataPointValueType | null, is_required: boolean, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value?: string | null }> | null, config?: { __typename?: 'QuestionConfig', recode_enabled?: boolean | null, use_select?: boolean | null, mandatory: boolean, slider?: { __typename?: 'SliderConfig', min: number, max: number, step_value: number, min_label: string, max_label: string, is_value_tooltip_on: boolean, display_marks: boolean, show_min_max_values: boolean } | null, phone?: { __typename?: 'PhoneConfig', default_country?: string | null, available_countries?: Array<string> | null } | null, number?: { __typename?: 'NumberConfig', range?: { __typename?: 'RangeConfig', enabled?: boolean | null, min?: number | null, max?: number | null } | null } | null, multiple_select?: { __typename?: 'MultipleSelectConfig', range?: { __typename?: 'ChoiceRangeConfig', enabled?: boolean | null, min?: number | null, max?: number | null } | null, exclusive_option?: { __typename?: 'ExclusiveOptionConfig', enabled?: boolean | null, option_id?: string | null } | null } | null, date_validation?: { __typename?: 'DateConfig', allowed_dates?: AllowedDatesOptions | null, include_date_of_response?: boolean | null } | null, file_storage?: { __typename?: 'FileStorageQuestionConfig', file_storage_config_slug?: string | null, accepted_file_types?: Array<string> | null } | null, input_validation?: { __typename?: 'InputValidationConfig', mode?: string | null, pattern?: string | null, helper_text?: string | null, simpleConfig?: { __typename?: 'InputValidationSimpleConfig', exactLength?: number | null, allowed?: { __typename?: 'InputValidationAllowed', letters?: boolean | null, numbers?: boolean | null, whitespace?: boolean | null, special?: boolean | null } | null } | null } | null } | null }> } | null } | { __typename: 'ExtensionActivityInput', type: ActivityInputType, activityRecord?: unknown | null, componentKey?: string | null } | { __typename: 'FormActivityInput', type: ActivityInputType, form?: { __typename?: 'ActivityForm', id: string, key: string, title: string, trademark?: string | null, questions: Array<{ __typename?: 'Question', id: string, key: string, title: string, definition_id: string, question_type?: QuestionType | null, user_question_type: UserQuestionType, data_point_value_type?: DataPointValueType | null, is_required: boolean, options?: Array<{ __typename?: 'QuestionOption', id: string, label: string, value?: string | null }> | null, config?: { __typename?: 'QuestionConfig', recode_enabled?: boolean | null, use_select?: boolean | null, mandatory: boolean, slider?: { __typename?: 'SliderConfig', min: number, max: number, step_value: number, min_label: string, max_label: string, is_value_tooltip_on: boolean, display_marks: boolean, show_min_max_values: boolean } | null, phone?: { __typename?: 'PhoneConfig', default_country?: string | null, available_countries?: Array<string> | null } | null, number?: { __typename?: 'NumberConfig', range?: { __typename?: 'RangeConfig', enabled?: boolean | null, min?: number | null, max?: number | null } | null } | null, multiple_select?: { __typename?: 'MultipleSelectConfig', range?: { __typename?: 'ChoiceRangeConfig', enabled?: boolean | null, min?: number | null, max?: number | null } | null, exclusive_option?: { __typename?: 'ExclusiveOptionConfig', enabled?: boolean | null, option_id?: string | null } | null } | null, date_validation?: { __typename?: 'DateConfig', allowed_dates?: AllowedDatesOptions | null, include_date_of_response?: boolean | null } | null, file_storage?: { __typename?: 'FileStorageQuestionConfig', file_storage_config_slug?: string | null, accepted_file_types?: Array<string> | null } | null, input_validation?: { __typename?: 'InputValidationConfig', mode?: string | null, pattern?: string | null, helper_text?: string | null, simpleConfig?: { __typename?: 'InputValidationSimpleConfig', exactLength?: number | null, allowed?: { __typename?: 'InputValidationAllowed', letters?: boolean | null, numbers?: boolean | null, whitespace?: boolean | null, special?: boolean | null } | null } | null } | null } | null, rule?: { __typename?: 'Rule', id: string, boolean_operator: BooleanOperator, conditions: Array<{ __typename?: 'Condition', id: string, reference: string, reference_key?: string | null, operator: ConditionOperator, operand: { __typename?: 'ConditionOperand', value: string, type: ConditionOperandType } }> } | null }> } | null } | { __typename: 'MessageActivityInput', type: ActivityInputType, message?: { __typename?: 'ActivityMessage', id: string, subject: string, body: string, format?: MessageFormat | null, attachments?: Array<{ __typename?: 'MessageAttachment', id: string, name: string, type: string, url: string }> | null } | null } | null, outputs?: { __typename: 'CalculationActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'DynamicFormActivityOutput', type: ActivityOutputType, response?: unknown | null } | { __typename: 'ExtensionActivityOutput', type: ActivityOutputType, results?: unknown | null } | { __typename: 'FormActivityOutput', type: ActivityOutputType, response?: unknown | null } | null };
 
@@ -1235,6 +1293,52 @@ export const ActivityFragmentDoc = gql`
 }
     ${QuestionFragmentDoc}
 ${DynamicQuestionFragmentDoc}`;
+export const AdHocTracksByCareflowDocument = gql`
+    query adHocTracksByCareflow($careflow_id: String!) {
+  adHocTracksByCareflow(careflow_id: $careflow_id) {
+    tracks {
+      id
+      title
+      careflowId
+      careflowStatus
+      isCareflowActive
+    }
+  }
+}
+    `;
+
+/**
+ * __useAdHocTracksByCareflowQuery__
+ *
+ * To run a query within a React component, call `useAdHocTracksByCareflowQuery` and pass it any options that fit your needs.
+ * When your component renders, `useAdHocTracksByCareflowQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAdHocTracksByCareflowQuery({
+ *   variables: {
+ *      careflow_id: // value for 'careflow_id'
+ *   },
+ * });
+ */
+export function useAdHocTracksByCareflowQuery(baseOptions: ApolloReactHooks.QueryHookOptions<AdHocTracksByCareflowQuery, AdHocTracksByCareflowQueryVariables> & ({ variables: AdHocTracksByCareflowQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<AdHocTracksByCareflowQuery, AdHocTracksByCareflowQueryVariables>(AdHocTracksByCareflowDocument, options);
+      }
+export function useAdHocTracksByCareflowLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<AdHocTracksByCareflowQuery, AdHocTracksByCareflowQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<AdHocTracksByCareflowQuery, AdHocTracksByCareflowQueryVariables>(AdHocTracksByCareflowDocument, options);
+        }
+export function useAdHocTracksByCareflowSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<AdHocTracksByCareflowQuery, AdHocTracksByCareflowQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<AdHocTracksByCareflowQuery, AdHocTracksByCareflowQueryVariables>(AdHocTracksByCareflowDocument, options);
+        }
+export type AdHocTracksByCareflowQueryHookResult = ReturnType<typeof useAdHocTracksByCareflowQuery>;
+export type AdHocTracksByCareflowLazyQueryHookResult = ReturnType<typeof useAdHocTracksByCareflowLazyQuery>;
+export type AdHocTracksByCareflowSuspenseQueryHookResult = ReturnType<typeof useAdHocTracksByCareflowSuspenseQuery>;
+export type AdHocTracksByCareflowQueryResult = ApolloReactCommon.QueryResult<AdHocTracksByCareflowQuery, AdHocTracksByCareflowQueryVariables>;
 export const CompleteActivityDocument = gql`
     mutation CompleteActivity($input: CompleteActivityInput!) {
   completeActivity(input: $input) {
@@ -1637,3 +1741,36 @@ export function useStartCareFlowMutation(baseOptions?: ApolloReactHooks.Mutation
 export type StartCareFlowMutationHookResult = ReturnType<typeof useStartCareFlowMutation>;
 export type StartCareFlowMutationResult = ApolloReactCommon.MutationResult<StartCareFlowMutation>;
 export type StartCareFlowMutationOptions = ApolloReactCommon.BaseMutationOptions<StartCareFlowMutation, StartCareFlowMutationVariables>;
+export const StartTrackDocument = gql`
+    mutation StartTrack($input: StartTrackInput!) {
+  startTrack(input: $input) {
+    success
+  }
+}
+    `;
+export type StartTrackMutationFn = ApolloReactCommon.MutationFunction<StartTrackMutation, StartTrackMutationVariables>;
+
+/**
+ * __useStartTrackMutation__
+ *
+ * To run a mutation, you first call `useStartTrackMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useStartTrackMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [startTrackMutation, { data, loading, error }] = useStartTrackMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useStartTrackMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<StartTrackMutation, StartTrackMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<StartTrackMutation, StartTrackMutationVariables>(StartTrackDocument, options);
+      }
+export type StartTrackMutationHookResult = ReturnType<typeof useStartTrackMutation>;
+export type StartTrackMutationResult = ApolloReactCommon.MutationResult<StartTrackMutation>;
+export type StartTrackMutationOptions = ApolloReactCommon.BaseMutationOptions<StartTrackMutation, StartTrackMutationVariables>;
