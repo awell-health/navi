@@ -1,0 +1,11 @@
+query adHocTracksByCareflow($careflow_id: String!) {
+  adHocTracksByCareflow(careflow_id: $careflow_id) {
+    tracks {
+      id
+      title
+      careflowId
+      careflowStatus
+      isCareflowActive
+    }
+  }
+}

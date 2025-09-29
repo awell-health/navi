@@ -1,0 +1,5 @@
+mutation StartTrack($input: StartTrackInput!) {
+  startTrack(input: $input) {
+    success
+  }
+}

@@ -9,10 +9,10 @@ import {
   DropdownMenuTrigger,
 } from "../../../../components/ui/dropdown-menu";
 import { 
-  useAddTrackMutation, 
-  useAdHocTracksByPathwayLazyQuery,
-  AdHocTracksByPathwayQuery,
-  TracksWithPathwayPayload
+  useStartTrackMutation, 
+  AdHocTracksByCareflowQuery,
+  TracksWithCareflowPayload,
+  useAdHocTracksByCareflowLazyQuery
 } from "../../../../lib/awell-client/generated/graphql";
 import { ApolloError } from "@apollo/client";
 import { Task } from "@medplum/fhirtypes";
@@ -27,12 +27,12 @@ export function AddTaskDropdown({ tasks, disabled = false, onTaskAdded }: AddTas
   const [isAdding, setIsAdding] = useState(false);
   const [allQueryResults, setAllQueryResults] = useState<Array<{
     pathwayId: string;
-    data: AdHocTracksByPathwayQuery | null;
+    data: AdHocTracksByCareflowQuery | null;
     loading: boolean;
     error: ApolloError | null;
   }>>([]);
 
-  const [addTrack] = useAddTrackMutation();
+  const [addTrack] = useStartTrackMutation();
 
   // Extract unique pathway IDs from tasks
   const pathwayIds = Array.from(new Set(
@@ -53,7 +53,7 @@ export function AddTaskDropdown({ tasks, disabled = false, onTaskAdded }: AddTas
       .filter((id): id is string => id !== undefined)
   ));
 
-  const [executeQuery] = useAdHocTracksByPathwayLazyQuery();
+  const [executeQuery] = useAdHocTracksByCareflowLazyQuery();
 
   // Execute queries for each pathway ID
   useEffect(() => {
@@ -73,7 +73,7 @@ export function AddTaskDropdown({ tasks, disabled = false, onTaskAdded }: AddTas
             
             const result = await executeQuery({
               variables: {
-                pathway_id: pathwayId
+                careflow_id: pathwayId
               }
             });
             return { pathwayId, result };
@@ -101,20 +101,20 @@ export function AddTaskDropdown({ tasks, disabled = false, onTaskAdded }: AddTas
   }, [pathwayIds.join(',')]); // Use pathwayIds as string to avoid infinite loop
 
   // Merge all tracks from all query results into one list
-  const allTracks: TracksWithPathwayPayload[] = allQueryResults
-    .filter(result => result.data?.adHocTracksByPathway?.tracks)
-    .flatMap(result => result.data?.adHocTracksByPathway?.tracks || [])
-    .filter((track): track is TracksWithPathwayPayload => track !== null && track !== undefined);
+    const allTracks: TracksWithCareflowPayload[] = allQueryResults
+    .filter(result => result.data?.adHocTracksByCareflow?.tracks)
+    .flatMap(result => result.data?.adHocTracksByCareflow?.tracks || [])
+    .filter((track): track is TracksWithCareflowPayload => track !== null && track !== undefined);
 
-  const handleAddTask = async (track: TracksWithPathwayPayload) => {
+  const handleAddTask = async (track: TracksWithCareflowPayload) => {
     
     if (track) {
       setIsAdding(true);
       await addTrack({
         variables: {
           input: {
-            track_id: track.id,
-            pathway_id: track.pathwayId
+            track_definition_id: track.id,
+            careflow_id: track.careflowId
           }
         }
       });
