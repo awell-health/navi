@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { generateThemeCSS } from "@/lib/branding";
 import { getBrandingByOrgId } from "@/lib/branding/branding-service";
 import "../globals.css";
@@ -6,6 +7,11 @@ import React, { Suspense } from "react";
 import { LoaderCircle } from "lucide-react";
 
 export const runtime = "nodejs";
+
+export const metadata: Metadata = {
+  title: "Navi | Powered by Awell",
+  description: "Your personalized health care portal",
+};
 
 export default async function Layout({
   children,
@@ -31,7 +37,7 @@ export default async function Layout({
   
   const css = generateThemeCSS(orgBranding);
   return (
-    <html>
+    <html lang="en">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
