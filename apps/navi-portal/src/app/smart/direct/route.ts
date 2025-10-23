@@ -10,6 +10,7 @@ import {
   createSmartTicket,
 } from "@/domains/smart";
 import { initializeStatsig, Statsig } from "@/lib/statsig.edge";
+import { TokenEnvironment } from "@awell-health/navi-core";
 
 export const runtime = "edge";
 
@@ -23,6 +24,7 @@ export async function GET(request: NextRequest) {
   const token = searchParams.get("token");
   const organizationId = searchParams.get("organization_id");
   const profileId = searchParams.get("trusted_token_profile_id") ?? undefined;
+  const environment = searchParams.get("environment") ?? "sandbox";
 
   if (!patientIdentifier || !token || !organizationId) {
     return NextResponse.json(
@@ -79,8 +81,7 @@ export async function GET(request: NextRequest) {
     // Determine tenant/environment for awell.jwt
     const tenantId = await getTenantIdForEnvironment({
       organization_id: organizationId,
-      environment:
-        env.NODE_ENV === "production" ? "production-us" : "development",
+      environment: environment as TokenEnvironment,
     });
 
     // Construct minimal SMART session compatible object for /smart/home
