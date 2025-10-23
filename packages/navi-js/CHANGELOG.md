@@ -1,5 +1,16 @@
 # @awell-health/navi-js
 
+## 1.0.0
+
+### Minor Changes
+
+- 4cfcd91: Add ActivityReadyData interface for activity-ready events
+
+### Patch Changes
+
+- Updated dependencies [4cfcd91]
+  - @awell-health/navi-core@1.0.0
+
 ## 0.0.10
 
 ### Patch Changes

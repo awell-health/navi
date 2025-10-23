@@ -1,5 +1,11 @@
 # @awell-health/navi-core
 
+## 1.0.0
+
+### Minor Changes
+
+- 4cfcd91: Add ActivityReadyData interface for activity-ready events
+
 ## 0.0.10
 
 ### Patch Changes
