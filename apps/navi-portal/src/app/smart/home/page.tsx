@@ -78,7 +78,9 @@ export default async function SmartHomePage({
       },
       "http_only_cookies"
     );
+    console.log("httpOnly", httpOnly);
     medplumPatient = await fetchPatientByIdentifierAction(patientIdentifier);
+    console.log("medplumPatient", medplumPatient);
   } else if (sp?.testPatient) {
     patient = getTestPatient();
     patientIdentifier = {

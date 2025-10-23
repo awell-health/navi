@@ -59,25 +59,40 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Fast-path 2: if a valid JWT cookie is present, reuse it
+    // Fast-path 2: If a valid JWT cookie is present, verify and re-mint from stored session
     if (existingJwtCookie?.value) {
       try {
         const payload = await authService.verifyToken(existingJwtCookie.value);
-        const response = NextResponse.json({
-          jwt: existingJwtCookie.value,
-          expiresAt: payload.exp,
-          environment: payload.environment,
-        });
-        const now = Math.floor(Date.now() / 1000);
-        const remaining = Math.max(0, (payload.exp ?? now) - now);
-        response.cookies.set("awell.jwt", existingJwtCookie.value, {
-          httpOnly: true,
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-          secure: process.env.NODE_ENV === "production",
-          maxAge: remaining || 1,
-          path: "/",
-        });
-        return response;
+        const sessionIdFromJwt = payload.sub;
+        if (sessionIdFromJwt) {
+          const session = await SessionService.get(sessionIdFromJwt);
+          if (session) {
+            const tokenData = NaviSession.renewJwtExpiration(
+              SessionTokenDataSchema.parse(session),
+              NaviSession.DEFAULT_JWT_TTL_SECONDS
+            );
+            const jwt = await authService.createJWTFromSession(
+              tokenData,
+              sessionIdFromJwt,
+              env.JWT_KEY_ID,
+              { authenticationState: payload.authentication_state }
+            );
+            const response = NextResponse.json({
+              jwt,
+              expiresAt: Math.floor(Date.now() / 1000) + 15 * 60,
+              environment: tokenData.environment,
+            });
+            // Refresh cookie with freshly minted token (captures latest session claims like careflow_id)
+            response.cookies.set("awell.jwt", jwt, {
+              httpOnly: true,
+              sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+              secure: process.env.NODE_ENV === "production",
+              maxAge: 15 * 60,
+              path: "/",
+            });
+            return response;
+          }
+        }
       } catch {
         // fall through to session-based issuance
       }

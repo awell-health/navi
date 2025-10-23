@@ -54,10 +54,12 @@ const loadStytch = async () => {
 export async function attestTrustedToken(params: {
   token: string;
   organizationId: string;
+  /** Optional override for the trusted token profile ID */
+  profileId?: string;
 }) {
   const stytch = await loadStytch();
   return await stytch.sessions.attest({
-    profile_id: env.STYTCH_TRUSTED_TOKEN_PROFILE_ID,
+    profile_id: params.profileId ?? env.STYTCH_TRUSTED_TOKEN_PROFILE_ID,
     token: params.token,
     organization_id: params.organizationId,
   });

@@ -1,6 +1,11 @@
 import { PatientIdentifier } from "@awell-health/navi-core";
 import type { MedplumClient } from "@medplum/core";
-import type { Patient, Task, MedicationStatement, Medication } from "@medplum/fhirtypes";
+import type {
+  Patient,
+  Task,
+  MedicationStatement,
+  Medication,
+} from "@medplum/fhirtypes";
 
 export type ResourceHandler = (resource: unknown) => void;
 
@@ -111,6 +116,16 @@ export class MedplumStoreClient {
     identifier: PatientIdentifier
   ): Promise<Patient | null> {
     try {
+      if (
+        identifier.system ===
+        "https://www.medplum.com/docs/api/fhir/resources/patient"
+      ) {
+        const patient = await this.client.readResource(
+          "Patient",
+          identifier.value
+        );
+        return patient ?? null;
+      }
       const patient = await this.client.searchOne("Patient", {
         identifier: `${identifier.system}|${identifier.value}`,
       });
@@ -126,7 +141,10 @@ export class MedplumStoreClient {
     medications: Medication[];
   }> {
     try {
-      console.log("Fetching Medplum MedicationStatements for Patient", patientId);
+      console.log(
+        "Fetching Medplum MedicationStatements for Patient",
+        patientId
+      );
       const bundle = await this.client.search("MedicationStatement", {
         subject: `Patient/${patientId}`,
         _count: 100,
@@ -153,12 +171,18 @@ export class MedplumStoreClient {
     }
   }
 
-  async updateTaskStatus(taskId: string, status: Task["status"]): Promise<Task> {
+  async updateTaskStatus(
+    taskId: string,
+    status: Task["status"]
+  ): Promise<Task> {
     try {
       console.log("Updating Medplum Task status", taskId, status);
 
       // First, read the current task
-      const currentTask = await this.client.readResource("Task", taskId) as Task;
+      const currentTask = (await this.client.readResource(
+        "Task",
+        taskId
+      )) as Task;
 
       // Update the status
       const updatedTask = {
