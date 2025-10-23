@@ -3,7 +3,7 @@
 import React from "react";
 import { ListTodo } from "lucide-react";
 import { useBranding } from "@/lib/branding-provider";
-import { useActivity } from "@/lib/activity-context-provider";
+import { useActivityContext } from "@/lib/activity-context-provider";
 
 interface ActivityHeaderProps {
   onActivityListClick?: () => void;
@@ -11,7 +11,7 @@ interface ActivityHeaderProps {
 
 export function ActivityHeader({ onActivityListClick }: ActivityHeaderProps) {
   const { branding, getLogoUrl } = useBranding();
-  const { newActivities } = useActivity();
+  const { newActivities } = useActivityContext();
 
   const logoUrl = getLogoUrl();
   const hasNewActivities = newActivities.size > 0;

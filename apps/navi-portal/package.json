@@ -27,6 +27,7 @@
     "clean": "rm -rf .next dist",
     "test-fonts": "tsx --env-file=.env.local scripts/test-font-generation.ts",
     "test-runtime-fonts": "tsx --env-file=.env.local scripts/test-runtime-fonts.ts",
+    "mint-trusted-token": "tsx --env-file=.env.local scripts/mint-trusted-token.ts",
     "font:generate": "tsx scripts/generate-fonts.ts",
     "font:test": "tsx scripts/test-font-generation.ts"
   },

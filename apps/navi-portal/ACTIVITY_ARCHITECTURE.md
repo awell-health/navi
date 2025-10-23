@@ -175,10 +175,7 @@ All original exports are maintained for compatibility:
 ```typescript
 // These still work
 export const useActivity = useActivityContext;
-export const ActivityProvider = ActivityContextProvider;
-export const useCompletionFlow = useSessionCompletionTimer;
 export const CompletionStateRenderer = SessionCompletionUI;
-export const usePendingActivities = useActivityCounts;
 ```
 
 ## Usage Examples

@@ -8,6 +8,8 @@ import {
   createCompletionController,
   type CompletionEvent,
 } from "@/lib/completion/completion-controller";
+import type { CompletionLifecycleName } from "@/lib/completion/completion-controller";
+import type { ActivityEventCoordinator } from "@/lib/activity-context-provider";
 
 // Completion flow states
 type CompletionState = "active" | "waiting" | "completed";
@@ -19,11 +21,13 @@ interface UseSessionCompletionTimerOptions {
   isSingleActivityMode?: boolean; // Whether we're in single activity mode
   allowCompletedActivitiesInSingleMode?: boolean; // Whether to allow completed activities in single mode without logout
   careflowId?: string; // Optional override to derive pending state without relying on activities array
+  coordinator?: ActivityEventCoordinator; // To reset countdown on any lifecycle event
 }
 
 interface UseSessionCompletionTimerResult {
   completionState: CompletionState;
   waitingCountdown: number | null;
+  waitingTotal: number | null;
 }
 
 /**
@@ -39,10 +43,11 @@ export function useSessionCompletionTimer(
   activities: ActivityFragment[],
   options: UseSessionCompletionTimerOptions = {}
 ): UseSessionCompletionTimerResult {
-  const { waitingDuration = 10, onSessionCompleted, onIframeClose, isSingleActivityMode = false, allowCompletedActivitiesInSingleMode = true, careflowId } = options;
+  const { waitingDuration = 20, onSessionCompleted, onIframeClose, isSingleActivityMode = false, allowCompletedActivitiesInSingleMode = true, careflowId, coordinator } = options;
 
   const [completionState, setCompletionState] = useState<CompletionState>("active");
   const [waitingCountdown, setWaitingCountdown] = useState<number | null>(null);
+  const [waitingTotal, setWaitingTotal] = useState<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const controllerRef = useRef(createCompletionController("active"));
 
@@ -67,17 +72,44 @@ export function useSessionCompletionTimer(
     if (actions.includes("start_timer")) {
       if (timerRef.current) clearTimeout(timerRef.current);
       setWaitingCountdown(waitingDuration);
+      setWaitingTotal(waitingDuration);
     }
     if (actions.includes("stop_timer")) {
       if (timerRef.current) clearTimeout(timerRef.current);
       setWaitingCountdown(null);
+      setWaitingTotal(null);
     }
   }, [activities.length, pendingCount, careflowIdEffective, waitingDuration]);
 
-  // Abort waiting if the list size changes (any items, completable or not)
-  // (Handled by controller via activitiesChanged) keep for safety if needed
-
-  // No lifecycle listeners; pendingCount changes are sufficient
+  // Reset countdown if ANY activity lifecycle event comes in via coordinator
+  useEffect(() => {
+    if (!coordinator) return;
+    const names: CompletionLifecycleName[] = [
+      "activity.ready",
+      "activity.updated",
+      "activity.completed",
+      "activity.expired",
+    ];
+    const unsubs = names.map((name) =>
+      coordinator.on(name, () => {
+        const { state, actions } = controllerRef.current.transition({ type: "lifecycle", name });
+        setCompletionState(state);
+        const debug = process.env.NEXT_PUBLIC_DEBUG_NAVI === "true";
+        if (debug) {
+          // eslint-disable-next-line no-console
+          console.debug("[Completion] lifecycle", { name, state, actions });
+        }
+        if (actions.includes("stop_timer")) {
+          if (timerRef.current) clearTimeout(timerRef.current);
+          setWaitingCountdown(null);
+          setWaitingTotal(null);
+        }
+      })
+    );
+    return () => {
+      unsubs.forEach((u) => u && u());
+    };
+  }, [coordinator]);
 
   // Handle countdown timer and session cleanup
   useEffect(() => {
@@ -134,8 +166,6 @@ export function useSessionCompletionTimer(
   return {
     completionState,
     waitingCountdown,
+    waitingTotal,
   };
 }
-
-// Backward compatibility
-export const useCompletionFlow = useSessionCompletionTimer;

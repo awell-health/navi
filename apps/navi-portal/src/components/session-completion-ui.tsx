@@ -7,6 +7,7 @@ type CompletionState = "active" | "waiting" | "completed";
 interface SessionCompletionUIProps {
   completionState: CompletionState;
   waitingCountdown: number | null;
+  waitingTotal?: number | null;
 }
 
 /**
@@ -19,13 +20,28 @@ interface SessionCompletionUIProps {
 export function SessionCompletionUI({
   completionState,
   waitingCountdown,
+  waitingTotal,
 }: SessionCompletionUIProps) {
   if (completionState === "waiting") {
-    const showFinalMessage = (waitingCountdown ?? 0) <= 3; // Show final copy only in last 3s
+    // Show "listening" for the first 5s, then show finishing up until the last 3s
+    const total = waitingTotal ?? 0;
+    const elapsed = total && waitingCountdown !== null ? total - waitingCountdown : 0;
+    const inListeningPhase = elapsed < 5;
+    const showFinalMessage = !inListeningPhase && (waitingCountdown ?? 0) <= 3; // final 3s
     return (
       <div className="min-h-[500px] h-full flex items-center justify-center p-8">
         <div className="text-center">
-          {showFinalMessage ? (
+          {inListeningPhase ? (
+            <>
+              <div className="rounded-full h-16 w-16 bg-primary/10 mx-auto mb-4 flex items-center justify-center">
+                <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+              <h2 className="text-xl font-semibold text-foreground mb-2">
+                Listening for updates
+              </h2>
+              <p className="text-muted-foreground">We’re checking for any background changes…</p>
+            </>
+          ) : showFinalMessage ? (
             <>
               <div className="animate-pulse rounded-full h-16 w-16 bg-primary/20 mx-auto mb-4 flex items-center justify-center">
                 <div className="text-2xl font-bold text-primary">

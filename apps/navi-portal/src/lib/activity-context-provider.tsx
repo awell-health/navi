@@ -18,9 +18,10 @@ import {
   useOnActivityExpiredSubscription,
   useOnActivityReadySubscription,
   useCompleteActivityMutation,
+  useOnActivityCreatedSubscription,
 } from "@/lib/awell-client/generated/graphql";
-import { upsertActivityInCache } from "@/lib/awell-client/cache-policies";
 import { UserActivityType } from "@awell-health/navi-core";
+import { ActivitiesManager } from "./activities/activities-manager";
 import {
   filterUserActivities,
   findFirstActiveActivity,
@@ -31,6 +32,7 @@ import {
   canTransitionTo,
   isActivityCompleted,
   getCompletableActivities,
+  isUserCompletable,
 } from "./activities/helpers";
 
 // =================== SERVICE LAYER ===================
@@ -48,7 +50,7 @@ class ActivityEventCoordinator {
     const handlers = this.listeners.get(event);
     if (handlers) {
       handlers.forEach((handler) => {
-        console.log("🔔 Calling handler for event:", event);
+        console.log("🔔 Calling handler for event:", event, data);
         handler(data);
       });
     }
@@ -96,6 +98,9 @@ interface ActivityContextType {
   // Event coordinator instance (for advanced use cases)
   coordinator: ActivityEventCoordinator;
 
+  // Activities manager (for advanced use cases)
+  activitiesManager: ActivitiesManager;
+
   // Computed values
   progress: { completed: number; total: number; percentage: number };
 }
@@ -140,6 +145,11 @@ export function ActivityContextProvider({
   const [coordinator] = useState(() => injectedCoordinator || new ActivityEventCoordinator());
   const sessionId = useSessionId();
 
+  // Create activities manager instance only once
+  const [activitiesManager] = useState(() => {
+    return new ActivitiesManager(careflowId);
+  });
+
   // State (UI only)
   const [activeActivity, setActiveActivityState] =
     useState<ActivityFragment | null>(null);
@@ -165,7 +175,7 @@ export function ActivityContextProvider({
       // We read both from session cookies via a tiny helper to avoid plumbing.
       // For now, only server-side track filtering is applied here.
     },
-    skip: !!activityId, // Skip fetching all activities if we're fetching a single one
+    skip: !!activityId || !careflowId, // Skip when fetching single activity OR careflowId missing
   });
 
   // GraphQL query for a single activity if activityId is provided
@@ -176,7 +186,7 @@ export function ActivityContextProvider({
     refetch: refetchSingleActivity,
   } = useGetActivityQuery({
     variables: { id: activityId || "" },
-    skip: !activityId, // Skip if no activityId is provided
+    skip: !activityId || !careflowId, // Skip if no activityId or missing careflowId
   });
 
   // GraphQL mutation for completing activities
@@ -186,20 +196,23 @@ export function ActivityContextProvider({
 
   useOnActivityReadySubscription({
     variables: { careflow_id: careflowId },
-    onData: ({ data, client }) => {
+    onData: ({ data }) => {
       const ready = data.data?.activityReady;
-      if (!ready) return;
+      if (!ready) {
+        console.warn("❌ onActivityReady - data.activityReady is missing");
+        return;
+      }
       const readyId = ready.id;
-      if (ready.is_user_activity === false) return;
-      upsertActivityInCache(client.cache, {
-        careflowId,
-        activity: ready as unknown as { __typename: "Activity"; id: string } & Record<string, unknown>,
-      });
-      console.log("🔍 Activity ready. Emitting event", ready);
+      if (!isUserCompletable(ready)) {
+        console.log(`🤖 onActivityReady - Activity ID ${ready.id} is not a user activity`);
+        return;
+      }
+      activitiesManager.upsertActivity(ready as ActivityFragment);
+      console.log(`🔍 onActivityReady - Coordinator emitting event for activity ID ${readyId}`, { data });
       coordinator.emit("activity.ready", { activity: ready });
       if (readyId) setNewActivities((prev) => new Set([...prev, readyId]));
       // If nothing is active, immediately activate the newly ready activity
-      if (!activeActivity && ready.status === "ACTIVE") {
+      if (!activeActivity) {
         setActiveActivityState(ready as ActivityFragment);
         coordinator.emit("activity.activated", { activity: ready });
       }
@@ -210,15 +223,13 @@ export function ActivityContextProvider({
   });
 
   useOnActivityUpdatedSubscription({
-    variables: { careflow_id: careflowId },
-    onData: ({ data, client }) => {
+    variables: { careflow_id: careflowId || "" },
+    skip: !careflowId,
+    onData: ({ data }) => {
       const updatedActivity = data.data?.activityUpdated;
       if (!updatedActivity) return;
       console.log("🔄 Activity updated:", updatedActivity.id);
-      upsertActivityInCache(client.cache, {
-        careflowId,
-        activity: updatedActivity as unknown as { __typename: "Activity"; id: string } & Record<string, unknown>,
-      });
+      activitiesManager.upsertActivity(updatedActivity as ActivityFragment);
       coordinator.emit("activity.updated", { activity: updatedActivity });
       if (activeActivity?.id === updatedActivity.id) {
         setActiveActivityState(updatedActivity as ActivityFragment);
@@ -230,15 +241,13 @@ export function ActivityContextProvider({
   });
 
   useOnActivityCompletedSubscription({
-    variables: { careflow_id: careflowId },
-    onData: ({ data, client }) => {
+    variables: { careflow_id: careflowId || "" },
+    skip: !careflowId,
+    onData: ({ data }) => {
       const completedActivity = data.data?.activityCompleted;
       if (!completedActivity) return;
       console.log("✅ Activity completed:", completedActivity.id);
-      upsertActivityInCache(client.cache, {
-        careflowId,
-        activity: completedActivity as unknown as { __typename: "Activity"; id: string } & Record<string, unknown>,
-      });
+      activitiesManager.upsertActivity(completedActivity as ActivityFragment);
 
       coordinator.emit("activity.completed", {
         activity: completedActivity,
@@ -258,14 +267,11 @@ export function ActivityContextProvider({
 
   useOnActivityExpiredSubscription({
     variables: { careflow_id: careflowId },
-    onData: ({ data, client }) => {
+    onData: ({ data }) => {
       if (data.data?.activityExpired) {
         const expiredActivity = data.data.activityExpired;
         console.log("⏰ Activity expired:", expiredActivity.id);
-        upsertActivityInCache(client.cache, {
-          careflowId,
-          activity: expiredActivity as unknown as { __typename: "Activity"; id: string } & Record<string, unknown>,
-        });
+        activitiesManager.upsertActivity(expiredActivity as ActivityFragment);
         coordinator.emit("activity.expired", { activity: expiredActivity });
         if (activeActivity?.id === expiredActivity.id) {
           setActiveActivityState(expiredActivity);
@@ -278,19 +284,24 @@ export function ActivityContextProvider({
     },
   });
 
-  // =================== DERIVED ACTIVITIES FROM CACHE/QUERY ===================
-  const activities: ActivityFragment[] = useMemo(() => {
-    if (activityId && singleActivityData?.activity?.activity) {
-      const single = singleActivityData.activity.activity as ActivityFragment;
-      if (single.careflow_id !== careflowId) return [];
-      const filtered = filterUserActivities([single], stakeholderId);
-      return filtered;
-    }
-    const list: ActivityFragment[] = activitiesData?.pathwayActivities?.activities ?? [];
-    const filtered = filterUserActivities(list, stakeholderId);
-    // Do not narrow by URL params here; the provider manages focus internally.
-    return filtered;
-  }, [activityId, singleActivityData, activitiesData, stakeholderId, careflowId]);
+  // =================== DERIVED ACTIVITIES FROM MANAGER ===================
+  const [managerActivities, setManagerActivities] = useState<ActivityFragment[]>([]);
+
+  // Sync manager activities with component state when manager updates
+  const syncManagerActivities = useCallback(() => {
+    const allActivities = activitiesManager.getActivities();
+    const filtered = filterUserActivities(allActivities, stakeholderId);
+    setManagerActivities(filtered);
+  }, [activitiesManager, stakeholderId]);
+
+  // Set up manager callback to trigger UI updates
+  useEffect(() => {
+    activitiesManager.onChangeCallback = syncManagerActivities;
+  }, [activitiesManager, syncManagerActivities]);
+
+  // This will be set up after isLoading is defined
+
+  const activities = managerActivities;
 
   // Fallback auto-select for initial render: pick first completable when none selected
   useEffect(() => {
@@ -341,12 +352,25 @@ export function ActivityContextProvider({
 
   const refetchActivities = useCallback(async () => {
     console.log("🔄 Refetching activities...");
-    if (activityId) {
-      await refetchSingleActivity();
-    } else {
-      await refetch();
+    try {
+      if (activityId) {
+        const result = await refetchSingleActivity();
+        if (result.data?.activity?.activity) {
+          const single = result.data.activity.activity as ActivityFragment;
+          activitiesManager.upsertActivity(single);
+        }
+      } else {
+        const result = await refetch();
+        if (result.data?.pathwayActivities?.activities) {
+          const list: ActivityFragment[] = result.data.pathwayActivities.activities as ActivityFragment[];
+          activitiesManager.loadActivities(list);
+        }
+      }
+      syncManagerActivities();
+    } catch (error) {
+      console.error("❌ Error refetching activities:", error);
     }
-  }, [refetch, refetchSingleActivity, activityId]);
+  }, [refetch, refetchSingleActivity, activityId, activitiesManager, syncManagerActivities]);
 
   const completeActivity = useCallback(
     async (
@@ -444,14 +468,7 @@ export function ActivityContextProvider({
 
         const result = await completeActivityMutation({
           variables: { input },
-          update: (cache, { data }) => {
-            const a = data?.completeActivity?.activity as
-              | ({ __typename: "Activity"; id: string } & Record<string, unknown>)
-              | undefined;
-            if (a) {
-              upsertActivityInCache(cache, { careflowId, activity: a });
-            }
-          },
+          // No manual cache update needed - activities manager will trigger refetch
         });
 
         if (
@@ -461,6 +478,7 @@ export function ActivityContextProvider({
           console.log("✅ Activity completed successfully:", activityId);
 
           const completedActivity = result.data.completeActivity.activity as ActivityFragment;
+          activitiesManager.upsertActivity(completedActivity);
           coordinator.emit("activity.completed", {
             activityId,
             activity: completedActivity,
@@ -495,6 +513,36 @@ export function ActivityContextProvider({
   const error =
     (activityId ? singleActivityError?.message : gqlError?.message) || null;
 
+  // Load initial activities from Apollo cache into manager
+  useEffect(() => {
+    const loadInitialActivities = () => {
+      console.log("📋 Loading initial activities into manager", {
+        activityId,
+        hasActivitiesData: !!activitiesData?.pathwayActivities?.activities,
+        activitiesCount: activitiesData?.pathwayActivities?.activities?.length || 0,
+        hasSingleActivityData: !!singleActivityData?.activity?.activity
+      });
+
+      if (activityId && singleActivityData?.activity?.activity) {
+        const single = singleActivityData.activity.activity as ActivityFragment;
+        if (single.careflow_id === careflowId) {
+          console.log("📋 Loading single activity into manager:", single.id);
+          activitiesManager.upsertActivity(single);
+        }
+      } else if (activitiesData?.pathwayActivities?.activities) {
+        const list: ActivityFragment[] = activitiesData.pathwayActivities.activities as ActivityFragment[];
+        console.log("📋 Loading pathway activities into manager:", list.map(a => ({ id: a.id, type: a.object.type, status: a.status })));
+        activitiesManager.loadActivities(list);
+      }
+      syncManagerActivities();
+    };
+
+    if (!isLoading) {
+      console.log("📋 GraphQL loading complete, triggering initial activities load");
+      loadInitialActivities();
+    }
+  }, [activityId, singleActivityData, activitiesData, careflowId, activitiesManager, syncManagerActivities, isLoading]);
+
   const contextValue: ActivityContextType = useMemo(
     () => ({
       // Data (from Apollo cache)
@@ -519,6 +567,9 @@ export function ActivityContextProvider({
       // Event coordinator instance
       coordinator,
 
+      // Activities manager instance
+      activitiesManager,
+
       // Computed values
       progress: calculateProgress(activities),
     }),
@@ -535,6 +586,7 @@ export function ActivityContextProvider({
       refetchActivities,
       completeActivity,
       coordinator,
+      activitiesManager,
     ]
   );
 
@@ -555,7 +607,6 @@ export function useActivityContext() {
 
 // Backward compatibility
 export const useActivity = useActivityContext;
-export const ActivityProvider = ActivityContextProvider;
 
 // Export coordinator class for testing or external use
 export { ActivityEventCoordinator };

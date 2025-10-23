@@ -5,6 +5,7 @@ import { isUserCompletable } from "./helpers";
 export function useActivityCounts(careflowId: string) {
   const { data, loading } = usePathwayActivitiesQuery({
     variables: { careflow_id: careflowId },
+    skip: !careflowId,
   });
 
   const activities = (data?.pathwayActivities?.activities ?? []) as ActivityFragment[];
@@ -34,8 +35,3 @@ export function useActivityCounts(careflowId: string) {
     lastChangeAt: lastChangeAtRef.current,
   };
 }
-
-// Backward compatibility
-export const usePendingActivities = useActivityCounts;
-
-

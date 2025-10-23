@@ -63,7 +63,7 @@ const ExtensionIframeSwitchingDemo = () => {
     <NaviProvider
       publishableKey="pk_test-UfYqfiAQUN6s0gQ7bHczu"
       config={{
-        embedOrigin: "http://localhost:3000",
+        embedOrigin: "http://localhost:3000"
       }}
     >
       <div style={{ 
@@ -133,9 +133,7 @@ const ExtensionIframeSwitchingDemo = () => {
         </div>
         
         <div style={{ 
-          width: '100%', 
-          maxWidth: '800px', 
-          height: '500px',
+          width: '100%',
           position: 'relative'
         }}>
           <div 

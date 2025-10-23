@@ -1,23 +1,23 @@
-# ActivityProvider Usage Guide
+# ActivityContextProvider Usage Guide
 
-The `ActivityProvider` is a React context provider that manages activity state and lifecycle for careflows. It now supports two modes of operation:
+The `ActivityContextProvider` is a React context provider that manages activity state and lifecycle for careflows. It now supports two modes of operation:
 
 ## 🎯 Single Activity Mode
 
 When you need to focus on a specific activity instead of loading all careflow activities:
 
 ```tsx
-import { ActivityProvider } from "@/lib/activity-provider";
+import { ActivityContextProvider } from "@/lib/activity-provider";
 
 function SingleActivityView({ careflowId, stakeholderId, activityId }) {
   return (
-    <ActivityProvider
+    <ActivityContextProvider
       careflowId={careflowId}
       stakeholderId={stakeholderId}
       activityId={activityId} // 🆕 New: fetch only this activity
     >
       <SingleActivityContent />
-    </ActivityProvider>
+    </ActivityContextProvider>
   );
 }
 ```
@@ -33,17 +33,17 @@ function SingleActivityView({ careflowId, stakeholderId, activityId }) {
 When you need to show all activities in a careflow:
 
 ```tsx
-import { ActivityProvider } from "@/lib/activity-provider";
+import { ActivityContextProvider } from "@/lib/activity-provider";
 
 function CareflowView({ careflowId, stakeholderId }) {
   return (
-    <ActivityProvider
+    <ActivityContextProvider
       careflowId={careflowId}
       stakeholderId={stakeholderId}
       // No activityId = fetch all activities
     >
       <CareflowActivitiesList />
-    </ActivityProvider>
+    </ActivityContextProvider>
   );
 }
 ```
@@ -67,25 +67,25 @@ function CareflowView({ careflowId, stakeholderId }) {
 ### Task View (Single Activity)
 ```tsx
 // apps/navi-portal/src/app/smart/home/components/task-view.tsx
-<ActivityProvider
+<ActivityContextProvider
   careflowId={careflowId}
   stakeholderId={stakeholderId}
   activityId={activityId} // Focus on specific task
 >
   <TaskResolutionInterface />
-</ActivityProvider>
+</ActivityContextProvider>
 ```
 
 ### Careflow Overview (Multiple Activities)
 ```tsx
 // apps/navi-portal/src/app/careflows/[careflow_id]/stakeholders/[stakeholder_id]/careflow-activities-client.tsx
-<ActivityProvider
+<ActivityContextProvider
   careflowId={careflowId}
   stakeholderId={stakeholderId}
   // No activityId = show all activities
 >
   <CareflowActivitiesList />
-</ActivityProvider>
+</ActivityContextProvider>
 ```
 
 ## 🎛️ Props Reference
@@ -123,7 +123,7 @@ const {
   
   // Computed
   progress,         // Completion progress
-} = useActivity();
+} = useActivityContext();
 ```
 
 ## 🚀 Performance Benefits
@@ -145,10 +145,10 @@ const {
 ### From Multiple to Single
 ```tsx
 // Before: Always fetched all activities
-<ActivityProvider careflowId={id} stakeholderId={stakeholderId}>
+<ActivityContextProvider careflowId={id} stakeholderId={stakeholderId}>
 
 // After: Fetch only specific activity
-<ActivityProvider 
+<ActivityContextProvider 
   careflowId={id} 
   stakeholderId={stakeholderId}
   activityId={specificActivityId}
@@ -171,10 +171,10 @@ const {
 ### From Single to Multiple
 ```tsx
 // Before: Single activity only
-<ActivityProvider careflowId={id} activityId={activityId}>
+<ActivityContextProvider careflowId={id} activityId={activityId}>
 
 // After: All activities
-<ActivityProvider careflowId={id} stakeholderId={stakeholderId}>
+<ActivityContextProvider careflowId={id} stakeholderId={stakeholderId}>
 ```
 
 ## 🧪 Testing
@@ -184,21 +184,21 @@ The provider maintains the same testing interface:
 ```tsx
 // Test with injected service
 const mockService = new ActivityService();
-<ActivityProvider
+<ActivityContextProvider
   careflowId="test-id"
   service={mockService}
   activityId="single-activity-id"
 >
   {children}
-</ActivityProvider>
+</ActivityContextProvider>
 ```
 
 ## 🎛️ Completion Flow Options
 
-The `useCompletionFlow` hook now supports additional options for single activity mode:
+The `useSessionCompletionTimer` hook now supports additional options for single activity mode:
 
 ```tsx
-const { completionState, waitingCountdown } = useCompletionFlow(
+const { completionState, waitingCountdown } = useSessionCompletionTimer(
   activities,
   service,
   isLoading,

@@ -10,7 +10,7 @@ import {
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { ArrowLeftToLine } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useActivity } from "@/lib/activity-context-provider";
+import { useActivityContext } from "@/lib/activity-context-provider";
 import {
   clearAuthenticationCache,
   apolloClient,
@@ -69,7 +69,8 @@ export function ActivityDrawer({
     setActiveActivity,
     activeActivity,
     refetchActivities,
-  } = useActivity();
+    activitiesManager,
+  } = useActivityContext();
   const { requestHeightUpdate } = useCommunications();
 
   const { authState, isLoadingAuth, refreshAuth } = useAuthState();
@@ -105,6 +106,18 @@ export function ActivityDrawer({
     // After the drawer closes, request a height update (allow animation to finish)
     setTimeout(() => requestHeightUpdate(), 350);
   };
+
+  // When drawer opens, refresh activities to ensure we have the latest data
+  useEffect(() => {
+    if (open) {
+      console.log("📋 ActivityDrawer: Opened - refreshing activities");
+      refetchActivities().then(() => {
+        console.log("📋 ActivityDrawer: Fresh activities loaded from server");
+      }).catch(error => {
+        console.error("❌ ActivityDrawer: Failed to refresh activities:", error);
+      });
+    }
+  }, [open, refetchActivities]);
 
   // When drawer opens/closes, recalculate height after transition ends
   useEffect(() => {

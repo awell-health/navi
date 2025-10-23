@@ -128,8 +128,3 @@ const { activities } = useActivityContext();
 const flowState = useActivityFlowState(careflowId);
 const { completionState } = useSessionCompletionTimer(activities);
 ```
-
-### Backward Compatibility
-Old hook names are still exported for compatibility:
-- `useCompletionFlow` → `useSessionCompletionTimer`
-- `usePendingActivities` → `useActivityCounts`

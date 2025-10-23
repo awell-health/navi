@@ -13,11 +13,9 @@ import {
   FormActivityInput,
   MessageActivityInput,
 } from "@/lib/awell-client/generated/graphql";
-import { useActivity } from "@/lib/activity-context-provider";
-import { SessionCompletionUI } from "@/components/session-completion-ui";
-import { useSessionCompletionTimer } from "@/hooks/use-session-completion-timer";
+import { useActivityContext } from "@/lib/activity-context-provider";
+import { ActivityFlowRenderer } from "@/components/activity-flow-renderer";
 import { useActivityHandlers } from "@/hooks/use-activity-handlers";
-
 // Helper function to check if activity has form input
 function getFormFromActivity(
   activity: ActivityFragment
@@ -55,7 +53,7 @@ export function CareflowActivitiesContent({
     markActivityAsViewed,
     completeActivity,
     coordinator,
-  } = useActivity();
+  } = useActivityContext();
 
   useEffect(() => {
     if (activityId) {
@@ -67,20 +65,12 @@ export function CareflowActivitiesContent({
   const { handleFormSubmit, handleMessageMarkAsRead, handleChecklistComplete, handleExtensionSubmit } =
     useActivityHandlers({ completeActivity });
 
-  // Completion flow management
-  const { completionState, waitingCountdown } = useSessionCompletionTimer(
-    activities,
-    {
-      waitingDuration: 5,
-      onSessionCompleted: () => {
-        console.log("Session completed");
-      },
-      onIframeClose: () => {
-        console.log("Iframe close requested");
-      },
-      isSingleActivityMode: !!activityId, // Enable single activity mode when activityId is provided
-      allowCompletedActivitiesInSingleMode: !!activityId, // Allow completed activities in single mode
-    }
+  const flow = (
+    <ActivityFlowRenderer
+      careflowId={activities[0]?.careflow_id ?? ""}
+      waitingDuration={20}
+      renderActivities={() => renderActiveActivity()}
+    />
   );
 
   // Mark the active activity as viewed when it changes
@@ -177,16 +167,6 @@ export function CareflowActivitiesContent({
     }
   };
 
-  // Show completion state if session is completed
-  if (completionState === "completed") {
-    return (
-      <SessionCompletionUI
-        waitingCountdown={waitingCountdown || 0}
-        completionState={completionState}
-      />
-    );
-  }
-
   // Show loading state
   if (isLoading) {
     return (
@@ -212,9 +192,7 @@ export function CareflowActivitiesContent({
 
   return (
     <div className="min-h-0 bg-background flex">
-      <div className="flex-1 overflow-y-auto w-full">
-        {renderActiveActivity()}
-      </div>
+      <div className="flex-1 overflow-y-auto w-full">{flow}</div>
     </div>
   );
 }

@@ -16,8 +16,9 @@ import {
   FormActivityInput,
   MessageActivityInput,
 } from "@/lib/awell-client/generated/graphql";
-import { useActivity } from "@/lib/activity-context-provider";
+import { useActivityContext } from "@/lib/activity-context-provider";
 import { ActivityDrawer } from "@/components/activity-drawer";
+import { isActivityCompleted } from "@/lib/activities/helpers";
 import {
   IframeCommunicator,
   useCommunications,
@@ -26,6 +27,7 @@ import { ActivityHeader } from "@/components/activity-header";
 import { SessionCompletionUI } from "@/components/session-completion-ui";
 import { useSessionCompletionTimer } from "@/hooks/use-session-completion-timer";
 import { useActivityHandlers } from "@/hooks/use-activity-handlers";
+import { ActivityFlowRenderer } from "@/components/activity-flow-renderer";
 
 interface CareflowActivitiesClientProps {
   careflowId: string;
@@ -106,16 +108,29 @@ export default function CareflowActivitiesClient({
     url: typeof window !== "undefined" ? window.location.href : "SSR",
   });
 
+  function RendererWithComms() {
+    const { sendSessionCompleted, sendIframeClose } = useCommunications();
+    return (
+      <ActivityFlowRenderer
+        careflowId={careflowId}
+        waitingDuration={20}
+        onSessionCompleted={sendSessionCompleted}
+        onIframeClose={sendIframeClose}
+        renderActivities={() => <CareflowActivitiesContent />}
+      />
+    );
+  }
+
   return (
     <ActivityContextProvider careflowId={careflowId} stakeholderId={stakeholderId}>
       <IframeCommunicator instanceId={instanceId}>
-        <CareflowActivitiesContent />
+        <RendererWithComms />
       </IframeCommunicator>
     </ActivityContextProvider>
   );
 }
 
-// Inner component that uses the useActivity hook
+// Inner component that uses the useActivityContext hook
 function CareflowActivitiesContent() {
   const {
     activeActivity,
@@ -126,7 +141,7 @@ function CareflowActivitiesContent() {
     markActivityAsViewed,
     completeActivity,
     coordinator,
-  } = useActivity();
+  } = useActivityContext();
   const { createActivityEventHandlers, sendSessionCompleted, sendIframeClose } =
     useCommunications();
 
@@ -138,11 +153,12 @@ function CareflowActivitiesContent() {
     useActivityHandlers({ completeActivity });
 
   // Completion flow management
-  // Derive careflowId from list when invoking useCompletionFlow
-  const { completionState, waitingCountdown } = useSessionCompletionTimer(activities, {
-    waitingDuration: 5,
+  // Derive careflowId from list when invoking useSessionCompletionTimer
+  const { completionState, waitingCountdown, waitingTotal } = useSessionCompletionTimer(activities, {
+    waitingDuration: 20,
     onSessionCompleted: sendSessionCompleted,
     onIframeClose: sendIframeClose,
+    coordinator,
   });
 
   // Mark the active activity as viewed when it changes
@@ -176,6 +192,7 @@ function CareflowActivitiesContent() {
       <SessionCompletionUI
         completionState={completionState}
         waitingCountdown={waitingCountdown}
+        waitingTotal={waitingTotal}
       />
     );
     if (completionState !== "active") {
@@ -197,9 +214,6 @@ function CareflowActivitiesContent() {
       );
     }
 
-    // Check if activity is completed
-    const isCompleted = activeActivity.status === "DONE";
-
     switch (activeActivity.object.type) {
       case "FORM": {
         const form = getFormFromActivity(activeActivity);
@@ -210,7 +224,7 @@ function CareflowActivitiesContent() {
           return (
             <Activities.Form
               activity={formActivity}
-              disabled={isCompleted}
+              disabled={isActivityCompleted(activeActivity)}
               eventHandlers={createActivityEventHandlers(
                 activeActivity.id,
                 activeActivity.object.type
@@ -235,6 +249,7 @@ function CareflowActivitiesContent() {
                 activeActivity.id,
                 activeActivity.object.type
               )}
+              disabled={isActivityCompleted(activeActivity)}
               onMarkAsRead={handleMessageMarkAsRead}
             />
           );
@@ -248,7 +263,7 @@ function CareflowActivitiesContent() {
         return (
           <Activities.Checklist
             activity={checklistActivity}
-            disabled={isCompleted}
+            disabled={isActivityCompleted(activeActivity)}
             eventHandlers={createActivityEventHandlers(
               activeActivity.id,
               activeActivity.object.type
@@ -263,7 +278,7 @@ function CareflowActivitiesContent() {
           return (
             <Activities.Extension
               activity={extensionActivity}
-              disabled={isCompleted}
+              disabled={isActivityCompleted(activeActivity)}
               onSubmit={(data) =>
                 completeActivity(activeActivity.id, data, "EXTENSION")
               }

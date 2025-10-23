@@ -73,6 +73,11 @@ export interface ActivityDataChangeData {
   validationState?: "valid" | "invalid" | "pending";
 }
 
+export interface ActivityReadyData {
+  activityId: string;
+  activityType: UserActivityType;
+}
+
 export interface ActivityCompleteData {
   submissionData: UntypedData;
 }
