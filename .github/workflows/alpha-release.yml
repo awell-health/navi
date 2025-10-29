@@ -59,7 +59,7 @@ jobs:
           access=public
           EOF
         env:
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AWELL_HEALTH_PUBLISHER }}
 
       - name: Enter alpha prerelease mode
         run: pnpm changeset pre enter alpha
@@ -82,7 +82,7 @@ jobs:
       - name: Publish alpha packages
         run: pnpm changeset:publish --tag alpha
         env:
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AWELL_HEALTH_PUBLISHER }}
 
       - name: Exit prerelease mode (cleanup)
         run: pnpm changeset pre exit

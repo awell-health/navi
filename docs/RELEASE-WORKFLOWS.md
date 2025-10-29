@@ -79,14 +79,14 @@ npm install @awell-health/navi-js-react@alpha
 You need to configure these secrets in your GitHub repository:
 
 ```
-NPM_AUTH_TOKEN - Your NPM authentication token for @awell-health org
+NPM_AWELL_HEALTH_PUBLISHER - Your NPM authentication token for @awell-health org
 ```
 
 ### NPM Token Setup
 
 1. Create an NPM token with "Automation" permission
 2. Ensure the token has access to the @awell-health organization
-3. Add it as `NPM_AUTH_TOKEN` in GitHub repository secrets
+3. Add it as `NPM_AWELL_HEALTH_PUBLISHER` in GitHub repository secrets
 
 ## 📋 Version Strategy
 

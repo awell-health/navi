@@ -52,7 +52,7 @@ jobs:
           npm config set @awell-health:registry https://registry.npmjs.org/
           npm config set //registry.npmjs.org/:_authToken $NPM_AUTH_TOKEN
         env:
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AWELL_HEALTH_PUBLISHER }}
 
       - name: Create Release Pull Request or Publish to NPM
         id: changesets
@@ -64,7 +64,7 @@ jobs:
           commit: "Release new versions"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AWELL_HEALTH_PUBLISHER }}
 
       - name: Create GitHub Release
         if: steps.changesets.outputs.published == 'true'
